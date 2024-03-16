@@ -1188,7 +1188,30 @@ static void ndpi_debug_printf(unsigned int proto,
            buf);
 }
 
-static char const * cfg_err2str(ndpi_cfg_error err)
+// Ashwani
+// 
+//static char const * cfg_err2str(ndpi_cfg_error err)
+//{
+//    switch (err)
+//    {
+//        case NDPI_CFG_INVALID_CONTEXT:
+//            return "Invalid context";
+//        case NDPI_CFG_NOT_FOUND:
+//            return "Not found";
+//        case NDPI_CFG_INVALID_PARAM:
+//            return "Invalid parameter";
+//        case NDPI_CFG_CONTEXT_ALREADY_INITIALIZED:
+//            return "Context already initialized";
+//        case NDPI_CFG_CALLBACK_ERROR:
+//            return "Callback error";
+//        case NDPI_CFG_OK:
+//            return "Success";
+//    }
+//
+//    return "Unknown error";
+//}
+
+static char const * cfg_err2str(int err)
 {
     switch (err)
     {
@@ -1214,14 +1237,15 @@ static int cfg_set_u64(struct nDPId_workflow * const workflow,
                        char const * const param,
                        uint64_t const value)
 {
-    ndpi_cfg_error cfg_err;
+    // Ashwani
+    //ndpi_cfg_error cfg_err;
 
-    cfg_err = ndpi_set_config_u64(workflow->ndpi_struct, proto, param, value);
-    if (cfg_err != NDPI_CFG_OK)
-    {
-        logger_early(1, "Could not set nDPI configuration (numeric value): %s", cfg_err2str(cfg_err));
-        return 1;
-    }
+    //cfg_err = ndpi_set_config_u64(workflow->ndpi_struct, proto, param, value);
+    //if (cfg_err != NDPI_CFG_OK)
+    //{
+    //    logger_early(1, "Could not set nDPI configuration (numeric value): %s", cfg_err2str(cfg_err));
+    //    return 1;
+    //}
 
     return 0;
 }
@@ -1862,10 +1886,14 @@ static void process_idle_flow(struct nDPId_reader_thread * const reader_thread, 
                     if (ndpi_is_protocol_detected(workflow->ndpi_struct,
                                                   flow->info.detection_data->guessed_l7_protocol) == 0)
                     {
-                        flow->info.detection_data->guessed_l7_protocol =
+                        // Ashwani
+                        /*flow->info.detection_data->guessed_l7_protocol =
                             ndpi_detection_giveup(workflow->ndpi_struct,
                                                   &flow->info.detection_data->flow,
-                                                  &protocol_was_guessed);
+                                                  &protocol_was_guessed);*/
+                       
+                        flow->info.detection_data->guessed_l7_protocol = ndpi_detection_giveup(
+                            workflow->ndpi_struct, &flow->info.detection_data->flow, 1, &protocol_was_guessed);
                     }
                     else
                     {
@@ -4237,10 +4265,15 @@ static void ndpi_process_packet(uint8_t * const args,
     {
         /* last chance to guess something, better then nothing */
         uint8_t protocol_was_guessed = 0;
-        flow_to_process->info.detection_data->guessed_l7_protocol =
+        //Ashwani
+        /*flow_to_process->info.detection_data->guessed_l7_protocol =
             ndpi_detection_giveup(workflow->ndpi_struct,
                                   &flow_to_process->info.detection_data->flow,
-                                  &protocol_was_guessed);
+                                  &protocol_was_guessed);*/
+        flow_to_process->info.detection_data->guessed_l7_protocol =
+           ndpi_detection_giveup(workflow->ndpi_struct,
+                                 &flow_to_process->info.detection_data->flow, 1,
+                                 &protocol_was_guessed);
         if (protocol_was_guessed != 0)
         {
             workflow->total_guessed_flows++;
