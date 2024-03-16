@@ -1833,7 +1833,7 @@ static void process_idle_flow(struct nDPId_reader_thread * const reader_thread, 
 {
     struct nDPId_workflow * const workflow = reader_thread->workflow;
 
-    logger(0, "%s", "\nAshwani: process_idle_flow() method ->start\n");
+    // logger(0, "%s", "\nAshwani: process_idle_flow() method ->start\n");
     while (workflow->cur_idle_flows > 0)
     {
         struct nDPId_flow_basic * const flow_basic =
@@ -1929,7 +1929,7 @@ static void process_idle_flow(struct nDPId_reader_thread * const reader_thread, 
         workflow->cur_active_flows--;
     }
 
-    logger(0, "%s", "\nAshwani: process_idle_flow() method ->end\n");
+    //logger(0, "%s", "\nAshwani: process_idle_flow() method ->end\n");
 }
 
 static void check_for_idle_flows(struct nDPId_reader_thread * const reader_thread)
