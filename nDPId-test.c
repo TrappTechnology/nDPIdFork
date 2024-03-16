@@ -1653,6 +1653,9 @@ int main(int argc, char ** argv)
         return 1;
     }
 
+    // Ashwani
+    logger(0, "%s", "Ashwani: main called\n");
+
     if (argc == 1)
     {
         int retval = 0;
