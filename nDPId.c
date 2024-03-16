@@ -1833,6 +1833,7 @@ static void process_idle_flow(struct nDPId_reader_thread * const reader_thread, 
 {
     struct nDPId_workflow * const workflow = reader_thread->workflow;
 
+    logger(0, "%s", "\nAshwani: process_idle_flow() method ->start\n");
     while (workflow->cur_idle_flows > 0)
     {
         struct nDPId_flow_basic * const flow_basic =
@@ -1927,6 +1928,8 @@ static void process_idle_flow(struct nDPId_reader_thread * const reader_thread, 
         ndpi_flow_info_free(flow_basic);
         workflow->cur_active_flows--;
     }
+
+    logger(0, "%s", "\nAshwani: process_idle_flow() method ->end\n");
 }
 
 static void check_for_idle_flows(struct nDPId_reader_thread * const reader_thread)
@@ -1942,6 +1945,7 @@ static void check_for_idle_flows(struct nDPId_reader_thread * const reader_threa
 
 static void ndpi_flow_update_scan_walker(void const * const A, ndpi_VISIT which, int depth, void * const user_data)
 {
+    logger(0, "%s", "\nAshwani: ndpi_flow_update_scan_walker() method ->start\n");
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)user_data;
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     struct nDPId_flow_basic * const flow_basic = *(struct nDPId_flow_basic **)A;
@@ -1978,6 +1982,8 @@ static void ndpi_flow_update_scan_walker(void const * const A, ndpi_VISIT which,
             }
         }
     }
+
+    logger(0, "%s", "\nAshwani: ndpi_flow_update_scan_walker() method ->end\n");
 }
 
 static void check_for_flow_updates(struct nDPId_reader_thread * const reader_thread)
@@ -4254,7 +4260,7 @@ static void ndpi_process_packet(uint8_t * const args,
         return;
     }
 
-
+    logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 17-start\n");
     flow_to_process->flow_extended.detected_l7_protocol =
         ndpi_detection_process_packet(workflow->ndpi_struct,
                                       &flow_to_process->info.detection_data->flow,
@@ -4263,9 +4269,11 @@ static void ndpi_process_packet(uint8_t * const args,
                                       workflow->last_thread_time / 1000,
                                       NULL);
 
+    logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 17-end\n");
     if (ndpi_is_protocol_detected(workflow->ndpi_struct, flow_to_process->flow_extended.detected_l7_protocol) != 0 &&
         flow_to_process->info.detection_completed == 0)
     {
+        logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 18-start\n");
         flow_to_process->info.detection_completed = 1;
         workflow->total_detected_flows++;
         /*
@@ -4283,9 +4291,11 @@ static void ndpi_process_packet(uint8_t * const args,
         jsonize_flow_detection_event(reader_thread, flow_to_process, FLOW_EVENT_DETECTED);
         flow_to_process->info.detection_data->last_ndpi_flow_struct_hash =
             calculate_ndpi_flow_struct_hash(&flow_to_process->info.detection_data->flow);
+        logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 18-end\n");
     }
     else if (flow_to_process->info.detection_completed == 1)
     {
+        logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 19-start\n");
         uint32_t hash = calculate_ndpi_flow_struct_hash(&flow_to_process->info.detection_data->flow);
         if (hash != flow_to_process->info.detection_data->last_ndpi_flow_struct_hash)
         {
@@ -4293,6 +4303,7 @@ static void ndpi_process_packet(uint8_t * const args,
             jsonize_flow_detection_event(reader_thread, flow_to_process, FLOW_EVENT_DETECTION_UPDATE);
             flow_to_process->info.detection_data->last_ndpi_flow_struct_hash = hash;
         }
+        logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 19-end\n");
     }
 
     if (flow_to_process->info.detection_data->flow.num_processed_pkts ==
@@ -4312,13 +4323,17 @@ static void ndpi_process_packet(uint8_t * const args,
                                  &protocol_was_guessed);
         if (protocol_was_guessed != 0)
         {
+            logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 20-start\n");
             workflow->total_guessed_flows++;
             jsonize_flow_detection_event(reader_thread, flow_to_process, FLOW_EVENT_GUESSED);
+            logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 20-end\n");
         }
         else
         {
+            logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 21-start\n");
             reader_thread->workflow->total_not_detected_flows++;
             jsonize_flow_detection_event(reader_thread, flow_to_process, FLOW_EVENT_NOT_DETECTED);
+            logger(0, "%s", "\nAshwani: ndpi_process_packet() method -> 21-end\n");
         }
     }
 
