@@ -1215,18 +1215,18 @@ static char const * cfg_err2str(int err)
 {
     switch (err)
     {
-        case NDPI_CFG_INVALID_CONTEXT:
-            return "Invalid context";
-        case NDPI_CFG_NOT_FOUND:
-            return "Not found";
-        case NDPI_CFG_INVALID_PARAM:
-            return "Invalid parameter";
-        case NDPI_CFG_CONTEXT_ALREADY_INITIALIZED:
-            return "Context already initialized";
-        case NDPI_CFG_CALLBACK_ERROR:
-            return "Callback error";
-        case NDPI_CFG_OK:
-            return "Success";
+        //case NDPI_CFG_INVALID_CONTEXT:
+        //    return "Invalid context";
+        //case NDPI_CFG_NOT_FOUND:
+        //    return "Not found";
+        //case NDPI_CFG_INVALID_PARAM:
+        //    return "Invalid parameter";
+        //case NDPI_CFG_CONTEXT_ALREADY_INITIALIZED:
+        //    return "Context already initialized";
+        //case NDPI_CFG_CALLBACK_ERROR:
+        //    return "Callback error";
+        //case NDPI_CFG_OK:
+        //    return "Success";
     }
 
     return "Unknown error";
