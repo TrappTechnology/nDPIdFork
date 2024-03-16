@@ -3615,6 +3615,9 @@ static void ndpi_process_packet(uint8_t * const args,
                                 struct pcap_pkthdr const * const header,
                                 uint8_t const * const packet)
 {
+    // Ashwani
+    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> begin\n");
+
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
     struct nDPId_workflow * workflow;
     struct nDPId_flow_basic flow_basic = {};
@@ -3686,8 +3689,10 @@ static void ndpi_process_packet(uint8_t * const args,
     {
         if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
         {
+            logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 1-start\n");
             jsonize_error_eventf(reader_thread, UNKNOWN_L3_PROTOCOL, "%s%u", "protocol", type);
             jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+            logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 1-end\n");
         }
         return;
     }
@@ -3699,6 +3704,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 2-start\n");
                 jsonize_error_eventf(reader_thread,
                                      CAPTURE_SIZE_SMALLER_THAN_PACKET_SIZE,
                                      "%s%u %s%u",
@@ -3707,6 +3713,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      "expected",
                                      header->len);
                 jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 2-end\n");
             }
         }
     }
@@ -3718,6 +3725,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 3-start\n");
                 jsonize_error_eventf(reader_thread,
                                      IP4_SIZE_SMALLER_THAN_HEADER,
                                      "%s%u %s%zu",
@@ -3726,6 +3734,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      "expected",
                                      sizeof(*ip));
                 jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 3-end\n");
             }
             return;
         }
@@ -3737,9 +3746,11 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 4-start\n");
                 jsonize_error_eventf(
                     reader_thread, IP4_L4_PAYLOAD_DETECTION_FAILED, "%s%zu", "l4_data_len", ip_size - sizeof(*ip));
                 jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 4-end\n");
             }
             return;
         }
@@ -3755,6 +3766,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 5-start\n");
                 jsonize_error_eventf(reader_thread,
                                      IP6_SIZE_SMALLER_THAN_HEADER,
                                      "%s%u %s%zu",
@@ -3763,6 +3775,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      "expected",
                                      sizeof(ip6->ip6_hdr));
                 jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 5-end\n");
             }
             return;
         }
@@ -3773,9 +3786,11 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 6-start\n");
                 jsonize_error_eventf(
                     reader_thread, IP6_L4_PAYLOAD_DETECTION_FAILED, "%s%zu", "l4_data_len", ip_size - sizeof(*ip));
                 jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 6-end\n");
             }
             return;
         }
@@ -3803,8 +3818,10 @@ static void ndpi_process_packet(uint8_t * const args,
     {
         if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
         {
+            logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 7-start\n");
             jsonize_error_eventf(reader_thread, UNKNOWN_L3_PROTOCOL, "%s%u", "protocol", type);
             jsonize_packet_event(reader_thread, header, packet, type, ip_offset, 0, 0, NULL, PACKET_EVENT_PAYLOAD);
+            logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 7-end\n");
         }
         return;
     }
@@ -3816,6 +3833,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 8-start\n");
                 jsonize_error_eventf(reader_thread,
                                      TCP_PACKET_TOO_SHORT,
                                      "%s%u %s%zu",
@@ -3832,6 +3850,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      l4_len,
                                      NULL,
                                      PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 8-end\n");
             }
             return;
         }
@@ -3850,6 +3869,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (distribute_single_packet(reader_thread) != 0 && is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 9-start\n");
                 jsonize_error_eventf(reader_thread,
                                      UDP_PACKET_TOO_SHORT,
                                      "%s%u %s%zu",
@@ -3866,6 +3886,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      l4_len,
                                      NULL,
                                      PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 9-end\n");
             }
             return;
         }
@@ -3983,6 +4004,7 @@ static void ndpi_process_packet(uint8_t * const args,
                 if (add_new_flow(workflow, &flow_basic, FS_SKIPPED, hashed_index) == NULL &&
                     is_error_event_threshold(reader_thread->workflow) == 0)
                 {
+                    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 10-start\n");
                     jsonize_error_eventf(reader_thread,
                                          FLOW_MEMORY_ALLOCATION_FAILED,
                                          "%s%zu",
@@ -3997,6 +4019,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                          l4_len,
                                          NULL,
                                          PACKET_EVENT_PAYLOAD);
+                    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 10-end\n");
                 }
                 return;
             }
@@ -4008,6 +4031,7 @@ static void ndpi_process_packet(uint8_t * const args,
                 if (add_new_flow(workflow, &flow_basic, FS_SKIPPED, hashed_index) == NULL &&
                     is_error_event_threshold(reader_thread->workflow) == 0)
                 {
+                    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 11-start\n");
                     jsonize_error_eventf(reader_thread,
                                          FLOW_MEMORY_ALLOCATION_FAILED,
                                          "%s%zu",
@@ -4022,6 +4046,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                          l4_len,
                                          NULL,
                                          PACKET_EVENT_PAYLOAD);
+                    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 11-end\n");
                 }
                 return;
             }
@@ -4031,6 +4056,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 12-start\n");
                 jsonize_error_eventf(reader_thread,
                                      MAX_FLOW_TO_TRACK,
                                      "%s%llu %s%llu %s%llu %s%llu",
@@ -4051,6 +4077,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      l4_len,
                                      NULL,
                                      PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 12-end\n");
             }
             return;
         }
@@ -4060,6 +4087,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 13-start\n");
                 jsonize_error_eventf(
                     reader_thread, FLOW_MEMORY_ALLOCATION_FAILED, "%s%zu", "size", sizeof(*flow_to_process));
                 jsonize_packet_event(reader_thread,
@@ -4071,6 +4099,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      l4_len,
                                      NULL,
                                      PACKET_EVENT_PAYLOAD);
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 13-end\n");
             }
             return;
         }
@@ -4082,6 +4111,7 @@ static void ndpi_process_packet(uint8_t * const args,
         {
             if (is_error_event_threshold(reader_thread->workflow) == 0)
             {
+                logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 14-start\n");
                 jsonize_error_eventf(
                     reader_thread, FLOW_MEMORY_ALLOCATION_FAILED, "%s%zu", "size", sizeof(*flow_to_process));
                 jsonize_packet_event(reader_thread,
@@ -4094,6 +4124,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                      NULL,
                                      PACKET_EVENT_PAYLOAD);
             }
+            logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 14-end\n");
             return;
         }
 
@@ -4164,6 +4195,7 @@ static void ndpi_process_packet(uint8_t * const args,
 
     if (is_new_flow != 0)
     {
+        logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 15-start\n");
         last_pkt_time = flow_to_process->flow_extended.first_seen =
             flow_to_process->flow_extended.flow_basic.last_pkt_time[direction] =
                 flow_to_process->flow_extended.flow_basic.last_pkt_time[1 - direction] =
@@ -4171,6 +4203,7 @@ static void ndpi_process_packet(uint8_t * const args,
         flow_to_process->flow_extended.max_l4_payload_len[direction] = l4_payload_len;
         flow_to_process->flow_extended.min_l4_payload_len[direction] = l4_payload_len;
         jsonize_flow_event(reader_thread, &flow_to_process->flow_extended, FLOW_EVENT_NEW);
+        logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 15-end\n");
     }
 
     if (nDPId_options.enable_data_analysis != 0 && flow_to_process->flow_extended.flow_analysis != NULL &&
@@ -4203,6 +4236,7 @@ static void ndpi_process_packet(uint8_t * const args,
         }
     }
 
+    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 16-start\n");
     jsonize_packet_event(reader_thread,
                          header,
                          packet,
@@ -4212,12 +4246,14 @@ static void ndpi_process_packet(uint8_t * const args,
                          l4_len,
                          &flow_to_process->flow_extended,
                          PACKET_EVENT_PAYLOAD_FLOW);
+    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> 16-end\n");
 
     if (flow_to_process->flow_extended.flow_basic.state != FS_INFO || flow_to_process->info.detection_data == NULL)
     {
         /* Only FS_INFO goes through the whole detection process. */
         return;
     }
+
 
     flow_to_process->flow_extended.detected_l7_protocol =
         ndpi_detection_process_packet(workflow->ndpi_struct,
@@ -4308,6 +4344,8 @@ static void ndpi_process_packet(uint8_t * const args,
         flow->finished.risk = risk;
         flow->finished.confidence = confidence;
     }
+
+    logger(0, "*s", "\nAshwani: ndpi_process_packet() method -> end\n");
 
 #ifdef ENABLE_ZLIB
     if (nDPId_options.enable_zlib_compression != 0)
