@@ -40,7 +40,7 @@ static void getProgramFolderPath(char* buffer, size_t size)
 #endif
 
     if (end == NULL) {
-        fprintf(stderr, "Error: Unable to determine program folder path.\n");
+        //fprintf(stderr, "Error: Unable to determine program folder path.\n");
         exit(EXIT_FAILURE);
     }
 
@@ -161,11 +161,11 @@ static bool matchEntryInParamsVector(const char* srcIP, const char* destIP, int 
         }
 
         // All criteria match, return true
-        return true;
+        return TRUE;
     }
 
     // No matching entry found
-    return false;
+    return FALSE;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------*/
