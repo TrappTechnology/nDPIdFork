@@ -220,6 +220,8 @@ set(NDPID_DEFS -DJSMN_STATIC=1 -DJSMN_STRICT=1 -DJSMN_PARENT_LINKS=1)
 set(NDPID_DEPS_INC "${CMAKE_SOURCE_DIR}"
                    "${CMAKE_SOURCE_DIR}/dependencies"
                    "${CMAKE_SOURCE_DIR}/dependencies/json-c"
+                   "${CMAKE_SOURCE_DIR}/dependencies/json-c/include"
+                   "${CMAKE_SOURCE_DIR}/dependencies/json-c/include/json-c"
                    "${CMAKE_SOURCE_DIR}/dependencies/jsmn"
                    "${CMAKE_SOURCE_DIR}/dependencies/uthash/src")
 if(CMAKE_CROSSCOMPILING)
