@@ -1667,6 +1667,18 @@ int main(int argc, char ** argv)
         return retval;
     }
 
+    int status = mkdir("Events", 0777); // 0777 is the permission mode for the folder
+    
+    if (status == 0) 
+    {
+        logger(0, "Events folder created successfully");
+    } 
+    else 
+    {
+        logger(0, "Failed to create Events folder");
+    }
+
+
     nDPIsrvd_options.max_write_buffers = 32;
     nDPId_options.enable_data_analysis = 1;
     nDPId_options.max_packets_per_flow_to_send = 5;
