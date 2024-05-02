@@ -21,6 +21,17 @@ struct SkipParameters
     int destinationPort; // Use -1 if not present
 };
 
+char * strDuplicate(char* inputSting)
+{
+#ifdef _WIN32
+    // Windows-specific code
+    return _strdup(inputSting);
+#else
+    // Non-Windows (assume POSIX) code
+    return strdup(inputSting);
+#endif
+}
+
 /*--------------------------------------------------------------------------------------------------------------------------*/
 static void getProgramFolderPath(char* buffer, size_t size) 
 {
@@ -79,8 +90,8 @@ static void traverseJsonObject(json_object* jsonObj, struct SkipParameters** par
             {
                 *vectorSize += 1;
                 *paramsVector = realloc(*paramsVector, (*vectorSize) * sizeof(struct SkipParameters));
-                (*paramsVector)[*vectorSize - 1].sourceIP = _strdup("NOT_SET");
-                (*paramsVector)[*vectorSize - 1].destinationIP = _strdup("NOT_SET");
+                (*paramsVector)[*vectorSize - 1].sourceIP = strDuplicate("NOT_SET");
+                (*paramsVector)[*vectorSize - 1].destinationIP = strDuplicate("NOT_SET");
                 (*paramsVector)[*vectorSize - 1].destinationPort = -1;
 
                 json_object* arrayElement = json_object_array_get_idx(val, i);
@@ -98,14 +109,14 @@ static void traverseJsonObject(json_object* jsonObj, struct SkipParameters** par
                 // Check if key is one of the desired parameters
                 if (strcmp(keyStr, "sourceIP") == 0)
                 {
-                    char* sourceIP = _strdup(valueStr);
+                    char* sourceIP = strDuplicate(valueStr);
                     (*paramsVector)[*vectorSize - 1].sourceIP = sourceIP;
                 }
 
                 // Check if key is one of the desired parameters
                 if (strcmp(keyStr, "destinationIP") == 0)
                 {
-                    char* destinationIP = _strdup(valueStr);
+                    char* destinationIP = strDuplicate(valueStr);
                     (*paramsVector)[*vectorSize - 1].destinationIP = destinationIP;
                 }
 
