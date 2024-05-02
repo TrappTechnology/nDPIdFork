@@ -347,6 +347,7 @@ find_package(json-c CONFIG)
 if(json-c_FOUND)
     # Link the json-c library to your target
     target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
 else()
     # Handle error if json-c is not found
     message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
