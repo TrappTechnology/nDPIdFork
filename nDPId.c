@@ -33,6 +33,7 @@
 #include "nDPIsrvd.h"
 #include "nio.h"
 #include "utils.h"
+#include "ReadJsonConfiguration.h"
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
@@ -1883,8 +1884,7 @@ static void process_idle_flow(struct nDPId_reader_thread * const reader_thread, 
                 {
                     uint8_t protocol_was_guessed = 0;
 
-                    if (ndpi_is_protocol_detected(workflow->ndpi_struct,
-                                                  flow->info.detection_data->guessed_l7_protocol) == 0)
+                    if (ndpi_is_protocol_detected(flow->info.detection_data->guessed_l7_protocol) == 0)
                     {
                         // Ashwani
                         /*flow->info.detection_data->guessed_l7_protocol =
@@ -2426,6 +2426,12 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     uint32_t json_msg_len;
 
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
+
+    char * converted_json_str = NULL;
+    int createAlert = 0;
+    ConvertnDPIDataFormat(json_msg, &converted_json_str, &createAlert);
+    free(converted_json_str);
+
     if (json_msg == NULL || json_msg_len == 0)
     {
         logger(1,
@@ -4227,7 +4233,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                       workflow->last_thread_time / 1000,
                                       NULL);
 
-    if (ndpi_is_protocol_detected(workflow->ndpi_struct, flow_to_process->flow_extended.detected_l7_protocol) != 0 &&
+    if (ndpi_is_protocol_detected(flow_to_process->flow_extended.detected_l7_protocol) != 0 &&
         flow_to_process->info.detection_completed == 0)
     {
         flow_to_process->info.detection_completed = 1;
@@ -4240,9 +4246,7 @@ static void ndpi_process_packet(uint8_t * const args,
                 flow_to_process->flow_extended.packets_processed[FD_DST2SRC] ==
             1)
         {
-            ndpi_unset_risk(workflow->ndpi_struct,
-                            &flow_to_process->info.detection_data->flow,
-                            NDPI_UNIDIRECTIONAL_TRAFFIC);
+            ndpi_unset_risk(&flow_to_process->info.detection_data->flow, NDPI_UNIDIRECTIONAL_TRAFFIC);
         }
         jsonize_flow_detection_event(reader_thread, flow_to_process, FLOW_EVENT_DETECTED);
         flow_to_process->info.detection_data->last_ndpi_flow_struct_hash =
@@ -4288,11 +4292,11 @@ static void ndpi_process_packet(uint8_t * const args,
 
     if (flow_to_process->info.detection_data->flow.num_processed_pkts ==
             nDPId_options.max_packets_per_flow_to_process ||
-        (ndpi_is_protocol_detected(workflow->ndpi_struct, flow_to_process->flow_extended.detected_l7_protocol) != 0 &&
+        (ndpi_is_protocol_detected(flow_to_process->flow_extended.detected_l7_protocol) != 0 &&
          ndpi_extra_dissection_possible(workflow->ndpi_struct, &flow_to_process->info.detection_data->flow) == 0))
     {
         struct ndpi_proto detected_l7_protocol = flow_to_process->flow_extended.detected_l7_protocol;
-        if (ndpi_is_protocol_detected(workflow->ndpi_struct, detected_l7_protocol) == 0)
+        if (ndpi_is_protocol_detected(detected_l7_protocol) == 0)
         {
             detected_l7_protocol = flow_to_process->info.detection_data->guessed_l7_protocol;
         }
