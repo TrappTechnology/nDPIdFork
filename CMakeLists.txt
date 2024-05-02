@@ -112,9 +112,9 @@ else()
     unset(NDPI_WITH_MAXMINDDB CACHE)
 endif()
 
-add_executable(nDPId nDPId.c nio.c utils.c)
+add_executable(nDPId nDPId.c nio.c utils.c ReadJsonConfiguration.c nDPIJsonDataConverter.c)
 add_executable(nDPIsrvd nDPIsrvd.c nio.c utils.c)
-add_executable(nDPId-test nDPId-test.c)
+add_executable(nDPId-test nDPId-test.c ReadJsonConfiguration.c nDPIJsonDataConverter.c)
 
 add_custom_target(dist)
 add_custom_command(
@@ -219,6 +219,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra")
 set(NDPID_DEFS -DJSMN_STATIC=1 -DJSMN_STRICT=1 -DJSMN_PARENT_LINKS=1)
 set(NDPID_DEPS_INC "${CMAKE_SOURCE_DIR}"
                    "${CMAKE_SOURCE_DIR}/dependencies"
+                   "${CMAKE_SOURCE_DIR}/dependencies/json-c"
                    "${CMAKE_SOURCE_DIR}/dependencies/jsmn"
                    "${CMAKE_SOURCE_DIR}/dependencies/uthash/src")
 if(CMAKE_CROSSCOMPILING)
