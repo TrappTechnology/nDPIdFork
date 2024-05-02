@@ -344,7 +344,7 @@ find_package(json-c CONFIG)
 
 if(json-c_FOUND)
     # Link the json-c library to your target
-    target_link_libraries(nDPId-test PRIVATE json-c::json-c)
+    target_link_libraries(nDPId-test json-c::json-c)
 else()
     # Handle error if json-c is not found
     message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
