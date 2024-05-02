@@ -1,5 +1,6 @@
 #include "ReadJsonConfiguration.h"
 #include "../json-c/include/json-c/json.h"
+#include "json.h"
 
 
 #define MAX_PATH_LENGTH 256

@@ -273,8 +273,8 @@ if(BUILD_NDPI)
     )
 
     set(STATIC_LIBNDPI_INSTALLDIR "${CMAKE_BINARY_DIR}/libnDPI")
-    add_dependencies(nDPId libnDPI)
-    add_dependencies(nDPId-test libnDPI)
+    add_dependencies(nDPId libnDPI libjson-c)
+    add_dependencies(nDPId-test libnDPI libjson-c)
 endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
@@ -451,6 +451,21 @@ install(FILES config.h
               dependencies/uthash/src/utringbuffer.h
               dependencies/uthash/src/utstack.h
               dependencies/uthash/src/utstring.h
+              dependencies/json-c/include/json-c/arraylist.h
+              dependencies/json-c/include/json-c/debug.h
+              dependencies/json-c/include/json-c/json.h
+              dependencies/json-c/include/json-c/json_c_version.h
+              dependencies/json-c/include/json-c/json_config.h
+              dependencies/json-c/include/json-c/json_inttypes.h
+              dependencies/json-c/include/json-c/json_object.h
+              dependencies/json-c/include/json-c/json_object_iterator.h
+              dependencies/json-c/include/json-c/json_pointer.h
+              dependencies/json-c/include/json-c/json_tokener.h
+              dependencies/json-c/include/json-c/json_types.h
+              dependencies/json-c/include/json-c/json_util.h
+              dependencies/json-c/include/json-c/json_visit.h
+              dependencies/json-c/include/json-c/linkhash.h
+              dependencies/json-c/include/json-c/printbuf.h
         DESTINATION include/nDPId)
 install(TARGETS nDPId DESTINATION sbin)
 install(TARGETS nDPIsrvd nDPId-test DESTINATION bin)
