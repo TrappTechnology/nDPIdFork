@@ -86,6 +86,18 @@ struct NDPI_Data
     char* category;
 };
 
+static char * strDuplicate(char * inputSting)
+{
+#ifdef _WIN32
+    // Windows-specific code
+    return _strdup(inputSting);
+#else
+    // Non-Windows (assume POSIX) code
+    return strdup(inputSting);
+#endif
+}
+
+
 static const char* ndpi_risk2description(ndpi_risk_enum risk)
 {
 
@@ -326,8 +338,8 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
                     {
 
                         // Allocate memory for the NDPI_Risk structure
-                        result.flow_risk[result.flow_risk_count].risk = _strdup(json_object_get_string(risk));
-                        result.flow_risk[result.flow_risk_count].severity = _strdup(json_object_get_string(severity));
+                        result.flow_risk[result.flow_risk_count].risk = strDuplicate(json_object_get_string(risk));
+                        result.flow_risk[result.flow_risk_count].severity = strDuplicate(json_object_get_string(severity));
                         result.flow_risk[result.flow_risk_count].risk_score.total = json_object_get_int(totalObj);
                         result.flow_risk[result.flow_risk_count].risk_score.client = json_object_get_int(clientObj);
                         result.flow_risk[result.flow_risk_count].risk_score.server = json_object_get_int(serverObj);
@@ -355,7 +367,7 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
 
             // Store confidence data in the result
             result.confidence.key = atoi(keyStr);
-            result.confidence.value = _strdup(json_object_get_string(value));
+            result.confidence.value = strDuplicate(json_object_get_string(value));
         }
 
         // Extract tls object
@@ -365,43 +377,43 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
             json_object* version_object;
             if (json_object_object_get_ex(tlsObject, "version", &version_object))
             {
-                result.tls.version = _strdup(json_object_get_string(version_object));
+                result.tls.version = strDuplicate(json_object_get_string(version_object));
             }
 
             json_object* server_names_object;
             if (json_object_object_get_ex(tlsObject, "server_names", &server_names_object))
             {
-                result.tls.server_names = _strdup(json_object_get_string(server_names_object));
+                result.tls.server_names = strDuplicate(json_object_get_string(server_names_object));
             }
 
             json_object* ja3_object;
             if (json_object_object_get_ex(tlsObject, "ja3", &ja3_object))
             {
-                result.tls.ja3 = _strdup(json_object_get_string(ja3_object));
+                result.tls.ja3 = strDuplicate(json_object_get_string(ja3_object));
             }
 
             json_object* ja3s_object;
             if (json_object_object_get_ex(tlsObject, "ja3s", &ja3s_object))
             {
-                result.tls.ja3s = _strdup(json_object_get_string(ja3s_object));
+                result.tls.ja3s = strDuplicate(json_object_get_string(ja3s_object));
             }
 
             json_object* cipher_object;
             if (json_object_object_get_ex(tlsObject, "cipher", &cipher_object))
             {
-                result.tls.cipher = _strdup(json_object_get_string(cipher_object));
+                result.tls.cipher = strDuplicate(json_object_get_string(cipher_object));
             }
 
             json_object* issuerDN_object;
             if (json_object_object_get_ex(tlsObject, "issuerDN", &issuerDN_object))
             {
-                result.tls.issuerDN = _strdup(json_object_get_string(issuerDN_object));
+                result.tls.issuerDN = strDuplicate(json_object_get_string(issuerDN_object));
             }
 
             json_object* subjectDN_object;
             if (json_object_object_get_ex(tlsObject, "subjectDN", &subjectDN_object))
             {
-                result.tls.subjectDN = _strdup(json_object_get_string(subjectDN_object));
+                result.tls.subjectDN = strDuplicate(json_object_get_string(subjectDN_object));
             }
            
         }
@@ -410,13 +422,13 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
         json_object* proto_id;
         if (json_object_object_get_ex(ndpiObject, "proto_id", &proto_id))
         {
-            result.proto_id = _strdup(json_object_get_string(proto_id));
+            result.proto_id = strDuplicate(json_object_get_string(proto_id));
         }
        
         json_object* proto_by_ip;
         if (json_object_object_get_ex(ndpiObject, "proto_by_ip", &proto_by_ip))
         {
-            result.proto_by_ip = _strdup(json_object_get_string(proto_by_ip));
+            result.proto_by_ip = strDuplicate(json_object_get_string(proto_by_ip));
         }
 
         json_object* proto_by_ip_id;
@@ -440,7 +452,7 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
         json_object* category;
         if (json_object_object_get_ex(ndpiObject, "category", &category))
         {
-            result.category = _strdup(json_object_get_string(category));
+            result.category = strDuplicate(json_object_get_string(category));
         }
     }
 
@@ -483,14 +495,14 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object* src_ip;
     if (json_object_object_get_ex(root, "src_ip", &src_ip))
     {
-        result.src_ip = _strdup(json_object_get_string(src_ip));
+        result.src_ip = strDuplicate(json_object_get_string(src_ip));
     }
     
 
     json_object* src_port;
     if (json_object_object_get_ex(root, "src_port", &src_port))
     {
-        result.src_port = _strdup(json_object_get_string(src_port));
+        result.src_port = strDuplicate(json_object_get_string(src_port));
     }
     
 
@@ -498,21 +510,21 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object* dest_ip;
     if (json_object_object_get_ex(root, "dest_ip", &dest_ip))
     {
-        result.dest_ip = _strdup(json_object_get_string(dest_ip));
+        result.dest_ip = strDuplicate(json_object_get_string(dest_ip));
     }
     
 
     json_object* dst_port;
     if (json_object_object_get_ex(root, "dst_port", &dst_port))
     {
-        result.dst_port = _strdup(json_object_get_string(dst_port));
+        result.dst_port = strDuplicate(json_object_get_string(dst_port));
     }
     
     // network object
     json_object* l3_proto;
     if (json_object_object_get_ex(root, "l3_proto", &l3_proto))
     {
-        result.l3_proto = _strdup(json_object_get_string(l3_proto));
+        result.l3_proto = strDuplicate(json_object_get_string(l3_proto));
     }
 
     json_object* ip;
@@ -525,13 +537,13 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object* l4_proto;
     if (json_object_object_get_ex(root, "l4_proto", &l4_proto))
     {
-        result.l4_proto = _strdup(json_object_get_string(l4_proto));
+        result.l4_proto = strDuplicate(json_object_get_string(l4_proto));
     }
    
     json_object* proto;
     if (json_object_object_get_ex(root, "proto", &proto))
     {
-        result.proto = _strdup(json_object_get_string(proto));
+        result.proto = strDuplicate(json_object_get_string(proto));
     }
     
 
@@ -541,13 +553,13 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
         json_object* breed;
         if (json_object_object_get_ex(ndpi_object, "breed", &breed))
         {
-            result.breed = _strdup(json_object_get_string(breed));
+            result.breed = strDuplicate(json_object_get_string(breed));
         }
 
         json_object* hostname;
         if (json_object_object_get_ex(ndpi_object, "hostname", &hostname))
         {
-            result.hostname = _strdup(json_object_get_string(hostname));
+            result.hostname = strDuplicate(json_object_get_string(hostname));
         }
     }
     
@@ -565,19 +577,19 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
         json_object* event_start;
         if (json_object_object_get_ex(event_object, "start", &event_start))
         {
-            result.event_start = _strdup(json_object_get_string(event_start));
+            result.event_start = strDuplicate(json_object_get_string(event_start));
         }
 
         json_object* event_end;
         if (json_object_object_get_ex(event_object, "end", &event_end))
         {
-            result.event_end = _strdup(json_object_get_string(event_end));
+            result.event_end = strDuplicate(json_object_get_string(event_end));
         }
 
         json_object* event_duration;
         if (json_object_object_get_ex(event_object, "duration", &event_duration))
         {
-            result.event_duration = _strdup(json_object_get_string(event_duration));
+            result.event_duration = strDuplicate(json_object_get_string(event_duration));
         }
     }
 
@@ -788,7 +800,7 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
     char* jsonString = NULL;
     if (json_object_object_length(ndpiObj) > 0)
     {
-        jsonString = _strdup(json_object_to_json_string(ndpiObj));
+        jsonString = strDuplicate(json_object_to_json_string(ndpiObj));
     }
 
    json_object_put(ndpiObj);
@@ -1154,7 +1166,7 @@ void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int
     struct Root_data rootData = getRootDataStructure(originalJsonStr);
     add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
 
-    *converted_json_str = _strdup(json_object_to_json_string(root_object));
+    *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
 
     FreeConvertnDPIDataFormat(&ndpiData);
     json_object_put(root_object);
