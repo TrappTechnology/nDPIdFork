@@ -339,6 +339,17 @@ if(NOT pkgcfg_lib_PCAP_pcap)
     find_package(PCAP "1.9.0" REQUIRED)
 endif()
 
+# Find json-c package
+find_package(json-c CONFIG)
+
+if(json-c_FOUND)
+    # Link the json-c library to your target
+    target_link_libraries(nDPId-test PRIVATE json-c::json-c)
+else()
+    # Handle error if json-c is not found
+    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
+endif()
+
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
