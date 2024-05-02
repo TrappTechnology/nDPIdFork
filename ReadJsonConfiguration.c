@@ -193,7 +193,7 @@ static void printParamsVector(const struct SkipParameters* paramsVector, int vec
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------*/
- int IsValidFlowForLogging(struct ndpi_flow_info* flow)
+ int IsValidFlowForLogging()
 {
     return 1;
 }
