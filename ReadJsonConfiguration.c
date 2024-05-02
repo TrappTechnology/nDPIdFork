@@ -7,7 +7,11 @@
 // Array to store SkipParameters
 struct SkipParameters* paramsVector = NULL;
 int vectorSize = 0;
-static bool hasAlreadyReadLogFile = false;
+#define TRUE 1
+#define FALSE 0
+#define bool int
+
+static bool hasAlreadyReadLogFile = FALSE;
 
 // Define a structure to represent skipParameters
 struct SkipParameters 
@@ -189,9 +193,9 @@ static void printParamsVector(const struct SkipParameters* paramsVector, int vec
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------*/
- bool IsValidFlowForLogging(struct ndpi_flow_info* flow)
+ int IsValidFlowForLogging(struct ndpi_flow_info* flow)
 {
-    return true;
+    return 1;
     //if (!hasAlreadyReadLogFile)
     //{
     //    char buffer[1024];
