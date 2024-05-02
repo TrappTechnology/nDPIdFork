@@ -4,7 +4,7 @@
 extern "C" {
 #endif
 
-bool IsValidFlowForLogging(struct ndpi_flow_info* flow);
+int IsValidFlowForLogging(struct ndpi_flow_info* flow);
 void FreeSettingsConfigurationData();
 
 #ifdef __cplusplus
