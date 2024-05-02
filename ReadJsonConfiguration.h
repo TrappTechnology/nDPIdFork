@@ -1,4 +1,4 @@
-#include "ndpi_includes.h"
-int IsValidFlowForLogging(struct ndpi_flow_info* flow);
+
+int IsValidFlowForLogging();
 void FreeSettingsConfigurationData();
 
