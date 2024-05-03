@@ -2387,7 +2387,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     }
 
     logger(0, "Ashwani: before <writeFile>");
-    writeFile("Events", newline_json_msg, s_ret)
+    writeFile("Events", newline_json_msg, s_ret);
     logger(0, "Ashwani: after <writeFile>");
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
