@@ -2259,6 +2259,64 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
+static #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+void writeFile(const char *folder, const char *data, size_t length) 
+{
+    // Get the path of the program executable
+    char path[1024];
+    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+    if (count != -1) 
+    {
+        path[count] = '\0'; // Null-terminate the string
+    } 
+    else 
+    {
+        fprintf(stderr, "Error: Unable to determine program executable path.\n");
+        return;
+    }
+
+    // Extract the directory path from the executable path
+    char *lastSlash = strrchr(path, '/');
+    if (lastSlash == NULL) 
+    {
+        fprintf(stderr, "Error: Unable to determine program directory path.\n");
+        return;
+    }
+    *lastSlash = '\0'; // Null-terminate to get the directory path
+
+    // Construct the full path to the folder
+    char folderPath[1024];
+    snprintf(folderPath, sizeof(folderPath), "%s/%s", path, folder);
+
+    // Create the directory if it doesn't exist
+    if (mkdir(folderPath, 0777) == -1) {
+        // Directory already exists or error occurred
+        // You might want to add error handling here
+    }
+
+    // Append the desired file name to the directory path
+    char filename[1024];
+    snprintf(filename, sizeof(filename), "%s/output.json", folderPath);
+
+    logger(1, "Ashwani: json file path is %s", filename);
+
+    // Open the file for writing
+    FILE *file = fopen(filename, "w");
+    if (file == NULL) {
+        fprintf(stderr, "Error: Unable to open file for writing.\n");
+        return;
+    }
+
+    // Write the provided string to the file
+    fwrite(data, sizeof(char), length, file);
+
+    // Close the file
+    fclose(file);
+}
+
 static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
@@ -2328,7 +2386,9 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
     }
 
-  /*  errno = 0;
+    logger(0, "Ashwani: before <writeFile>");
+    writeFile("Events", newline_json_msg, s_ret)
+    logger(0, "Ashwani: after <writeFile>");
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
@@ -2389,7 +2449,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
             }
             set_collector_nonblock(reader_thread);
         }
-    }*/
+    }
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
