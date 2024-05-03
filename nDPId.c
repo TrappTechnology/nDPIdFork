@@ -2356,7 +2356,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
     }
 
-    errno = 0;
+  /*  errno = 0;
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
@@ -2417,7 +2417,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
             }
             set_collector_nonblock(reader_thread);
         }
-    }
+    }*/
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
