@@ -2259,11 +2259,11 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
-static #include <stdio.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void writeFile(const char *folder, const char *data, size_t length) 
+static void writeFile(const char *folder, const char *data, size_t length) 
 {
     // Get the path of the program executable
     char path[1024];
