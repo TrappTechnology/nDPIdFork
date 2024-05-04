@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <string.h>
+#include <dirent.h>
 
 extern void nDPIsrvd_memprof_log(char const * const format, ...);
 extern void nDPIsrvd_memprof_log_alloc(size_t alloc_size);
@@ -21,7 +22,7 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 #include "nDPId.c"
 
 /*---------------------------------------------------------------------------------------------------------/*/
-#define MAX_FILES 1000 // Maximum number of files to handle
+#define MAX_NUMBER_OF_FILES 1000 // Maximum number of files to handle
 
 char * pcap_files[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_events[MAX_NUMBER_OF_FILES];
@@ -241,7 +242,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
     // Open the directory
     if ((dir = opendir(pcap_files_folder_path)) == NULL)
     {
-        logger(1, "Error opening directory: %s", pcap_files_folder_path));
+        logger(1, "Error opening directory: %s", pcap_files_folder_path);
         exit(EXIT_FAILURE);
     }
 
