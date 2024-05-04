@@ -2293,6 +2293,7 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 
 static void writeFile(const char *folder, const char *data, size_t length) 
 {
+    logger(0, "Ashwani: stage 1");
     // Get the path of the program executable
     char path[1024];
     ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
@@ -2306,6 +2307,7 @@ static void writeFile(const char *folder, const char *data, size_t length)
         return;
     }
 
+    logger(0, "Ashwani: stage 2");
     // Extract the directory path from the executable path
     char *lastSlash = strrchr(path, '/');
     if (lastSlash == NULL) 
@@ -2315,15 +2317,20 @@ static void writeFile(const char *folder, const char *data, size_t length)
     }
     *lastSlash = '\0'; // Null-terminate to get the directory path
 
+    logger(0, "Ashwani: stage 3");
     // Construct the full path to the folder
     char folderPath[1024];
     snprintf(folderPath, sizeof(folderPath), "%s/%s", path, folder);
 
     // Create the directory if it doesn't exist
-    if (mkdir(folderPath, 0777) == -1) {
+    if (mkdir(folderPath, 0777) == -1) 
+    {
+        logger(0, "Ashwani: error");
         // Directory already exists or error occurred
         // You might want to add error handling here
     }
+
+    logger(0, "Ashwani: stage 4");
 
     // Append the desired file name to the directory path
     char filename[1024];
@@ -2332,14 +2339,18 @@ static void writeFile(const char *folder, const char *data, size_t length)
     logger(1, "Ashwani: json file path is %s", filename);
 
     // Open the file for writing
-    FILE *file = fopen(filename, "w");
-    if (file == NULL) {
+    FILE *file = fopen(filename, "a");
+    if (file == NULL) 
+    {
         fprintf(stderr, "Error: Unable to open file for writing.\n");
         return;
     }
 
+   logger(0, "Ashwani: stage 5");
     // Write the provided string to the file
     fwrite(data, sizeof(char), length, file);
+
+    logger(0, "Ashwani: stage 6");
 
     // Close the file
     fclose(file);
