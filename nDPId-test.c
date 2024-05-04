@@ -2,6 +2,12 @@
 #include <pthread.h>
 #include <stdarg.h>
 #include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <errno.h>
+#include <string.h>
 
 extern void nDPIsrvd_memprof_log(char const * const format, ...);
 extern void nDPIsrvd_memprof_log_alloc(size_t alloc_size);
@@ -13,6 +19,18 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 #include "nio.c"
 #include "nDPIsrvd.c"
 #include "nDPId.c"
+
+/*---------------------------------------------------------------------------------------------------------/*/
+#define MAX_FILES 1000 // Maximum number of files to handle
+
+char * pcap_files[MAX_NUMBER_OF_FILES];
+char * generated_tmp_json_files_events[MAX_NUMBER_OF_FILES];
+char * generated_tmp_json_files_alerts[MAX_NUMBER_OF_FILES];
+char * generated_json_files_events[MAX_NUMBER_OF_FILES];
+char * generated_json_files_alerts[MAX_NUMBER_OF_FILES];
+int number_of_valid_files_found = 0;
+int currentFileIndex = -1;
+/*---------------------------------------------------------------------------------------------------------*/
 
 enum
 {
@@ -201,6 +219,85 @@ void nDPIsrvd_memprof_log(char const * const format, ...)
     (void)format;
 #endif
 }
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------*/
+static void fetch_files_to_process(const char * pcap_files_folder_path)
+{
+    DIR* dir = NULL;
+    struct dirent * entry;
+
+    int index = 0;
+    for (index = 0; index < number_of_valid_files_found; index++)
+    {
+        free(pcap_files);
+        free(generated_tmp_json_files_events[index]);
+        free(generated_tmp_json_files_alerts[index]);
+        free(generated_json_files_events[index]);
+        free(generated_json_files_alerts[index]);
+    }
+
+    number_of_valid_files_found = 0;
+
+    // Open the directory
+    if ((dir = opendir(pcap_files_folder_path)) == NULL)
+    {
+        logger(1, "Error opening directory: %s", pcap_files_folder_path));
+        exit(EXIT_FAILURE);
+    }
+
+    // Read directory entries
+    while ((entry = readdir(dir)) != NULL)
+    {
+        if (entry->d_type == DT_REG)
+        { /
+            char * filename = entry->d_name;        
+            if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
+            {
+                pcap_files[number_of_valid_files_found++] = strdup(filename);
+            }
+        }
+    }
+
+    closedir(dir);
+}
+
+/*-----------------------------------------------------------------------------------------------------*/
+// Ashwani:
+// This gets all the valid pcap and pcapng files and also set options like where data should be recorded.
+//
+static void fetch_files_to_process_and_set_default_options(const char * pcap_files_folder_path)
+{
+    do
+    {
+        fetch_files_to_process();
+        if (number_of_valid_files_found == 0)
+        {
+            logger(0, "No file to process. Sleeping for 15 secondss");            
+            sleep(15);
+        }
+    } while (number_of_valid_files_found == 0);
+
+    // Print the full paths of the .pcap files
+    logger(0, "Total number of pcap/pcapng files found = %d", number_of_valid_files_found);
+
+    int length_of_longest_file = 0;
+    int index = 0;
+    for (index = 0; index < number_of_valid_files_found; index++)
+    {
+        int length = strlen(pcap_files[index]);
+        if (length > length_of_longest_file)
+        {
+            length_of_longest_file = length;
+        }
+    }
+
+    index = 0;
+    for (index = 0; index < number_of_valid_files_found; index++)
+    {
+        logger(3,v"%3d.  %*s| %-*s\n",  index,  pcap_files[index],  generated_tmp_json_files_events[index]);
+    }
+}
+
 
 void nDPIsrvd_memprof_log_alloc(size_t alloc_size)
 {
@@ -1634,9 +1731,58 @@ error:
     return 1;
 }
 
+
+void create_events_and_alerts_folders()
+{
+    char * current_directory = NULL;
+    char * alerts_path = "Alerts";
+    char * events_path = "Events";
+
+    // Get the current directory
+    current_directory = getcwd(NULL, 0);
+    if (current_directory == NULL)
+    {
+        fprintf(stderr, "Error getting current directory: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    // Concatenate the directory path with folder names
+    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_path) + 2);
+    char * events_full_path = malloc(strlen(current_directory) + strlen(events_path) + 2);
+    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_path);
+    sprintf(events_full_path, "%s/%s", current_directory, events_path);
+
+    // Create the "Alerts" folder
+    if (mkdir(alerts_full_path, 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            fprintf(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Create the "Events" folder
+    if (mkdir(events_full_path, 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            fprintf(stderr, "Error creating folder 'Events': %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Free allocated memory
+    free(current_directory);
+    free(alerts_full_path);
+    free(events_full_path);
+}
+
+
 #define THREADS_RETURNED_ERROR()                                                                                       \
     (nDPId_return.thread_return_value.val != 0 || nDPIsrvd_return.val != 0 ||                                          \
      distributor_return.thread_return_value.val != 0)
+
 int main(int argc, char ** argv)
 {
     if (argc != 1 && argc != 2)
@@ -1667,17 +1813,7 @@ int main(int argc, char ** argv)
         return retval;
     }
 
-    int status = mkdir("Events", 0777); // 0777 is the permission mode for the folder
-    
-    if (status == 0) 
-    {
-        logger(0, "Events folder created successfully");
-    } 
-    else 
-    {
-        logger(0, "Failed to create Events folder");
-    }
-
+    create_events_and_alerts_folders();
 
     nDPIsrvd_options.max_write_buffers = 32;
     nDPId_options.enable_data_analysis = 1;
@@ -1693,12 +1829,16 @@ int main(int argc, char ** argv)
     nDPId_options.memory_profiling_log_interval = (unsigned long long int)-1;
     nDPId_options.reader_thread_count = 1; /* Please do not change this! Generating meaningful pcap diff's relies on a
                                               single reader thread! */
+
+
     set_cmdarg(&nDPId_options.instance_alias, "nDPId-test");
     if (access(argv[1], R_OK) != 0)
     {
         logger(1, "%s: pcap file `%s' does not exist or is not readable", argv[0], argv[1]);
         return 1;
     }
+
+    fetch_files_to_process_and_set_default_options(argv[1]);
     set_cmdarg(&nDPId_options.pcap_file_or_interface, argv[1]);
     if (validate_options() != 0)
     {
