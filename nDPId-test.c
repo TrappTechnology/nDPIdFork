@@ -250,7 +250,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
     while ((entry = readdir(dir)) != NULL)
     {
         if (entry->d_type == DT_REG)
-        { /
+        { 
             char * filename = entry->d_name;        
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
@@ -270,7 +270,7 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
 {
     do
     {
-        fetch_files_to_process();
+        fetch_files_to_process(pcap_files_folder_path);
         if (number_of_valid_files_found == 0)
         {
             logger(0, "No file to process. Sleeping for 15 secondss");            
@@ -295,7 +295,7 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
     index = 0;
     for (index = 0; index < number_of_valid_files_found; index++)
     {
-        logger(3,v"%3d.  %*s| %-*s\n",  index,  pcap_files[index],  generated_tmp_json_files_events[index]);
+        logger(3, "%3d.  %*s| %-*s\n",  index,  pcap_files[index],  generated_tmp_json_files_events[index]);
     }
 }
 
