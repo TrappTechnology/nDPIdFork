@@ -1887,7 +1887,9 @@ int main(int argc, char ** argv)
         return retval;
     }
 
+    logger(0, "Ashwani: 1");
     create_events_and_alerts_folders();
+    logger(0, "Ashwani: 2");
 
     nDPIsrvd_options.max_write_buffers = 32;
     nDPId_options.enable_data_analysis = 1;
@@ -1905,19 +1907,27 @@ int main(int argc, char ** argv)
                                               single reader thread! */
 
 
+    logger(0, "Ashwani: 3");
     set_cmdarg(&nDPId_options.instance_alias, "nDPId-test");
+    logger(0, "Ashwani: 4");
     if (access(argv[1], R_OK) != 0)
     {
         logger(1, "%s: pcap file `%s' does not exist or is not readable", argv[0], argv[1]);
         return 1;
     }
 
+    logger(0, "Ashwani: 5");
+
     if (validate_options() != 0)
     {
         return 1;
     }
 
+    logger(0, "Ashwani: 6");
+
     fetch_files_to_process_and_set_default_options(argv[1]);
+
+    logger(0, "Ashwani: 7");
 
     currentFileIndex = 0;
     for (currentFileIndex = 0; currentFileIndex < 3; currentFileIndex++)
