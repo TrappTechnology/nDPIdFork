@@ -271,7 +271,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 sprintf(alert_file_path, "%s/%s", current_directory, filename);
                 sprintf(event_file_path, "%s/%s", current_directory, filename);
 
-                generated_json_files_alerts[MAX_NUMBER_OF_FILES] = alerts_full_path;
+                generated_json_files_alerts[MAX_NUMBER_OF_FILES] = alert_file_path;
                 generated_json_files_events[MAX_NUMBER_OF_FILES] = event_file_path;
                
                 char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
