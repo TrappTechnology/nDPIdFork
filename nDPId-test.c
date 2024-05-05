@@ -32,6 +32,7 @@ char * generated_json_files_events[MAX_NUMBER_OF_FILES];
 char * generated_json_files_alerts[MAX_NUMBER_OF_FILES];
 int number_of_valid_files_found = 0;
 int currentFileIndex = -1;
+
 /*---------------------------------------------------------------------------------------------------------*/
 
 enum
