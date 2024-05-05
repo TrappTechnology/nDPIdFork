@@ -320,7 +320,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
             {
                 logger(0, "fetch_files_to_process 6");
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
-                sprintf(complete_path_of_pcap, "%s/%s", pcap_files_folder_path, filename);
+                sprintf(complete_path_of_pcap, "%s%s", pcap_files_folder_path, filename);
                 
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
 
