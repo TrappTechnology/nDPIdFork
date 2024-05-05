@@ -609,7 +609,8 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 
 /*--------------------------ASHWANI----------------------------------------------------------------------------------------------------*/
 char * generated_tmp_json_files_alerts = NULL;
-/*--------------------------ASHWANI----------------------------------------------------------------------------------------------------*/
+char * generated_tmp_json_files_events = NULL;
+    /*--------------------------ASHWANI----------------------------------------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
 {
@@ -2334,6 +2335,11 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 
 static write_to_file(const char * converted_json_str)
 {
+    if (generated_tmp_json_files_alerts == NULL || generated_tmp_json_files_events == NULL) 
+    {
+        return;
+    }
+
     //char * converted_json_str = NULL;
     int createAlert = 0;
     //ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
@@ -4514,9 +4520,11 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 }
 #endif
 
-static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alerts_path)
+static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alerts_path, char* generated_tmp_json_files_events_path)
 {
     generated_tmp_json_files_alerts = generated_tmp_json_files_alerts_path;
+    generated_tmp_json_files_events = generated_tmp_json_files_events_path;
+
     if (reader_thread->workflow != NULL && reader_thread->workflow->pcap_handle != NULL)
     {
         if (reader_thread->workflow->is_pcap_file != 0)
@@ -4735,7 +4743,7 @@ static void * processing_thread(void * const ndpi_thread_arg)
         jsonize_daemon(reader_thread, DAEMON_EVENT_INIT);
     }
 
-    run_pcap_loop(reader_thread, NULL);
+    run_pcap_loop(reader_thread, NULL, NULL);
     set_collector_block(reader_thread);
     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
     return NULL;

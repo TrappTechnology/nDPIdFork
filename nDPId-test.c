@@ -24,6 +24,7 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 /*---------------------------------------------------------------------------------------------------------/*/
 #define MAX_NUMBER_OF_FILES 1000 // Maximum number of files to handle
 
+static FILE * serialization_fp = NULL;
 char * pcap_files[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_events[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_alerts[MAX_NUMBER_OF_FILES];
@@ -305,6 +306,45 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
     }
 }
 
+/*-----------------------------------------------------------------------------------------------------*/
+static void renameCurrentTempFile()
+{
+    serialization_fp = fopen(generated_tmp_json_files_events[currentFileIndex], "r");
+    if (serialization_fp != NULL)
+    {
+        fclose(serialization_fp);
+        if (rename(generated_tmp_json_files_events[currentFileIndex], generated_json_files_events[currentFileIndex]) !=  0)
+        {
+            logger(1, "Error renaming - %s file\n",  generated_tmp_json_files_events[currentFileIndex]);
+            remove(generated_json_files_events[currentFileIndex]);
+            logger(1, "deleted existing file - %s \n",generated_json_files_events[currentFileIndex]);
+
+            if (rename(generated_tmp_json_files_events[currentFileIndex], generated_json_files_events[currentFileIndex]) != 0)
+            {
+                logger(1, "Error renaming - %s file\n", generated_tmp_json_files_events[currentFileIndex]);
+            }
+        }
+
+        serialization_fp = fopen(generated_tmp_json_files_alerts[currentFileIndex], "r");
+        if (serialization_fp != NULL)
+        {
+            fclose(serialization_fp);
+            if (rename(generated_tmp_json_files_alerts[currentFileIndex],  generated_json_files_alerts[currentFileIndex]) != 0)
+            {
+                logger(1, "Error renaming - %s file\n", generated_tmp_json_files_alerts[currentFileIndex]);
+                remove(generated_json_files_alerts[currentFileIndex]);
+                logger(1, "deleted existing file - %s \n", generated_json_files_alerts[currentFileIndex]);
+
+                if (rename(generated_tmp_json_files_alerts[currentFileIndex],generated_json_files_alerts[currentFileIndex]) != 0)
+                {
+                    logger(1,"Error renaming - %s file\n", generated_tmp_json_files_alerts[currentFileIndex]);
+                }
+            }
+        }
+    }
+}
+
+/*-----------------------------------------------------------------------------------------------------*/
 
 void nDPIsrvd_memprof_log_alloc(size_t alloc_size)
 {
@@ -1417,7 +1457,8 @@ static void * nDPId_mainloop_thread(void * const arg)
     {
         goto error;
     }
-    run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex]);
+    run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
