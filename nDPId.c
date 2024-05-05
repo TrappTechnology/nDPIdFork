@@ -2401,11 +2401,18 @@ static write_to_file(const char * converted_json_str)
                 else
                 {
                     int length = strlen(converted_json_str);
+                    logger(0, "write_to_file 12");
                     fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+                    logger(0, "write_to_file 13");
                 }
+                logger(0, "write_to_file 14");
                 fclose(serialization_fp);
+                logger(0, "write_to_file 15");
             }
+
+            logger(0, "write_to_file 16");
             free(converted_json_str_no_risk);
+            logger(0, "write_to_file 17");
         }
     }
 
