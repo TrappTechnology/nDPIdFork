@@ -268,16 +268,16 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 
                 char * alert_file_path = malloc(strlen(current_directory) + strlen(filename) + 2);
                 char * event_file_path = malloc(strlen(current_directory) + strlen(filename) + 2);
-                sprintf(alerts_full_path, "%s/%s", current_directory, filename);
-                sprintf(events_full_path, "%s/%s", current_directory, filename);
+                sprintf(alert_file_path, "%s/%s", current_directory, filename);
+                sprintf(event_file_path, "%s/%s", current_directory, filename);
 
                 generated_json_files_alerts[MAX_NUMBER_OF_FILES] = alerts_full_path;
                 generated_json_files_events[MAX_NUMBER_OF_FILES] = event_file_path;
                
-                char * tmp_alert_file_path = malloc(strlen(alerts_full_path) +  5);
+                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
                 char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
-                sprintf(tmp_alert_file_path, "%s.%s", alerts_full_path, "tmp");
-                sprintf(tmp_event_file_path, "%s.%s", alerts_full_path, "tmp");
+                sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
+                sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
 
                 generated_tmp_json_files_alerts[MAX_NUMBER_OF_FILES] = tmp_alert_file_path;
                 generated_tmp_json_files_events[MAX_NUMBER_OF_FILES] = tmp_event_file_path;
