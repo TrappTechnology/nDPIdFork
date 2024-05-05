@@ -1550,9 +1550,12 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     logger(0, "Ashwani: nDPId thread initialize done 1");
     thread_signal(&start_condition);
+    logger(0, "Ashwani: nDPId_mainloop_thread 1");
     thread_wait(&start_condition);
 
+    logger(0, "Ashwani: nDPId_mainloop_thread 2");
     jsonize_daemon(&reader_threads[0], DAEMON_EVENT_INIT);
+    logger(0, "Ashwani: nDPId_mainloop_thread 3");
     /* restore SIGPIPE to the default handler (Termination) */
     if (signal(SIGPIPE, SIG_DFL) == SIG_ERR)
     {
