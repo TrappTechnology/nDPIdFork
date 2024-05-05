@@ -248,6 +248,14 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         exit(EXIT_FAILURE);
     }
 
+        // Get the current directory
+    char* current_directory = getcwd(NULL, 0);
+    if (current_directory == NULL)
+    {
+        logger(1, "Error getting current directory: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
     // Read directory entries
     while ((entry = readdir(dir)) != NULL)
     {
@@ -257,6 +265,19 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
                 pcap_files[number_of_valid_files_found++] = strdup(filename);
+
+                char * alert_file_path = malloc(strlen(current_directory) + strlen(filename) + 2);
+                char * event_file_path = malloc(strlen(current_directory) + strlen(filename) + 2);
+                sprintf(alerts_full_path, "%s/%s", current_directory, filename);
+                sprintf(events_full_path, "%s/%s", current_directory, filename);
+
+                generated_json_files_alerts[MAX_NUMBER_OF_FILES] = alerts_full_path;
+                generated_json_files_events[MAX_NUMBER_OF_FILES] = event_file_path;
+               
+                char * tmp_alert_file_path = malloc(strlen(alerts_full_path) +  5);
+                char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
+                sprintf(tmp_alert_file_path, "%s.%s", alerts_full_path, "tmp");
+                sprintf(tmp_event_file_path, "%s.%s", alerts_full_path, "tmp");
             }
         }
     }
@@ -1792,7 +1813,7 @@ void create_events_and_alerts_folders()
     current_directory = getcwd(NULL, 0);
     if (current_directory == NULL)
     {
-        fprintf(stderr, "Error getting current directory: %s\n", strerror(errno));
+        logger(1, "Error getting current directory: %s\n", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
