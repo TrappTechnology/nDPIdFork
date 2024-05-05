@@ -1253,6 +1253,7 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     MT_INIT2(workflow->error_or_eof, 0);
 
     errno = 0;
+    logger(0, "file_or_device is %s", file_or_device);
     if (access(file_or_device, R_OK) != 0 && errno == ENOENT)
     {
         workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 250, pcap_error_buffer);
