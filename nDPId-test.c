@@ -32,6 +32,9 @@ char * generated_json_files_events[MAX_NUMBER_OF_FILES];
 char * generated_json_files_alerts[MAX_NUMBER_OF_FILES];
 int number_of_valid_files_found = 0;
 int currentFileIndex = -1;
+char * alerts_folder_name = "Alerts";
+char * events_folder_name = "Events";
+
 
 /*---------------------------------------------------------------------------------------------------------*/
 
@@ -272,23 +275,23 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 logger(0, "fetch_files_to_process 6");
                 pcap_files[number_of_valid_files_found] = strdup(filename);
 
-                char * alert_file_path = malloc(strlen(current_directory) + strlen(filename) + 2);
-                char * event_file_path = malloc(strlen(current_directory) + strlen(filename) + 2);
-                sprintf(alert_file_path, "%s/%s", current_directory, filename);
-                sprintf(event_file_path, "%s/%s", current_directory, filename);
+                char * alert_file_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 3);
+                char * event_file_path = malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 3);
+                sprintf(alert_file_path, "%s/%s/%s", current_directory, alerts_folder_name, filename);
+                sprintf(event_file_path, "%s/%s/%s", current_directory, events_folder_name, filename);
 
                 logger(0, "fetch_files_to_process 7 alert file = %s", alert_file_path);
                 logger(0, "fetch_files_to_process 8 event file = %s", event_file_path);
 
-                generated_json_files_alerts[MAX_NUMBER_OF_FILES] = alert_file_path;
-                generated_json_files_events[MAX_NUMBER_OF_FILES] = event_file_path;
+                generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
+                generated_json_files_events[number_of_valid_files_found] = event_file_path;
                
-                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
-                char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
+                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 7);
+                char * tmp_event_file_path = malloc(strlen(event_file_path) + 7);
                 sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
                 sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
 
-
+                
 
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
@@ -1821,9 +1824,6 @@ error:
 void create_events_and_alerts_folders()
 {
     char * current_directory = NULL;
-    char * alerts_path = "Alerts";
-    char * events_path = "Events";
-
     // Get the current directory
     current_directory = getcwd(NULL, 0);
     if (current_directory == NULL)
@@ -1833,10 +1833,10 @@ void create_events_and_alerts_folders()
     }
 
     // Concatenate the directory path with folder names
-    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_path) + 2);
-    char * events_full_path = malloc(strlen(current_directory) + strlen(events_path) + 2);
-    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_path);
-    sprintf(events_full_path, "%s/%s", current_directory, events_path);
+    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
+    char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
+    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
+    sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
 
     // Create the "Alerts" folder
     if (mkdir(alerts_full_path, 0777) == -1)
