@@ -319,8 +319,8 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
                 logger(0, "fetch_files_to_process 6");
-                char * complete_path_of_pcap =  malloc(strlen(current_directory) + strlen(filename) + 2);
-                sprintf(complete_path_of_pcap, "%s/%s", current_directory, filename);
+                char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
+                sprintf(complete_path_of_pcap, "%s/%s", pcap_files_folder_path, filename);
                 
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
 
