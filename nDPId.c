@@ -607,6 +607,10 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                                          struct nDPId_flow * const flow,
                                          enum flow_event event);
 
+/*--------------------------ASHWANI----------------------------------------------------------------------------------------------------*/
+char * generated_tmp_json_files_alerts = NULL;
+/*--------------------------ASHWANI----------------------------------------------------------------------------------------------------*/
+
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
 {
     int current_flags;
@@ -2259,73 +2263,132 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//
+//static void writeFile(const char *folder, const char *data, size_t length) 
+//{
+//    logger(0, "Ashwani: stage 1");
+//    // Get the path of the program executable
+//    char path[1024];
+//    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
+//    if (count != -1) 
+//    {
+//        path[count] = '\0'; // Null-terminate the string
+//    } 
+//    else 
+//    {
+//        fprintf(stderr, "Error: Unable to determine program executable path.\n");
+//        return;
+//    }
+//
+//    logger(0, "Ashwani: stage 2");
+//    // Extract the directory path from the executable path
+//    char *lastSlash = strrchr(path, '/');
+//    if (lastSlash == NULL) 
+//    {
+//        fprintf(stderr, "Error: Unable to determine program directory path.\n");
+//        return;
+//    }
+//    *lastSlash = '\0'; // Null-terminate to get the directory path
+//
+//    logger(0, "Ashwani: stage 3");
+//    // Construct the full path to the folder
+//    char folderPath[1024];
+//    snprintf(folderPath, sizeof(folderPath), "%s/%s", path, folder);
+//
+//    // Create the directory if it doesn't exist
+//    if (mkdir(folderPath, 0777) == -1) 
+//    {
+//        logger(0, "Ashwani: error");
+//        // Directory already exists or error occurred
+//        // You might want to add error handling here
+//    }
+//
+//    logger(0, "Ashwani: stage 4");
+//
+//    // Append the desired file name to the directory path
+//    char filename[1024];
+//    snprintf(filename, sizeof(filename), "%s/output.json", folderPath);
+//
+//    logger(1, "Ashwani: json file path is %s", filename);
+//
+//    // Open the file for writing
+//    FILE *file = fopen(filename, "a");
+//    if (file == NULL) 
+//    {
+//        fprintf(stderr, "Error: Unable to open file for writing.\n");
+//        return;
+//    }
+//
+//   logger(0, "Ashwani: stage 5");
+//    // Write the provided string to the file
+//    fwrite(data, sizeof(char), length, file);
+//
+//    logger(0, "Ashwani: stage 6");
+//
+//    // Close the file
+//    fclose(file);
+//}
 
-static void writeFile(const char *folder, const char *data, size_t length) 
+static write_to_file(const char * converted_json_str)
 {
-    logger(0, "Ashwani: stage 1");
-    // Get the path of the program executable
-    char path[1024];
-    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
-    if (count != -1) 
+    //char * converted_json_str = NULL;
+    int createAlert = 0;
+    //ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
+
+    if (converted_json_str != NULL)
     {
-        path[count] = '\0'; // Null-terminate the string
-    } 
-    else 
-    {
-        fprintf(stderr, "Error: Unable to determine program executable path.\n");
-        return;
+        int length = strlen(converted_json_str);
+
+        if (length != 0)
+        {
+            if (createAlert)
+            {
+                serialization_fp = fopen(generated_tmp_json_files_alerts, "a");
+                if (serialization_fp == NULL)
+                {
+                    logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_alerts,  strerror(errno));
+                }
+                else
+                {
+                    int length = strlen(converted_json_str);
+                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+                    fclose(serialization_fp);
+                }
+            }
+
+            char * converted_json_str_no_risk = NULL;
+            if (createAlert)
+            {
+                DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
+            }
+
+            serialization_fp = fopen(generated_tmp_json_files_events, "a");
+            if (serialization_fp == NULL)
+            {
+                logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_events,  strerror(errno));
+            }
+            else
+            {
+                if (createAlert)
+                {
+                    int length = strlen(converted_json_str_no_risk);
+                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str_no_risk);
+                }
+                else
+                {
+                    int length = strlen(converted_json_str);
+                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+                }
+                fclose(serialization_fp);
+            }
+            free(converted_json_str_no_risk);
+        }
     }
 
-    logger(0, "Ashwani: stage 2");
-    // Extract the directory path from the executable path
-    char *lastSlash = strrchr(path, '/');
-    if (lastSlash == NULL) 
-    {
-        fprintf(stderr, "Error: Unable to determine program directory path.\n");
-        return;
-    }
-    *lastSlash = '\0'; // Null-terminate to get the directory path
-
-    logger(0, "Ashwani: stage 3");
-    // Construct the full path to the folder
-    char folderPath[1024];
-    snprintf(folderPath, sizeof(folderPath), "%s/%s", path, folder);
-
-    // Create the directory if it doesn't exist
-    if (mkdir(folderPath, 0777) == -1) 
-    {
-        logger(0, "Ashwani: error");
-        // Directory already exists or error occurred
-        // You might want to add error handling here
-    }
-
-    logger(0, "Ashwani: stage 4");
-
-    // Append the desired file name to the directory path
-    char filename[1024];
-    snprintf(filename, sizeof(filename), "%s/output.json", folderPath);
-
-    logger(1, "Ashwani: json file path is %s", filename);
-
-    // Open the file for writing
-    FILE *file = fopen(filename, "a");
-    if (file == NULL) 
-    {
-        fprintf(stderr, "Error: Unable to open file for writing.\n");
-        return;
-    }
-
-   logger(0, "Ashwani: stage 5");
-    // Write the provided string to the file
-    fwrite(data, sizeof(char), length, file);
-
-    logger(0, "Ashwani: stage 6");
-
-    // Close the file
-    fclose(file);
+    free(converted_json_str);
 }
 
 static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
@@ -2398,7 +2461,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     }
 
     logger(0, "Ashwani: before <writeFile>");
-    writeFile("Events", newline_json_msg, s_ret);
+    write_to_file(newline_json_msg);
     logger(0, "Ashwani: after <writeFile>");
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
@@ -4451,8 +4514,9 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 }
 #endif
 
-static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread)
+static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alerts_path)
 {
+    generated_tmp_json_files_alerts = generated_tmp_json_files_alerts_path;
     if (reader_thread->workflow != NULL && reader_thread->workflow->pcap_handle != NULL)
     {
         if (reader_thread->workflow->is_pcap_file != 0)
@@ -4671,7 +4735,7 @@ static void * processing_thread(void * const ndpi_thread_arg)
         jsonize_daemon(reader_thread, DAEMON_EVENT_INIT);
     }
 
-    run_pcap_loop(reader_thread);
+    run_pcap_loop(reader_thread, NULL);
     set_collector_block(reader_thread);
     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
     return NULL;
