@@ -2444,7 +2444,8 @@ static write_to_file(const char * converted_json_str)
         }
     }
 
-    free(converted_json_str);
+    //Ashwani: need to uncomment
+    //free(converted_json_str);
 }
 
 static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
