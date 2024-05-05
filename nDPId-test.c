@@ -1548,7 +1548,7 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
-    logger(0, "nDPId thread initialize done");
+    logger(0, "nDPId thread initialize done 1");
     thread_signal(&start_condition);
     thread_wait(&start_condition);
 
@@ -1556,6 +1556,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     /* restore SIGPIPE to the default handler (Termination) */
     if (signal(SIGPIPE, SIG_DFL) == SIG_ERR)
     {
+        logger(0, "Ashwani: nDPId thread initialize done 1");
         goto error;
     }
 
