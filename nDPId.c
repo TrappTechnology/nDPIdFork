@@ -2056,12 +2056,15 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
     char const ev[] = "daemon_event_name";
     struct nDPId_workflow * const workflow = reader_thread->workflow;
 
+    logger(0, "Ashwani: jsonize_daemon 1");
+
     if (event == DAEMON_EVENT_RECONNECT)
     {
         ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
     }
 
     ndpi_serialize_string_int32(&workflow->ndpi_serializer, "daemon_event_id", event);
+    logger(0, "Ashwani: jsonize_daemon 2");
     if (event > DAEMON_EVENT_INVALID && event < DAEMON_EVENT_COUNT)
     {
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, daemon_event_name_table[event]);
@@ -2071,7 +2074,11 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, daemon_event_name_table[DAEMON_EVENT_INVALID]);
     }
 
+    logger(0, "Ashwani: jsonize_daemon 3");
+
     jsonize_basic(reader_thread, 1);
+
+     logger(0, "Ashwani: jsonize_daemon 4");
 #ifndef PKG_VERSION
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "version", "unknown");
 #else
@@ -2079,6 +2086,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 #endif
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "ndpi_version", ndpi_revision());
 
+    logger(0, "Ashwani: jsonize_daemon 5");
     switch (event)
     {
         case DAEMON_EVENT_INVALID:
@@ -2174,8 +2182,12 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
                                              1 /* DAEMON_EVENT_SHUTDOWN is an event as well */);
             break;
     }
+
+    logger(0, "Ashwani: jsonize_daemon 6");
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "global_ts_usec", workflow->last_global_time);
+    logger(0, "Ashwani: jsonize_daemon 7");
     serialize_and_send(reader_thread);
+    logger(0, "Ashwani: jsonize_daemon 8");
 }
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
@@ -2336,6 +2348,11 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 
 static write_to_file(const char * converted_json_str)
 {
+    if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
+    {
+        return;
+    }
+
     FILE* serialization_fp = NULL;
     //char * converted_json_str = NULL;
     int createAlert = 0;
