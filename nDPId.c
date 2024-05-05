@@ -608,8 +608,8 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                                          enum flow_event event);
 
 /*--------------------------------------------------------------------------------------------------------------------*/
-char * generated_tmp_json_files_alert = null;
-char * generated_tmp_json_files_event = null;
+char * generated_tmp_json_files_alert = NULL;
+char * generated_tmp_json_files_event = NULL;
     /*--------------------------------------------------------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
