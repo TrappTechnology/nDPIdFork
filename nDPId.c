@@ -2340,6 +2340,8 @@ static write_to_file(const char * converted_json_str)
         return;
     }
 
+    FILE * serialization_fp = NULL;
+
     //char * converted_json_str = NULL;
     int createAlert = 0;
     //ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
