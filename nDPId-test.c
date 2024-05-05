@@ -24,6 +24,7 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 /*---------------------------------------------------------------------------------------------------------/*/
 #define MAX_NUMBER_OF_FILES 1000 // Maximum number of files to handle
 
+static FILE * serialization_fp = NULL;
 char * pcap_files[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_events[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_alerts[MAX_NUMBER_OF_FILES];
@@ -31,6 +32,7 @@ char * generated_json_files_events[MAX_NUMBER_OF_FILES];
 char * generated_json_files_alerts[MAX_NUMBER_OF_FILES];
 int number_of_valid_files_found = 0;
 int currentFileIndex = -1;
+
 /*---------------------------------------------------------------------------------------------------------*/
 
 enum
@@ -295,10 +297,55 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
     index = 0;
     for (index = 0; index < number_of_valid_files_found; index++)
     {
-        logger(3, "%3d.  %*s| %-*s\n",  index,  pcap_files[index],  generated_tmp_json_files_events[index]);
+        logger(5,
+               "%3d.  %-*s| %-*s\n",
+               index,
+               length_of_longest_file + 10,
+               pcap_files[index],
+               length_of_longest_file,
+               generated_tmp_json_files_events[index]);
     }
 }
 
+/*-----------------------------------------------------------------------------------------------------*/
+static void renameCurrentTempFile()
+{
+    serialization_fp = fopen(generated_tmp_json_files_events[currentFileIndex], "r");
+    if (serialization_fp != NULL)
+    {
+        fclose(serialization_fp);
+        if (rename(generated_tmp_json_files_events[currentFileIndex], generated_json_files_events[currentFileIndex]) !=  0)
+        {
+            logger(1, "Error renaming - %s file\n",  generated_tmp_json_files_events[currentFileIndex]);
+            remove(generated_json_files_events[currentFileIndex]);
+            logger(1, "deleted existing file - %s \n",generated_json_files_events[currentFileIndex]);
+
+            if (rename(generated_tmp_json_files_events[currentFileIndex], generated_json_files_events[currentFileIndex]) != 0)
+            {
+                logger(1, "Error renaming - %s file\n", generated_tmp_json_files_events[currentFileIndex]);
+            }
+        }
+
+        serialization_fp = fopen(generated_tmp_json_files_alerts[currentFileIndex], "r");
+        if (serialization_fp != NULL)
+        {
+            fclose(serialization_fp);
+            if (rename(generated_tmp_json_files_alerts[currentFileIndex],  generated_json_files_alerts[currentFileIndex]) != 0)
+            {
+                logger(1, "Error renaming - %s file\n", generated_tmp_json_files_alerts[currentFileIndex]);
+                remove(generated_json_files_alerts[currentFileIndex]);
+                logger(1, "deleted existing file - %s \n", generated_json_files_alerts[currentFileIndex]);
+
+                if (rename(generated_tmp_json_files_alerts[currentFileIndex],generated_json_files_alerts[currentFileIndex]) != 0)
+                {
+                    logger(1,"Error renaming - %s file\n", generated_tmp_json_files_alerts[currentFileIndex]);
+                }
+            }
+        }
+    }
+}
+
+/*-----------------------------------------------------------------------------------------------------*/
 
 void nDPIsrvd_memprof_log_alloc(size_t alloc_size)
 {
@@ -1411,7 +1458,8 @@ static void * nDPId_mainloop_thread(void * const arg)
     {
         goto error;
     }
-    run_pcap_loop(&reader_threads[0]);
+    run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
@@ -1839,455 +1887,465 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    fetch_files_to_process_and_set_default_options(argv[1]);
-    set_cmdarg(&nDPId_options.pcap_file_or_interface, argv[1]);
     if (validate_options() != 0)
     {
         return 1;
     }
 
-    if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
-        setup_pipe(mock_nullfds) != 0 || setup_pipe(mock_arpafds) != 0)
-    {
-        return 1;
-    }
+    fetch_files_to_process_and_set_default_options(argv[1]);
 
-    /* We do not have any sockets, any socket operation must fail! */
-    collector_un_sockfd = -1;
-    distributor_un_sockfd = -1;
-    distributor_in_sockfd = -1;
-
-    if (setup_remote_descriptors(MAX_REMOTE_DESCRIPTORS) != 0)
+    currentFileIndex = 0;
+    for (currentFileIndex = 0; currentFileIndex < 3; currentFileIndex++)
     {
-        return 1;
-    }
+        set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
 
-    pthread_t nDPId_thread;
-    struct nDPId_return_value nDPId_return = {};
-    if (pthread_create(&nDPId_thread, NULL, nDPId_mainloop_thread, &nDPId_return) != 0)
-    {
-        return 1;
-    }
+        if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
+            setup_pipe(mock_nullfds) != 0 || setup_pipe(mock_arpafds) != 0)
+        {
+            continue;
+        }
 
-    pthread_t nDPIsrvd_thread;
-    struct thread_return_value nDPIsrvd_return = {};
-    if (pthread_create(&nDPIsrvd_thread, NULL, nDPIsrvd_mainloop_thread, &nDPIsrvd_return) != 0)
-    {
-        return 1;
-    }
+        /* We do not have any sockets, any socket operation must fail! */
+        collector_un_sockfd = -1;
+        distributor_un_sockfd = -1;
+        distributor_in_sockfd = -1;
 
-    pthread_t distributor_thread;
-    struct distributor_return_value distributor_return = {};
-    if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
-    {
-        return 1;
-    }
+        if (setup_remote_descriptors(MAX_REMOTE_DESCRIPTORS) != 0)
+        {
+            continue;
+        }
 
-    /* Try to gracefully shutdown all threads. */
-    while (thread_wait_for_termination(distributor_thread, 1, &distributor_return.thread_return_value) == 0)
-    {
+        pthread_t nDPId_thread;
+        struct nDPId_return_value nDPId_return = {};
+        if (pthread_create(&nDPId_thread, NULL, nDPId_mainloop_thread, &nDPId_return) != 0)
+        {
+            continue;
+        }
+
+        pthread_t nDPIsrvd_thread;
+        struct thread_return_value nDPIsrvd_return = {};
+        if (pthread_create(&nDPIsrvd_thread, NULL, nDPIsrvd_mainloop_thread, &nDPIsrvd_return) != 0)
+        {
+            continue;
+        }
+
+        pthread_t distributor_thread;
+        struct distributor_return_value distributor_return = {};
+        if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
+        {
+            continue;
+        }
+
+        /* Try to gracefully shutdown all threads. */
+        while (thread_wait_for_termination(distributor_thread, 1, &distributor_return.thread_return_value) == 0)
+        {
+            if (THREADS_RETURNED_ERROR() != 0)
+            {
+                break;
+            }
+        }
+
+        while (thread_wait_for_termination(nDPId_thread, 1, &nDPId_return.thread_return_value) == 0)
+        {
+            if (THREADS_RETURNED_ERROR() != 0)
+            {
+                break;
+            }
+        }
+
+        while (thread_wait_for_termination(nDPIsrvd_thread, 1, &nDPIsrvd_return) == 0)
+        {
+            if (THREADS_RETURNED_ERROR() != 0)
+            {
+                break;
+            }
+        }
+
+        logger(0, "%s", "All worker threads terminated..");
+
         if (THREADS_RETURNED_ERROR() != 0)
         {
-            break;
-        }
-    }
+            char const * which_thread = "Unknown";
+            int thread_errno = 0;
 
-    while (thread_wait_for_termination(nDPId_thread, 1, &nDPId_return.thread_return_value) == 0)
-    {
-        if (THREADS_RETURNED_ERROR() != 0)
+            if (nDPId_return.thread_return_value.val != 0)
+            {
+                which_thread = "nDPId";
+                thread_errno = nDPId_return.thread_return_value.val;
+            }
+            else if (nDPIsrvd_return.val != 0)
+            {
+                which_thread = "nDPIsrvd";
+                thread_errno = nDPIsrvd_return.val;
+            }
+            else if (distributor_return.thread_return_value.val != 0)
+            {
+                which_thread = "Distributor";
+                thread_errno = distributor_return.thread_return_value.val;
+            }
+
+            logger(1,
+                   "%s Thread returned a non zero value: %d (%s)",
+                   which_thread,
+                   thread_errno,
+                   (thread_errno < 0 ? strerror(thread_errno) : "Application specific error"));
+            continue;
+        }
+
         {
-            break;
-        }
-    }
+            printf(
+                "~~~~~~~~~~~~~~~~~~~~ SUMMARY ~~~~~~~~~~~~~~~~~~~~\n"
+                "~~ packets captured/processed: %llu/%llu\n"
+                "~~ skipped flows.............: %llu\n"
+                "~~ total layer4 data length..: %llu bytes\n"
+                "~~ total detected protocols..: %llu\n"
+                "~~ total active/idle flows...: %llu/%llu\n"
+                "~~ total timeout flows.......: %llu\n"
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
+                nDPId_return.packets_captured,
+                nDPId_return.packets_processed,
+                nDPId_return.total_skipped_flows,
+                nDPId_return.total_l4_payload_len,
+                nDPId_return.detected_flow_protocols,
+                nDPId_return.total_active_flows,
+                nDPId_return.total_idle_flows,
+                distributor_return.stats.total_flow_timeouts);
 
-    while (thread_wait_for_termination(nDPIsrvd_thread, 1, &nDPIsrvd_return) == 0)
-    {
-        if (THREADS_RETURNED_ERROR() != 0)
-        {
-            break;
-        }
-    }
-
-    logger(0, "%s", "All worker threads terminated..");
-
-    if (THREADS_RETURNED_ERROR() != 0)
-    {
-        char const * which_thread = "Unknown";
-        int thread_errno = 0;
-
-        if (nDPId_return.thread_return_value.val != 0)
-        {
-            which_thread = "nDPId";
-            thread_errno = nDPId_return.thread_return_value.val;
-        }
-        else if (nDPIsrvd_return.val != 0)
-        {
-            which_thread = "nDPIsrvd";
-            thread_errno = nDPIsrvd_return.val;
-        }
-        else if (distributor_return.thread_return_value.val != 0)
-        {
-            which_thread = "Distributor";
-            thread_errno = distributor_return.thread_return_value.val;
-        }
-
-        logger(1,
-               "%s Thread returned a non zero value: %d (%s)",
-               which_thread,
-               thread_errno,
-               (thread_errno < 0 ? strerror(thread_errno) : "Application specific error"));
-        return 1;
-    }
-
-    {
-        printf(
-            "~~~~~~~~~~~~~~~~~~~~ SUMMARY ~~~~~~~~~~~~~~~~~~~~\n"
-            "~~ packets captured/processed: %llu/%llu\n"
-            "~~ skipped flows.............: %llu\n"
-            "~~ total layer4 data length..: %llu bytes\n"
-            "~~ total detected protocols..: %llu\n"
-            "~~ total active/idle flows...: %llu/%llu\n"
-            "~~ total timeout flows.......: %llu\n"
-            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
-            nDPId_return.packets_captured,
-            nDPId_return.packets_processed,
-            nDPId_return.total_skipped_flows,
-            nDPId_return.total_l4_payload_len,
-            nDPId_return.detected_flow_protocols,
-            nDPId_return.total_active_flows,
-            nDPId_return.total_idle_flows,
-            distributor_return.stats.total_flow_timeouts);
-
-        unsigned long long int total_alloc_bytes =
+            unsigned long long int total_alloc_bytes =
 #ifdef ENABLE_ZLIB
-            (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0) -
-                                     MT_GET_AND_ADD(zlib_compression_bytes, 0) -
-                                     (MT_GET_AND_ADD(zlib_compressions, 0) * sizeof(struct nDPId_detection_data)));
+                (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0) -
+                                         MT_GET_AND_ADD(zlib_compression_bytes, 0) -
+                                         (MT_GET_AND_ADD(zlib_compressions, 0) * sizeof(struct nDPId_detection_data)));
 #else
-            (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0);
+                (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0);
 #endif
-        unsigned long long int total_free_bytes =
+            unsigned long long int total_free_bytes =
 #ifdef ENABLE_ZLIB
-            (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_free_bytes, 0) -
-                                     MT_GET_AND_ADD(zlib_compression_bytes, 0) -
-                                     (MT_GET_AND_ADD(zlib_compressions, 0) * sizeof(struct nDPId_detection_data)));
+                (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_free_bytes, 0) -
+                                         MT_GET_AND_ADD(zlib_compression_bytes, 0) -
+                                         (MT_GET_AND_ADD(zlib_compressions, 0) * sizeof(struct nDPId_detection_data)));
 #else
-            (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_bytes, 0);
+                (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_bytes, 0);
 #endif
 
-        unsigned long long int total_alloc_count =
+            unsigned long long int total_alloc_count =
 #ifdef ENABLE_ZLIB
-            (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_alloc_count, 0) -
-                                     MT_GET_AND_ADD(zlib_compressions, 0) * 2);
+                (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_alloc_count, 0) -
+                                         MT_GET_AND_ADD(zlib_compressions, 0) * 2);
 #else
-            (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_count, 0);
+                (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_count, 0);
 #endif
 
-        unsigned long long int total_free_count =
+            unsigned long long int total_free_count =
 #ifdef ENABLE_ZLIB
-            (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_free_count, 0) -
-                                     MT_GET_AND_ADD(zlib_decompressions, 0) * 2);
+                (unsigned long long int)(MT_GET_AND_ADD(ndpi_memory_free_count, 0) -
+                                         MT_GET_AND_ADD(zlib_decompressions, 0) * 2);
 #else
-            (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_count, 0);
+                (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_count, 0);
 #endif
 
-        printf(
-            "~~ total memory allocated....: %llu bytes\n"
-            "~~ total memory freed........: %llu bytes\n"
-            "~~ total allocations/frees...: %llu/%llu\n"
-            "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
-            total_alloc_bytes -
-                sizeof(struct nDPId_workflow) *
-                    nDPId_options.reader_thread_count /* We do not want to take the workflow into account. */,
-            total_free_bytes -
-                sizeof(struct nDPId_workflow) *
-                    nDPId_options.reader_thread_count /* We do not want to take the workflow into account. */,
-            total_alloc_count,
-            total_free_count);
+            printf(
+                "~~ total memory allocated....: %llu bytes\n"
+                "~~ total memory freed........: %llu bytes\n"
+                "~~ total allocations/frees...: %llu/%llu\n"
+                "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n",
+                total_alloc_bytes -
+                    sizeof(struct nDPId_workflow) *
+                        nDPId_options.reader_thread_count /* We do not want to take the workflow into account. */,
+                total_free_bytes -
+                    sizeof(struct nDPId_workflow) *
+                        nDPId_options.reader_thread_count /* We do not want to take the workflow into account. */,
+                total_alloc_count,
+                total_free_count);
 
-        printf(
-            "~~ json message min len.......: %llu chars\n"
-            "~~ json message max len.......: %llu chars\n"
-            "~~ json message avg len.......: %llu chars\n",
-            distributor_return.stats.json_message_len_min,
-            distributor_return.stats.json_message_len_max,
-            (unsigned long long int)distributor_return.stats.json_message_len_avg);
-    }
+            printf(
+                "~~ json message min len.......: %llu chars\n"
+                "~~ json message max len.......: %llu chars\n"
+                "~~ json message avg len.......: %llu chars\n",
+                distributor_return.stats.json_message_len_min,
+                distributor_return.stats.json_message_len_max,
+                (unsigned long long int)distributor_return.stats.json_message_len_avg);
+        }
 
-    if (MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0) != MT_GET_AND_ADD(ndpi_memory_free_bytes, 0) ||
-        MT_GET_AND_ADD(ndpi_memory_alloc_count, 0) != MT_GET_AND_ADD(ndpi_memory_free_count, 0) ||
-        nDPId_return.total_active_flows != nDPId_return.total_idle_flows)
-    {
-        logger(1, "%s: %s", argv[0], "Memory / Flow leak detected.");
-        logger(1,
-               "%s: Allocated / Free'd bytes: %llu / %llu",
-               argv[0],
-               (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0),
-               (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_bytes, 0));
-        logger(1,
-               "%s: Allocated / Free'd count: %llu / %llu",
-               argv[0],
-               (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_count, 0),
-               (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_count, 0));
-        logger(1,
-               "%s: Total Active / Idle Flows: %llu / %llu",
-               argv[0],
-               nDPId_return.total_active_flows,
-               nDPId_return.total_idle_flows);
-        return 1;
-    }
+        if (MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0) != MT_GET_AND_ADD(ndpi_memory_free_bytes, 0) ||
+            MT_GET_AND_ADD(ndpi_memory_alloc_count, 0) != MT_GET_AND_ADD(ndpi_memory_free_count, 0) ||
+            nDPId_return.total_active_flows != nDPId_return.total_idle_flows)
+        {
+            logger(1, "%s: %s", argv[0], "Memory / Flow leak detected.");
+            logger(1,
+                   "%s: Allocated / Free'd bytes: %llu / %llu",
+                   argv[0],
+                   (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_bytes, 0),
+                   (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_bytes, 0));
+            logger(1,
+                   "%s: Allocated / Free'd count: %llu / %llu",
+                   argv[0],
+                   (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_alloc_count, 0),
+                   (unsigned long long int)MT_GET_AND_ADD(ndpi_memory_free_count, 0));
+            logger(1,
+                   "%s: Total Active / Idle Flows: %llu / %llu",
+                   argv[0],
+                   nDPId_return.total_active_flows,
+                   nDPId_return.total_idle_flows);
+            return 1;
+        }
 
-    if (nDPIsrvd_alloc_bytes != nDPIsrvd_free_bytes || nDPIsrvd_alloc_count != nDPIsrvd_free_count)
-    {
-        logger(1, "%s: %s", argv[0], "nDPIsrvd.h memory leak detected.");
-        logger(1, "%s: Allocated / Free'd bytes: %llu / %llu", argv[0], nDPIsrvd_alloc_bytes, nDPIsrvd_free_bytes);
-        logger(1, "%s: Allocated / Free'd count: %llu / %llu", argv[0], nDPIsrvd_alloc_count, nDPIsrvd_free_count);
-        return 1;
-    }
+        if (nDPIsrvd_alloc_bytes != nDPIsrvd_free_bytes || nDPIsrvd_alloc_count != nDPIsrvd_free_count)
+        {
+            logger(1, "%s: %s", argv[0], "nDPIsrvd.h memory leak detected.");
+            logger(1, "%s: Allocated / Free'd bytes: %llu / %llu", argv[0], nDPIsrvd_alloc_bytes, nDPIsrvd_free_bytes);
+            logger(1, "%s: Allocated / Free'd count: %llu / %llu", argv[0], nDPIsrvd_alloc_count, nDPIsrvd_free_count);
+            return 1;
+        }
 
-    if (nDPId_return.cur_active_flows != 0 || nDPId_return.cur_idle_flows != 0)
-    {
-        logger(1,
-               "%s: %s [%llu / %llu]",
-               argv[0],
-               "Active / Idle inconsistency detected.",
-               nDPId_return.cur_active_flows,
-               nDPId_return.cur_idle_flows);
-        return 1;
-    }
+        if (nDPId_return.cur_active_flows != 0 || nDPId_return.cur_idle_flows != 0)
+        {
+            logger(1,
+                   "%s: %s [%llu / %llu]",
+                   argv[0],
+                   "Active / Idle inconsistency detected.",
+                   nDPId_return.cur_active_flows,
+                   nDPId_return.cur_idle_flows);
+            return 1;
+        }
 
-    if (nDPId_return.total_skipped_flows != 0)
-    {
-        logger(1,
-               "%s: %s [%llu]",
-               argv[0],
-               "Skipped flow detected, that should not happen.",
-               nDPId_return.total_skipped_flows);
-        return 1;
-    }
+        if (nDPId_return.total_skipped_flows != 0)
+        {
+            logger(1,
+                   "%s: %s [%llu]",
+                   argv[0],
+                   "Skipped flow detected, that should not happen.",
+                   nDPId_return.total_skipped_flows);
+            return 1;
+        }
 
-    if (nDPId_return.total_events_serialized != distributor_return.stats.total_events_deserialized ||
-        nDPId_return.total_events_serialized != distributor_return.stats.total_events_serialized)
-    {
-        logger(1,
-               "%s: Event count of nDPId and distributor not equal: %llu != %llu",
-               argv[0],
-               nDPId_return.total_events_serialized,
-               distributor_return.stats.total_events_deserialized);
-        return 1;
-    }
+        if (nDPId_return.total_events_serialized != distributor_return.stats.total_events_deserialized ||
+            nDPId_return.total_events_serialized != distributor_return.stats.total_events_serialized)
+        {
+            logger(1,
+                   "%s: Event count of nDPId and distributor not equal: %llu != %llu",
+                   argv[0],
+                   nDPId_return.total_events_serialized,
+                   distributor_return.stats.total_events_deserialized);
+            return 1;
+        }
 
-    if (nDPId_return.packets_processed != distributor_return.stats.total_packets_processed)
-    {
-        logger(1,
-               "%s: Total nDPId and distributor packets processed not equal: %llu != %llu",
-               argv[0],
-               nDPId_return.packets_processed,
-               distributor_return.stats.total_packets_processed);
-        return 1;
-    }
+        if (nDPId_return.packets_processed != distributor_return.stats.total_packets_processed)
+        {
+            logger(1,
+                   "%s: Total nDPId and distributor packets processed not equal: %llu != %llu",
+                   argv[0],
+                   nDPId_return.packets_processed,
+                   distributor_return.stats.total_packets_processed);
+            return 1;
+        }
 
-    if (nDPId_return.total_l4_payload_len != distributor_return.stats.total_l4_payload_len)
-    {
-        logger(1,
-               "%s: Total processed layer4 payload length of nDPId and distributor not equal: %llu != %llu",
-               argv[0],
-               nDPId_return.total_l4_payload_len,
-               distributor_return.stats.total_l4_payload_len);
-        return 1;
-    }
+        if (nDPId_return.total_l4_payload_len != distributor_return.stats.total_l4_payload_len)
+        {
+            logger(1,
+                   "%s: Total processed layer4 payload length of nDPId and distributor not equal: %llu != %llu",
+                   argv[0],
+                   nDPId_return.total_l4_payload_len,
+                   distributor_return.stats.total_l4_payload_len);
+            return 1;
+        }
 
-    if (distributor_return.stats.flow_new_count !=
-        distributor_return.stats.flow_end_count + distributor_return.stats.flow_idle_count)
-    {
-        logger(1,
-               "%s: Amount of flow 'new' events received is not equal to the amount of 'end' plus 'idle': %llu != "
-               "%llu + %llu",
-               argv[0],
-               distributor_return.stats.flow_new_count,
-               distributor_return.stats.flow_end_count,
-               distributor_return.stats.flow_idle_count);
-        return 1;
-    }
+        if (distributor_return.stats.flow_new_count !=
+            distributor_return.stats.flow_end_count + distributor_return.stats.flow_idle_count)
+        {
+            logger(1,
+                   "%s: Amount of flow 'new' events received is not equal to the amount of 'end' plus 'idle': %llu != "
+                   "%llu + %llu",
+                   argv[0],
+                   distributor_return.stats.flow_new_count,
+                   distributor_return.stats.flow_end_count,
+                   distributor_return.stats.flow_idle_count);
+            return 1;
+        }
 
-    if (nDPId_return.total_active_flows !=
-        distributor_return.stats.flow_end_count + distributor_return.stats.flow_idle_count)
-    {
-        logger(1,
-               "%s: Amount of total active flows is not equal to the amount of received 'end' plus 'idle' events: "
-               "%llu != %llu + %llu",
-               argv[0],
-               nDPId_return.total_active_flows,
-               distributor_return.stats.flow_end_count,
-               distributor_return.stats.flow_idle_count);
-        return 1;
-    }
+        if (nDPId_return.total_active_flows !=
+            distributor_return.stats.flow_end_count + distributor_return.stats.flow_idle_count)
+        {
+            logger(1,
+                   "%s: Amount of total active flows is not equal to the amount of received 'end' plus 'idle' events: "
+                   "%llu != %llu + %llu",
+                   argv[0],
+                   nDPId_return.total_active_flows,
+                   distributor_return.stats.flow_end_count,
+                   distributor_return.stats.flow_idle_count);
+            return 1;
+        }
 
-    if (nDPId_return.total_idle_flows !=
-        distributor_return.stats.flow_idle_count + distributor_return.stats.flow_end_count)
-    {
-        logger(1,
-               "%s: Amount of total idle flows is not equal to the amount of received 'idle' events: %llu != %llu",
-               argv[0],
-               nDPId_return.total_idle_flows,
-               distributor_return.stats.flow_idle_count);
-        return 1;
-    }
+        if (nDPId_return.total_idle_flows !=
+            distributor_return.stats.flow_idle_count + distributor_return.stats.flow_end_count)
+        {
+            logger(1,
+                   "%s: Amount of total idle flows is not equal to the amount of received 'idle' events: %llu != %llu",
+                   argv[0],
+                   nDPId_return.total_idle_flows,
+                   distributor_return.stats.flow_idle_count);
+            return 1;
+        }
 
-    if (nDPId_return.not_detected_flow_protocols != distributor_return.stats.flow_not_detected_count)
-    {
-        logger(1,
-               "%s: Amount of total undetected flows is not equal to the amount of received 'not-detected' events: "
-               "%llu != %llu",
-               argv[0],
-               nDPId_return.not_detected_flow_protocols,
-               distributor_return.stats.flow_not_detected_count);
-        return 1;
-    }
+        if (nDPId_return.not_detected_flow_protocols != distributor_return.stats.flow_not_detected_count)
+        {
+            logger(1,
+                   "%s: Amount of total undetected flows is not equal to the amount of received 'not-detected' events: "
+                   "%llu != %llu",
+                   argv[0],
+                   nDPId_return.not_detected_flow_protocols,
+                   distributor_return.stats.flow_not_detected_count);
+            return 1;
+        }
 
-    if (nDPId_return.guessed_flow_protocols != distributor_return.stats.flow_guessed_count)
-    {
-        logger(1,
-               "%s: Amount of total guessed flows is not equal to the amount of received 'guessed' events: %llu != "
-               "%llu",
-               argv[0],
-               nDPId_return.guessed_flow_protocols,
-               distributor_return.stats.flow_guessed_count);
-        return 1;
-    }
+        if (nDPId_return.guessed_flow_protocols != distributor_return.stats.flow_guessed_count)
+        {
+            logger(1,
+                   "%s: Amount of total guessed flows is not equal to the amount of received 'guessed' events: %llu != "
+                   "%llu",
+                   argv[0],
+                   nDPId_return.guessed_flow_protocols,
+                   distributor_return.stats.flow_guessed_count);
+            return 1;
+        }
 
-    if (nDPId_return.detected_flow_protocols != distributor_return.stats.flow_detected_count)
-    {
-        logger(1,
-               "%s: Amount of total detected flows not equal to the amount of received 'detected' events: %llu != "
-               "%llu",
-               argv[0],
-               nDPId_return.detected_flow_protocols,
-               distributor_return.stats.flow_detected_count);
-        return 1;
-    }
+        if (nDPId_return.detected_flow_protocols != distributor_return.stats.flow_detected_count)
+        {
+            logger(1,
+                   "%s: Amount of total detected flows not equal to the amount of received 'detected' events: %llu != "
+                   "%llu",
+                   argv[0],
+                   nDPId_return.detected_flow_protocols,
+                   distributor_return.stats.flow_detected_count);
+            return 1;
+        }
 
-    if (nDPId_return.flow_detection_updates != distributor_return.stats.flow_detection_update_count)
-    {
-        logger(1,
-               "%s: Amount of total detection updates is not equal to the amount of received 'detection-update' "
-               "events: %llu != %llu",
-               argv[0],
-               nDPId_return.flow_detection_updates,
-               distributor_return.stats.flow_detection_update_count);
-        return 1;
-    }
+        if (nDPId_return.flow_detection_updates != distributor_return.stats.flow_detection_update_count)
+        {
+            logger(1,
+                   "%s: Amount of total detection updates is not equal to the amount of received 'detection-update' "
+                   "events: %llu != %llu",
+                   argv[0],
+                   nDPId_return.flow_detection_updates,
+                   distributor_return.stats.flow_detection_update_count);
+            return 1;
+        }
 
-    if (nDPId_return.flow_updates != distributor_return.stats.flow_update_count)
-    {
-        logger(1,
-               "%s: Amount of total flow updates is not equal to the amount of received 'update' events: %llu != "
-               "%llu",
-               argv[0],
-               nDPId_return.flow_updates,
-               distributor_return.stats.flow_update_count);
-        return 1;
-    }
+        if (nDPId_return.flow_updates != distributor_return.stats.flow_update_count)
+        {
+            logger(1,
+                   "%s: Amount of total flow updates is not equal to the amount of received 'update' events: %llu != "
+                   "%llu",
+                   argv[0],
+                   nDPId_return.flow_updates,
+                   distributor_return.stats.flow_update_count);
+            return 1;
+        }
 
-    if (nDPId_return.total_active_flows != distributor_return.stats.flow_detected_count +
-                                               distributor_return.stats.flow_guessed_count +
-                                               distributor_return.stats.flow_not_detected_count)
-    {
-        logger(1,
-               "%s: Amount of total active flows not equal to the amount of received 'detected', 'guessed and "
-               "'not-detected' flow events: %llu != "
-               "%llu + %llu + %llu",
-               argv[0],
-               nDPId_return.total_active_flows,
-               distributor_return.stats.flow_detected_count,
-               distributor_return.stats.flow_guessed_count,
-               distributor_return.stats.flow_not_detected_count);
-        return 1;
-    }
+        if (nDPId_return.total_active_flows != distributor_return.stats.flow_detected_count +
+                                                   distributor_return.stats.flow_guessed_count +
+                                                   distributor_return.stats.flow_not_detected_count)
+        {
+            logger(1,
+                   "%s: Amount of total active flows not equal to the amount of received 'detected', 'guessed and "
+                   "'not-detected' flow events: %llu != "
+                   "%llu + %llu + %llu",
+                   argv[0],
+                   nDPId_return.total_active_flows,
+                   distributor_return.stats.flow_detected_count,
+                   distributor_return.stats.flow_guessed_count,
+                   distributor_return.stats.flow_not_detected_count);
+            return 1;
+        }
 
-    if (distributor_return.stats.instance_user_data.daemon_event_count !=
-        distributor_return.stats.thread_user_data.daemon_event_count)
-    {
-        logger(1,
-               "%s: Amount of received daemon events differs between instance and thread: %llu != %llu",
-               argv[0],
-               distributor_return.stats.instance_user_data.daemon_event_count,
-               distributor_return.stats.thread_user_data.daemon_event_count);
-        return 1;
-    }
+        if (distributor_return.stats.instance_user_data.daemon_event_count !=
+            distributor_return.stats.thread_user_data.daemon_event_count)
+        {
+            logger(1,
+                   "%s: Amount of received daemon events differs between instance and thread: %llu != %llu",
+                   argv[0],
+                   distributor_return.stats.instance_user_data.daemon_event_count,
+                   distributor_return.stats.thread_user_data.daemon_event_count);
+            return 1;
+        }
 
-    if (distributor_return.stats.instance_user_data.flow_cleanup_count - distributor_return.stats.total_flow_timeouts !=
-        distributor_return.stats.flow_end_count + distributor_return.stats.flow_idle_count)
-    {
-        logger(1,
-               "%s: Amount of flow cleanup callback calls differs between received 'end' and 'idle' flow events: %llu "
-               "!= %llu + %llu",
-               argv[0],
-               distributor_return.stats.instance_user_data.flow_cleanup_count -
-                   distributor_return.stats.total_flow_timeouts,
-               distributor_return.stats.flow_end_count,
-               distributor_return.stats.flow_idle_count);
-        return 1;
-    }
+        if (distributor_return.stats.instance_user_data.flow_cleanup_count - distributor_return.stats.total_flow_timeouts !=
+            distributor_return.stats.flow_end_count + distributor_return.stats.flow_idle_count)
+        {
+            logger(1,
+                   "%s: Amount of flow cleanup callback calls differs between received 'end' and 'idle' flow events: %llu "
+                   "!= %llu + %llu",
+                   argv[0],
+                   distributor_return.stats.instance_user_data.flow_cleanup_count -
+                       distributor_return.stats.total_flow_timeouts,
+                   distributor_return.stats.flow_end_count,
+                   distributor_return.stats.flow_idle_count);
+            return 1;
+        }
 
-    if (distributor_return.stats.flow_new_count != distributor_return.stats.thread_user_data.flow_new_count ||
-        distributor_return.stats.flow_end_count != distributor_return.stats.thread_user_data.flow_end_count ||
-        distributor_return.stats.flow_idle_count != distributor_return.stats.thread_user_data.flow_idle_count)
-    {
-        logger(1,
-               "%s: Thread user data counters not equal to the global user data counters: %llu != %llu or %llu != %llu "
-               "or %llu != %llu",
-               argv[0],
-               distributor_return.stats.flow_new_count,
-               distributor_return.stats.thread_user_data.flow_new_count,
-               distributor_return.stats.flow_end_count,
-               distributor_return.stats.thread_user_data.flow_end_count,
-               distributor_return.stats.flow_idle_count,
-               distributor_return.stats.thread_user_data.flow_idle_count);
-        return 1;
-    }
+        if (distributor_return.stats.flow_new_count != distributor_return.stats.thread_user_data.flow_new_count ||
+            distributor_return.stats.flow_end_count != distributor_return.stats.thread_user_data.flow_end_count ||
+            distributor_return.stats.flow_idle_count != distributor_return.stats.thread_user_data.flow_idle_count)
+        {
+            logger(1,
+                   "%s: Thread user data counters not equal to the global user data counters: %llu != %llu or %llu != %llu "
+                   "or %llu != %llu",
+                   argv[0],
+                   distributor_return.stats.flow_new_count,
+                   distributor_return.stats.thread_user_data.flow_new_count,
+                   distributor_return.stats.flow_end_count,
+                   distributor_return.stats.thread_user_data.flow_end_count,
+                   distributor_return.stats.flow_idle_count,
+                   distributor_return.stats.thread_user_data.flow_idle_count);
+            return 1;
+        }
+
+        renameCurrentTempFile();
+        free(pcap_files[currentFileIndex]);
+        pcap_files[currentFileIndex] = NULL;
 
 #ifdef ENABLE_ZLIB
-    if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
-    {
-        logger(1,
-               "%s: %s (%llu != %llu)",
-               argv[0],
-               "ZLib compression / decompression inconsistency detected.",
-               (unsigned long long int)MT_GET_AND_ADD(zlib_compressions, 0),
-               (unsigned long long int)MT_GET_AND_ADD(zlib_decompressions, 0));
-        return 1;
-    }
-    if (nDPId_return.current_compression_diff != 0)
-    {
-        logger(1,
-               "%s: %s (%llu bytes)",
-               argv[0],
-               "ZLib compression inconsistency detected. It should be 0.",
-               nDPId_return.current_compression_diff);
-        return 1;
-    }
-    if (nDPId_return.total_compressions != MT_GET_AND_ADD(zlib_compressions, 0))
-    {
-        logger(1,
-               "%s: %s (%llu != %llu)",
-               argv[0],
-               "ZLib global<->workflow compression / decompression inconsistency detected.",
-               (unsigned long long int)MT_GET_AND_ADD(zlib_compressions, 0),
-               nDPId_return.current_compression_diff);
-        return 1;
-    }
-    if (nDPId_return.total_compression_diff != MT_GET_AND_ADD(zlib_compression_bytes, 0))
-    {
-        logger(1,
-               "%s: %s (%llu bytes != %llu bytes)",
-               argv[0],
-               "ZLib global<->workflow compression / decompression inconsistency detected.",
-               (unsigned long long int)MT_GET_AND_ADD(zlib_compression_bytes, 0),
-               nDPId_return.total_compression_diff);
-        return 1;
-    }
+        if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
+        {
+            logger(1,
+                   "%s: %s (%llu != %llu)",
+                   argv[0],
+                   "ZLib compression / decompression inconsistency detected.",
+                   (unsigned long long int)MT_GET_AND_ADD(zlib_compressions, 0),
+                   (unsigned long long int)MT_GET_AND_ADD(zlib_decompressions, 0));
+            return 1;
+        }
+        if (nDPId_return.current_compression_diff != 0)
+        {
+            logger(1,
+                   "%s: %s (%llu bytes)",
+                   argv[0],
+                   "ZLib compression inconsistency detected. It should be 0.",
+                   nDPId_return.current_compression_diff);
+            return 1;
+        }
+        if (nDPId_return.total_compressions != MT_GET_AND_ADD(zlib_compressions, 0))
+        {
+            logger(1,
+                   "%s: %s (%llu != %llu)",
+                   argv[0],
+                   "ZLib global<->workflow compression / decompression inconsistency detected.",
+                   (unsigned long long int)MT_GET_AND_ADD(zlib_compressions, 0),
+                   nDPId_return.current_compression_diff);
+            return 1;
+        }
+        if (nDPId_return.total_compression_diff != MT_GET_AND_ADD(zlib_compression_bytes, 0))
+        {
+            logger(1,
+                   "%s: %s (%llu bytes != %llu bytes)",
+                   argv[0],
+                   "ZLib global<->workflow compression / decompression inconsistency detected.",
+                   (unsigned long long int)MT_GET_AND_ADD(zlib_compression_bytes, 0),
+                   nDPId_return.total_compression_diff);
+            return 1;
+        }
 #endif
+    }
 
     return 0;
 }
