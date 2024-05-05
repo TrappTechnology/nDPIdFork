@@ -278,6 +278,9 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
                 sprintf(tmp_alert_file_path, "%s.%s", alerts_full_path, "tmp");
                 sprintf(tmp_event_file_path, "%s.%s", alerts_full_path, "tmp");
+
+                generated_tmp_json_files_alerts[MAX_NUMBER_OF_FILES] = tmp_alert_file_path;
+                generated_tmp_json_files_events[MAX_NUMBER_OF_FILES] = tmp_event_file_path;
             }
         }
     }
