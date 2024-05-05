@@ -2335,7 +2335,7 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 
 static write_to_file(const char * converted_json_str)
 {
-    FILE* serialization_fp = null;
+    FILE* serialization_fp = NULL;
     //char * converted_json_str = NULL;
     int createAlert = 0;
     //ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
