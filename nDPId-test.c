@@ -227,6 +227,50 @@ void nDPIsrvd_memprof_log(char const * const format, ...)
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
+void create_events_and_alerts_folders()
+{
+    char * current_directory = NULL;
+    // Get the current directory
+    current_directory = getcwd(NULL, 0);
+    if (current_directory == NULL)
+    {
+        logger(1, "Error getting current directory: %s\n", strerror(errno));
+        exit(EXIT_FAILURE);
+    }
+
+    // Concatenate the directory path with folder names
+    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
+    char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
+    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
+    sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
+
+    // Create the "Alerts" folder
+    if (mkdir(alerts_full_path, 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            fprintf(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Create the "Events" folder
+    if (mkdir(events_full_path, 0777) == -1)
+    {
+        if (errno != EEXIST)
+        {
+            fprintf(stderr, "Error creating folder 'Events': %s\n", strerror(errno));
+            exit(EXIT_FAILURE);
+        }
+    }
+
+    // Free allocated memory
+    free(current_directory);
+    free(alerts_full_path);
+    free(events_full_path);
+}
+
+/*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 static void fetch_files_to_process(const char * pcap_files_folder_path)
 {
     DIR* dir = NULL;
@@ -261,6 +305,8 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         exit(EXIT_FAILURE);
     }
 
+    logger(0, "current_directory is %s", current_directory);
+
     logger(0, "fetch_files_to_process 3");
     // Read directory entries
     while ((entry = readdir(dir)) != NULL)
@@ -273,12 +319,21 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
                 logger(0, "fetch_files_to_process 6");
-                pcap_files[number_of_valid_files_found] = strdup(filename);
+                char * complete_path_of_pcap =  malloc(strlen(current_directory) + strlen(filename) + 2);
+                sprintf(complete_path_of_pcap, "%s/%s", filename);
+                
+                pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
 
-                char * alert_file_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 3);
-                char * event_file_path = malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 3);
-                sprintf(alert_file_path, "%s/%s/%s", current_directory, alerts_folder_name, filename);
-                sprintf(event_file_path, "%s/%s/%s", current_directory, events_folder_name, filename);
+                char * dot = strrchr(filename, '.');
+                if (dot != NULL)
+                {
+                    *dot = '\0'; // Replace the dot with the null terminator
+                }
+
+                char * alert_file_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 6);
+                char * event_file_path = malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 6);
+                sprintf(alert_file_path, "%s/%s/%s.%s", current_directory, alerts_folder_name, filename, "json");
+                sprintf(event_file_path, "%s/%s/%s.%s", current_directory, events_folder_name, filename, "json");
 
                 logger(0, "fetch_files_to_process 7 alert file = %s", alert_file_path);
                 logger(0, "fetch_files_to_process 8 event file = %s", event_file_path);
@@ -286,13 +341,11 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
                
-                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 7);
-                char * tmp_event_file_path = malloc(strlen(event_file_path) + 7);
+                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 4);
+                char * tmp_event_file_path = malloc(strlen(event_file_path) + 4);
                 sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
                 sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
-
-                
-
+               
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
                 number_of_valid_files_found++;
@@ -1818,50 +1871,6 @@ static int nio_selftest()
 error:
     nio_free(&io);
     return 1;
-}
-
-
-void create_events_and_alerts_folders()
-{
-    char * current_directory = NULL;
-    // Get the current directory
-    current_directory = getcwd(NULL, 0);
-    if (current_directory == NULL)
-    {
-        logger(1, "Error getting current directory: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    // Concatenate the directory path with folder names
-    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
-    char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
-    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
-    sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
-
-    // Create the "Alerts" folder
-    if (mkdir(alerts_full_path, 0777) == -1)
-    {
-        if (errno != EEXIST)
-        {
-            fprintf(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    // Create the "Events" folder
-    if (mkdir(events_full_path, 0777) == -1)
-    {
-        if (errno != EEXIST)
-        {
-            fprintf(stderr, "Error creating folder 'Events': %s\n", strerror(errno));
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    // Free allocated memory
-    free(current_directory);
-    free(alerts_full_path);
-    free(events_full_path);
 }
 
 
