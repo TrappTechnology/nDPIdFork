@@ -24,7 +24,7 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 /*---------------------------------------------------------------------------------------------------------/*/
 #define MAX_NUMBER_OF_FILES 1000 // Maximum number of files to handle
 
-static FILE * serialization_fp = NULL;
+FILE * serialization_fp = NULL;
 char * pcap_files[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_events[MAX_NUMBER_OF_FILES];
 char * generated_tmp_json_files_alerts[MAX_NUMBER_OF_FILES];
@@ -1458,7 +1458,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     {
         goto error;
     }
-    run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+    run_pcap_loop(&reader_threads[0]);
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
