@@ -387,15 +387,22 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
     }
 
     index = 0;
+    int distance = length_of_longest_file + 5;
     for (index = 0; index < number_of_valid_files_found; index++)
     {
-        logger(5,
-               "%3d.  %-*s| %-*s\n",
+        logger(0,
+               "%3d.  %-*s| %-*s| %-*s| %-*s\n",
                index,
-               length_of_longest_file + 10,
+               distance,
                pcap_files[index],
                length_of_longest_file,
-               generated_tmp_json_files_events[index]);
+               generated_json_files_events[index],
+               length_of_longest_file,
+               generated_tmp_json_files_events[index],
+               length_of_longest_file,
+               generated_json_files_alerts[index],
+               length_of_longest_file,
+               generated_tmp_json_files_alerts[index]);
     }
 }
 
