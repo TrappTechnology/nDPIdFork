@@ -388,20 +388,21 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
 
     index = 0;
     int distance = length_of_longest_file + 5;
+    int distance_plus_10 = distance + 10;
     for (index = 0; index < number_of_valid_files_found; index++)
     {
         logger(0,
-               "%3d.  %-*s| %-*s| %-*s| %-*s\n",
+               "%3d.  %-*s| %-*s| %-*s| %-*s| %-*s\n",
                index,
                distance,
                pcap_files[index],
                length_of_longest_file,
                generated_json_files_events[index],
-               length_of_longest_file,
+               distance_plus_10,
                generated_tmp_json_files_events[index],
-               length_of_longest_file,
+               distance_plus_10,
                generated_json_files_alerts[index],
-               length_of_longest_file,
+               distance_plus_10,
                generated_tmp_json_files_alerts[index]);
     }
 }
@@ -1558,6 +1559,7 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
+    logger(0, "Before run_pcap_loop currentFileIndex=%d %s  %s", currentFileIndex, generated_tmp_json_files_alerts[currentFileIndex], generated_tmp_json_files_events[currentFileIndex]);
     run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
 
     process_remaining_flows();

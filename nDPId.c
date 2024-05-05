@@ -2368,6 +2368,7 @@ static write_to_file(const char * converted_json_str)
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
             }
 
+            logger(0, "Inside write_to_file  %s ",generated_tmp_json_files_event);
             serialization_fp = fopen(generated_tmp_json_files_event, "a");
             if (serialization_fp == NULL)
             {
@@ -4519,6 +4520,8 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 
 static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
 {
+    logger(0, "Inside run_pcap_loop  %s  %s", generated_tmp_json_files_alert_input,  generated_tmp_json_files_event_input);
+
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
 
