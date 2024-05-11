@@ -1554,7 +1554,17 @@ static void * nDPId_mainloop_thread(void * const arg)
     thread_wait(&start_condition);
 
     logger(0, "Ashwani: nDPId_mainloop_thread 2");
+    char * json_msg;
+    uint32_t json_msg_len;
+
+    json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
+
+    logger(0, "ASHWANI 1: %s", json_msg);
+
     jsonize_daemon(&reader_threads[0], DAEMON_EVENT_INIT);
+
+    json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
+    logger(0, "ASHWANI 2: %s", json_msg);
     logger(0, "Ashwani: nDPId_mainloop_thread 3");
     /* restore SIGPIPE to the default handler (Termination) */
     if (signal(SIGPIPE, SIG_DFL) == SIG_ERR)

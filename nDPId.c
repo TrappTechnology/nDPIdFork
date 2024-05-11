@@ -2590,6 +2590,8 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
 
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
 
+    logger(0, "ASHWANI serialize_and_send: %s", json_msg);
+
     char * converted_json_str = NULL;
     int createAlert = 0;
     ConvertnDPIDataFormat(json_msg, &converted_json_str, &createAlert);
