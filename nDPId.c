@@ -2416,7 +2416,6 @@ static write_to_file(const char * json_str)
         }
     }
 
-    Ashwani: need to uncomment
     free(converted_json_str);
 }
 
