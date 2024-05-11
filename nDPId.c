@@ -2429,12 +2429,20 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     int s_ret;
     char newline_json_msg[NETWORK_BUFFER_MAX_SIZE];
 
-    s_ret = snprintf(newline_json_msg,
+    //s_ret = snprintf(newline_json_msg,
+    //                 sizeof(newline_json_msg),
+    //                 "%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "zu%.*s\n",
+    //                 json_msg_len + 1,
+    //                 (int)json_msg_len,
+    //                 json_msg);
+
+     s_ret = snprintf(newline_json_msg,
                      sizeof(newline_json_msg),
                      "%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "zu%.*s\n",
                      json_msg_len + 1,
                      (int)json_msg_len,
                      json_msg);
+
 
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
@@ -2489,8 +2497,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
     }
 
-    logger(0, "Ashwani: before <writeFile>");
-    write_to_file(newline_json_msg);
+    logger(0, "Ashwani: before <writeFile>: %s", json_msg);
+    write_to_file(json_msg);
     logger(0, "Ashwani: after <writeFile>");
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&

@@ -1563,6 +1563,7 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     jsonize_daemon(&reader_threads[0], DAEMON_EVENT_INIT);
 
+    json_msg_len = 0;
     json_msg = ndpi_serializer_get_buffer(&reader_threads[0].workflow->ndpi_serializer, &json_msg_len);
     logger(0, "ASHWANI 2: %s", json_msg);
     logger(0, "Ashwani: nDPId_mainloop_thread 3");
