@@ -2346,7 +2346,7 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 //    fclose(file);
 //}
 
-static write_to_file(const char * converted_json_str)
+static write_to_file(const char * json_str)
 {
     if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
     {
@@ -2354,9 +2354,9 @@ static write_to_file(const char * converted_json_str)
     }
 
     FILE* serialization_fp = NULL;
-    //char * converted_json_str = NULL;
+    char * converted_json_str = NULL;
     int createAlert = 0;
-    //ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
+    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
 
     if (converted_json_str != NULL)
     {
@@ -2416,8 +2416,8 @@ static write_to_file(const char * converted_json_str)
         }
     }
 
-    //Ashwani: need to uncomment
-    //free(converted_json_str);
+    Ashwani: need to uncomment
+    free(converted_json_str);
 }
 
 static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
