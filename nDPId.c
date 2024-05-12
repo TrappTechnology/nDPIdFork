@@ -2432,7 +2432,6 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     write_to_file(json_msg);
     return;
-    ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
