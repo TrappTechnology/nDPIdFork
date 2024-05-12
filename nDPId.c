@@ -2403,10 +2403,9 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     }
 
     write_to_file(json_msg);
-    return;
     errno = 0;
     ssize_t written;
-    if (reader_thread->collector_sock_last_errno == 0 &&
+ /*   if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
         logger(0, "************\n***********\n***********");
@@ -2471,7 +2470,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
             logger(0, "Ashwani 4");
             set_collector_nonblock(reader_thread);
         }
-    }
+    }*/
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
