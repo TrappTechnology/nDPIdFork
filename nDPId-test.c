@@ -410,7 +410,6 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
 /*-----------------------------------------------------------------------------------------------------*/
 static void renameCurrentTempFile()
 {
-    logger(0, "ASHWANI: renameCurrentTempFile enter");
     serialization_fp = fopen(generated_tmp_json_files_events[currentFileIndex], "r");
     if (serialization_fp != NULL)
     {
@@ -444,8 +443,6 @@ static void renameCurrentTempFile()
             }
         }
     }
-
-     logger(0, "ASHWANI: renameCurrentTempFile enter");
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
@@ -1551,29 +1548,22 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
-    logger(0, "Ashwani: nDPId thread initialize done 1");
     thread_signal(&start_condition);
-    logger(0, "Ashwani: nDPId_mainloop_thread 1");
     thread_wait(&start_condition);
 
-    logger(0, "Ashwani: nDPId_mainloop_thread 2");
     char * json_msg;
     uint32_t json_msg_len;
 
     json_msg = ndpi_serializer_get_buffer(&reader_threads[0].workflow->ndpi_serializer, &json_msg_len);
 
-    logger(0, "ASHWANI 1: %s", json_msg);
-
     jsonize_daemon(&reader_threads[0], DAEMON_EVENT_INIT);
 
     json_msg_len = 0;
     json_msg = ndpi_serializer_get_buffer(&reader_threads[0].workflow->ndpi_serializer, &json_msg_len);
-    logger(0, "ASHWANI 2: %s", json_msg);
-    logger(0, "Ashwani: nDPId_mainloop_thread 3");
     /* restore SIGPIPE to the default handler (Termination) */
     if (signal(SIGPIPE, SIG_DFL) == SIG_ERR)
     {
-        logger(0, "Ashwani: nDPId thread initialize done 2");
+        logger(0, "Error: nDPId_mainloop_thread <signal(SIGPIPE, SIG_DFL)>");
         goto error;
     }
 
@@ -1935,9 +1925,7 @@ int main(int argc, char ** argv)
         return retval;
     }
 
-    logger(0, "Ashwani: 1");
     create_events_and_alerts_folders();
-    logger(0, "Ashwani: 2");
 
     nDPIsrvd_options.max_write_buffers = 32;
     nDPId_options.enable_data_analysis = 1;
@@ -1954,28 +1942,19 @@ int main(int argc, char ** argv)
     nDPId_options.reader_thread_count = 1; /* Please do not change this! Generating meaningful pcap diff's relies on a
                                               single reader thread! */
 
-
-    logger(0, "Ashwani: 3");
     set_cmdarg(&nDPId_options.instance_alias, "nDPId-test");
-    logger(0, "Ashwani: 4");
     if (access(argv[1], R_OK) != 0)
     {
         logger(1, "%s: pcap file `%s' does not exist or is not readable", argv[0], argv[1]);
         return 1;
     }
 
-    logger(0, "Ashwani: 5");
-
     if (validate_options() != 0)
     {
         return 1;
     }
 
-    logger(0, "Ashwani: 6");
-
     fetch_files_to_process_and_set_default_options(argv[1]);
-
-    logger(0, "Ashwani: 7");
 
     currentFileIndex = 0;
     for (currentFileIndex = 0; currentFileIndex < 1; currentFileIndex++)
