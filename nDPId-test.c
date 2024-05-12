@@ -1567,7 +1567,7 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
-    logger(0, "Before run_pcap_loop currentFileIndex=%d %s  %s", currentFileIndex, generated_tmp_json_files_alerts[currentFileIndex], generated_tmp_json_files_events[currentFileIndex]);
+   
     run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
 
     process_remaining_flows();
