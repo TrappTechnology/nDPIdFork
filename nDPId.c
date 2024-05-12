@@ -2404,6 +2404,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     write_to_file(json_msg);
 
+    errno = 0;
+    ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
@@ -2430,11 +2432,13 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
         else if (collector_address.raw.sa_family == AF_UNIX)
         {
+            logger(0, "Ashwani 1");
             size_t pos = (written < 0 ? 0 : written);
             set_collector_block(reader_thread);
             while ((size_t)(written = write(reader_thread->collector_sockfd, newline_json_msg + pos, s_ret - pos)) !=
                    s_ret - pos)
             {
+                logger(0, "Ashwani 2");
                 saved_errno = errno;
                 if (saved_errno == EPIPE || written == 0)
                 {
@@ -2459,8 +2463,10 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                 else
                 {
                     pos += written;
+                    logger(0, "Ashwani 3");
                 }
             }
+            logger(0, "Ashwani 4");
             set_collector_nonblock(reader_thread);
         }
     }
