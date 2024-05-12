@@ -1978,7 +1978,7 @@ int main(int argc, char ** argv)
     logger(0, "Ashwani: 7");
 
     currentFileIndex = 0;
-    for (currentFileIndex = 0; currentFileIndex < 3; currentFileIndex++)
+    for (currentFileIndex = 0; currentFileIndex < 1; currentFileIndex++)
     {
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
 
