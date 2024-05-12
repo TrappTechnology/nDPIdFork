@@ -2056,15 +2056,12 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
     char const ev[] = "daemon_event_name";
     struct nDPId_workflow * const workflow = reader_thread->workflow;
 
-    logger(0, "Ashwani: jsonize_daemon 1");
-
     if (event == DAEMON_EVENT_RECONNECT)
     {
         ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
     }
 
     ndpi_serialize_string_int32(&workflow->ndpi_serializer, "daemon_event_id", event);
-    logger(0, "Ashwani: jsonize_daemon 2");
     if (event > DAEMON_EVENT_INVALID && event < DAEMON_EVENT_COUNT)
     {
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, daemon_event_name_table[event]);
@@ -2074,11 +2071,8 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, daemon_event_name_table[DAEMON_EVENT_INVALID]);
     }
 
-    logger(0, "Ashwani: jsonize_daemon 3");
-
     jsonize_basic(reader_thread, 1);
 
-     logger(0, "Ashwani: jsonize_daemon 4");
 #ifndef PKG_VERSION
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "version", "unknown");
 #else
@@ -2086,7 +2080,6 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 #endif
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "ndpi_version", ndpi_revision());
 
-    logger(0, "Ashwani: jsonize_daemon 5");
     switch (event)
     {
         case DAEMON_EVENT_INVALID:
@@ -2183,11 +2176,8 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
             break;
     }
 
-    logger(0, "Ashwani: jsonize_daemon 6");
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "global_ts_usec", workflow->last_global_time);
-    logger(0, "Ashwani: jsonize_daemon 7");
     serialize_and_send(reader_thread);
-    logger(0, "Ashwani: jsonize_daemon 8");
 }
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
@@ -2277,75 +2267,6 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-//
-//static void writeFile(const char *folder, const char *data, size_t length) 
-//{
-//    logger(0, "Ashwani: stage 1");
-//    // Get the path of the program executable
-//    char path[1024];
-//    ssize_t count = readlink("/proc/self/exe", path, sizeof(path) - 1);
-//    if (count != -1) 
-//    {
-//        path[count] = '\0'; // Null-terminate the string
-//    } 
-//    else 
-//    {
-//        fprintf(stderr, "Error: Unable to determine program executable path.\n");
-//        return;
-//    }
-//
-//    logger(0, "Ashwani: stage 2");
-//    // Extract the directory path from the executable path
-//    char *lastSlash = strrchr(path, '/');
-//    if (lastSlash == NULL) 
-//    {
-//        fprintf(stderr, "Error: Unable to determine program directory path.\n");
-//        return;
-//    }
-//    *lastSlash = '\0'; // Null-terminate to get the directory path
-//
-//    logger(0, "Ashwani: stage 3");
-//    // Construct the full path to the folder
-//    char folderPath[1024];
-//    snprintf(folderPath, sizeof(folderPath), "%s/%s", path, folder);
-//
-//    // Create the directory if it doesn't exist
-//    if (mkdir(folderPath, 0777) == -1) 
-//    {
-//        logger(0, "Ashwani: error");
-//        // Directory already exists or error occurred
-//        // You might want to add error handling here
-//    }
-//
-//    logger(0, "Ashwani: stage 4");
-//
-//    // Append the desired file name to the directory path
-//    char filename[1024];
-//    snprintf(filename, sizeof(filename), "%s/output.json", folderPath);
-//
-//    logger(1, "Ashwani: json file path is %s", filename);
-//
-//    // Open the file for writing
-//    FILE *file = fopen(filename, "a");
-//    if (file == NULL) 
-//    {
-//        fprintf(stderr, "Error: Unable to open file for writing.\n");
-//        return;
-//    }
-//
-//   logger(0, "Ashwani: stage 5");
-//    // Write the provided string to the file
-//    fwrite(data, sizeof(char), length, file);
-//
-//    logger(0, "Ashwani: stage 6");
-//
-//    // Close the file
-//    fclose(file);
-//}
-
 static write_to_file(const char * json_str)
 {
     if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
@@ -2385,11 +2306,10 @@ static write_to_file(const char * json_str)
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
             }
 
-            logger(0, "Inside write_to_file  %s ",generated_tmp_json_files_event);
             serialization_fp = fopen(generated_tmp_json_files_event, "a");
             if (serialization_fp == NULL)
             {
-                logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_event,  strerror(errno));
+                logger(0, "Unable to create file %s: %s\n",  generated_tmp_json_files_event,  strerror(errno));
             }
             else
             {
@@ -2401,18 +2321,12 @@ static write_to_file(const char * json_str)
                 else
                 {
                     int length = strlen(converted_json_str);
-                    logger(0, "write_to_file 12");
                     fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
-                    logger(0, "write_to_file 13");
                 }
-                logger(0, "write_to_file 14");
                 fclose(serialization_fp);
-                logger(0, "write_to_file 15");
             }
 
-            logger(0, "write_to_file 16");
             free(converted_json_str_no_risk);
-            logger(0, "write_to_file 17");
         }
     }
 
@@ -2427,15 +2341,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     int saved_errno;
     int s_ret;
     char newline_json_msg[NETWORK_BUFFER_MAX_SIZE];
-
-    //s_ret = snprintf(newline_json_msg,
-    //                 sizeof(newline_json_msg),
-    //                 "%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "zu%.*s\n",
-    //                 json_msg_len + 1,
-    //                 (int)json_msg_len,
-    //                 json_msg);
-
-     s_ret = snprintf(newline_json_msg,
+    s_ret = snprintf(newline_json_msg,
                      sizeof(newline_json_msg),
                      "%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "zu%.*s\n",
                      json_msg_len + 1,
@@ -2496,9 +2402,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
     }
 
-    logger(0, "Ashwani: before <writeFile>: %s", json_msg);
     write_to_file(json_msg);
-    logger(0, "Ashwani: after <writeFile>");
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
@@ -2568,8 +2472,6 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     uint32_t json_msg_len;
 
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
-
-    logger(0, "ASHWANI serialize_and_send: %s", json_msg);
 
     char * converted_json_str = NULL;
     int createAlert = 0;
