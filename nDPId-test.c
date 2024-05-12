@@ -410,6 +410,7 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
 /*-----------------------------------------------------------------------------------------------------*/
 static void renameCurrentTempFile()
 {
+    logger(0, "ASHWANI: renameCurrentTempFile enter");
     serialization_fp = fopen(generated_tmp_json_files_events[currentFileIndex], "r");
     if (serialization_fp != NULL)
     {
@@ -443,6 +444,8 @@ static void renameCurrentTempFile()
             }
         }
     }
+
+     logger(0, "ASHWANI: renameCurrentTempFile enter");
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
