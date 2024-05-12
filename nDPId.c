@@ -2431,6 +2431,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     }
 
     write_to_file(json_msg);
+    return;
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
@@ -4489,8 +4490,6 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 
 static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
 {
-    logger(0, "Inside run_pcap_loop  %s  %s", generated_tmp_json_files_alert_input,  generated_tmp_json_files_event_input);
-
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
 
