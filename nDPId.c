@@ -2286,7 +2286,7 @@ int duplicate_data(const char * json_str, size_t json_msg_len)
 
     prev_message = json_str;
     prev_length = json_msg_len;
-    return -1;
+    return 0;
 }
 
 static write_to_file(const char * json_str, size_t json_msg_len)
