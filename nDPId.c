@@ -610,11 +610,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 /*--------------------------------------------------------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
-struct PreviousJsonMessage
-{
-    const char * json_msg;
-    size_t json_msg_len;
-};
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
@@ -2274,15 +2270,16 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 
 int duplicate_data(const char * json_str, size_t json_msg_len)
 {
-    static PreviousJsonMessage prev_message = {NULL, 0};
+    static const char * prev_message = NULL;
+    static size_t prev_length = 0;
 
-    if (prev_message.json_msg_len == json_msg_len && std::memcmp(prev_message.json_msg, json_msg, json_msg_len) == 0)
+    if (prev_length == json_msg_len && std::memcmp(prev_message, json_msg, json_msg_len) == 0)
     {       
         return;
     }
 
-    prev_message.json_msg = json_msg;
-    prev_message.json_msg_len = json_msg_len;
+    prev_message = json_str;
+    prev_length = json_msg_len;
 }
 
 static write_to_file(const char * json_str, size_t json_msg_len)
