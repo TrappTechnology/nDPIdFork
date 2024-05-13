@@ -2296,13 +2296,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         return;
     }
 
-    if (duplicate_data(json_str, json_msg_len)) 
-    {
-        logger(0, "Ashwani: duplicate message: %s", json_str);
-        return;
-    }
 
-     logger(0, "ASHWANI DATA LOGGED");
 
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
@@ -2312,6 +2306,15 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     if (converted_json_str != NULL)
     {
         int length = strlen(converted_json_str);
+        if (duplicate_data(converted_json_str, length))
+        {
+            logger(0, "Ashwani: duplicate message: %s", json_str);
+            return;
+        }
+
+        logger(0, "ASHWANI DATA LOGGED");
+
+       
 
         if (length != 0)
         {
