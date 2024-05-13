@@ -2281,11 +2281,12 @@ int duplicate_data(const char * json_str, size_t json_msg_len)
 
     if (prev_length == json_msg_len && memcmp(prev_message, json_str, json_msg_len) == 0)
     {       
-        return;
+        return 1;
     }
 
     prev_message = json_str;
     prev_length = json_msg_len;
+    return -1;
 }
 
 static write_to_file(const char * json_str, size_t json_msg_len)
