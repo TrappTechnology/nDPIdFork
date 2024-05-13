@@ -338,8 +338,11 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
                 logger(0, "fetch_files_to_process 6");
                
+                logger(0, "fetch_files_to_process A %d", strlen(alert_file_path));
                 char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 4);
+                logger(0, "fetch_files_to_process B %d", strlen(event_file_path));
                 char * tmp_event_file_path = malloc(strlen(event_file_path) + 4);
+                logger(0, "fetch_files_to_process C %d", strlen(event_file_path));
                 sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
                 sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
                 logger(0, "fetch_files_to_process 7");
