@@ -2274,7 +2274,7 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
 
 int duplicate_data(const char * json_str, size_t json_msg_len)
 {
-    static PreviousJsonMessage prev_message = {"", 0};
+    static PreviousJsonMessage prev_message = {NULL, 0};
 
     if (prev_message.json_msg_len == json_msg_len && std::memcmp(prev_message.json_msg, json_msg, json_msg_len) == 0)
     {       
