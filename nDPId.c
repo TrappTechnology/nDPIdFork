@@ -610,7 +610,12 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 /*--------------------------------------------------------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
-    /*--------------------------------------------------------------------------------------------------------------------*/
+struct PreviousJsonMessage
+{
+    const char * json_msg;
+    size_t json_msg_len;
+};
+/*--------------------------------------------------------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
 {
@@ -2267,10 +2272,32 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
-static write_to_file(const char * json_str)
+int duplicate_data(const char * json_str, size_t json_msg_len)
+{
+    static PreviousJsonMessage prev_message = {nullptr, 0};
+
+    // Check if the incoming JSON message is the same as the previous one
+    if (prev_message.json_msg != nullptr && prev_message.json_msg_len == json_msg_len &&
+        std::memcmp(prev_message.json_msg, json_msg, json_msg_len) == 0)
+    {
+       
+        return;
+    }
+
+    prev_message.json_msg = json_msg;
+    prev_message.json_msg_len = json_msg_len;
+}
+
+static write_to_file(const char * json_str, size_t json_msg_len)
 {
     if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
     {
+        return;
+    }
+
+    if (duplicate_data(json_str, json_msg_len)) 
+    {
+        logger(0, "Ashwani: duplicate message: %s", json_str)
         return;
     }
 
@@ -2402,8 +2429,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
     }
 
-    write_to_file(json_msg);
-    errno = 0;
+    write_to_file(json_msg, json_msg_len);
     ssize_t written;
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
