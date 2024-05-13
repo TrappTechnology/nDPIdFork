@@ -2273,7 +2273,7 @@ int duplicate_data(const char * json_str, size_t json_msg_len)
     static const char * prev_message = NULL;
     static size_t prev_length = 0;
 
-    if (prev_length == json_msg_len && memcmp(prev_message, json_msg, json_msg_len) == 0)
+    if (prev_length == json_msg_len && memcmp(prev_message, json_str, json_msg_len) == 0)
     {       
         return;
     }
