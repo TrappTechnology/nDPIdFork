@@ -2276,7 +2276,6 @@ int duplicate_data(const char * json_str, size_t json_msg_len)
 {
     static PreviousJsonMessage prev_message = {"", 0};
 
-    // Check if the incoming JSON message is the same as the previous one
     if (prev_message.json_msg_len == json_msg_len && std::memcmp(prev_message.json_msg, json_msg, json_msg_len) == 0)
     {       
         return;
