@@ -1984,7 +1984,7 @@ int main(int argc, char ** argv)
     fetch_files_to_process_and_set_default_options(argv[1]);
 
     currentFileIndex = 0;
-    for (currentFileIndex = 0; currentFileIndex < 1; currentFileIndex++)
+    for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
 
