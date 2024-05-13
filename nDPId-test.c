@@ -312,11 +312,14 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         { 
             char * filename = entry->d_name;        
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
-            {                
+            {             
+                logger(0, "fetch_files_to_process 1 %s", filename);
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
+                logger(0, "fetch_files_to_process 2");
                 sprintf(complete_path_of_pcap, "%s%s", pcap_files_folder_path, filename);
                 
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
+                logger(0, "fetch_files_to_process 3");
 
                 char * dot = strrchr(filename, '.');
                 if (dot != NULL)
@@ -324,23 +327,27 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     *dot = '\0'; // Replace the dot with the null terminator
                 }
 
+                logger(0, "fetch_files_to_process 4");
                 char * alert_file_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 6);
                 char * event_file_path = malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 6);
                 sprintf(alert_file_path, "%s/%s/%s.%s", current_directory, alerts_folder_name, filename, "json");
                 sprintf(event_file_path, "%s/%s/%s.%s", current_directory, events_folder_name, filename, "json");
-
+                logger(0, "fetch_files_to_process 5");
 
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
+                logger(0, "fetch_files_to_process 6");
                
                 char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 4);
                 char * tmp_event_file_path = malloc(strlen(event_file_path) + 4);
                 sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
                 sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
+                logger(0, "fetch_files_to_process 7");
                
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
                 number_of_valid_files_found++;
+                logger(0, "fetch_files_to_process 8");
             }
         }
     }
