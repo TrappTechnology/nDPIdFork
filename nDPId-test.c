@@ -2364,6 +2364,7 @@ int main(int argc, char ** argv)
         }
 
         renameCurrentTempFile();
+        remove(pcap_files[currentFileIndex]);
         free(pcap_files[currentFileIndex]);
         pcap_files[currentFileIndex] = NULL;
 
