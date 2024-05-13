@@ -288,7 +288,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 
     number_of_valid_files_found = 0;
 
-    logger(0, "fetch_files_to_process 1");
     // Open the directory
     if ((dir = opendir(pcap_files_folder_path)) == NULL)
     {
@@ -296,7 +295,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         exit(EXIT_FAILURE);
     }
 
-    logger(0, "fetch_files_to_process 2");
     // Get the current directory
     char* current_directory = getcwd(NULL, 0);
     if (current_directory == NULL)
@@ -307,18 +305,14 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 
     logger(0, "current_directory is %s", current_directory);
 
-    logger(0, "fetch_files_to_process 3");
     // Read directory entries
     while ((entry = readdir(dir)) != NULL)
     {
-        logger(0, "fetch_files_to_process 4");
         if (entry->d_type == DT_REG)
         { 
-            logger(0, "fetch_files_to_process 5");
             char * filename = entry->d_name;        
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
-                logger(0, "fetch_files_to_process 6");
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
                 sprintf(complete_path_of_pcap, "%s%s", pcap_files_folder_path, filename);
                 
@@ -335,8 +329,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 sprintf(alert_file_path, "%s/%s/%s.%s", current_directory, alerts_folder_name, filename, "json");
                 sprintf(event_file_path, "%s/%s/%s.%s", current_directory, events_folder_name, filename, "json");
 
-                logger(0, "fetch_files_to_process 7 alert file = %s", alert_file_path);
-                logger(0, "fetch_files_to_process 8 event file = %s", event_file_path);
 
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
@@ -349,6 +341,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
                 number_of_valid_files_found++;
+                free(complete_path_of_pcap);
             }
         }
     }
