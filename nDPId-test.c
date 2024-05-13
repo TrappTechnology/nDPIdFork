@@ -312,7 +312,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         { 
             char * filename = entry->d_name;        
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
-            {
+            {                
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
                 sprintf(complete_path_of_pcap, "%s%s", pcap_files_folder_path, filename);
                 
@@ -341,7 +341,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
                 number_of_valid_files_found++;
-                free(complete_path_of_pcap);
             }
         }
     }
