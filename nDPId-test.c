@@ -2396,6 +2396,10 @@ int main(int argc, char ** argv)
         remove(pcap_files[currentFileIndex]);
         free(pcap_files[currentFileIndex]);
         pcap_files[currentFileIndex] = NULL;
+        free(generated_tmp_json_files_events[currentFileIndex]);
+        free(generated_tmp_json_files_alerts[currentFileIndex]);
+        free(generated_json_files_events[currentFileIndex]);
+        free(generated_json_files_alerts[currentFileIndex]);
         logger(0, "ASHWANI after renameCurrentTempFile");
 
 #ifdef ENABLE_ZLIB
