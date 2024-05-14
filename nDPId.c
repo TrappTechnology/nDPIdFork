@@ -2307,6 +2307,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         {
             if (createAlert)
             {
+                logger(0, "ASHWANI creatin temp alert file %s", generated_tmp_json_files_alert);
                 serialization_fp = fopen(generated_tmp_json_files_alert, "a");
                 if (serialization_fp == NULL)
                 {
@@ -2326,6 +2327,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
             }
 
+             logger(0, "ASHWANI creatin temp event file %s", generated_tmp_json_files_event);
             serialization_fp = fopen(generated_tmp_json_files_event, "a");
             if (serialization_fp == NULL)
             {
