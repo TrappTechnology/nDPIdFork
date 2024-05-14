@@ -323,7 +323,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     closedir(dir);
                     exit(EXIT_FAILURE);
                 }
-                snprintf(complete_path_of_pcap, strlen(pcap_files_folder_path) + strlen(filename) + 2, "%s/%s", pcap_files_folder_path, filename);
+                snprintf(complete_path_of_pcap, strlen(pcap_files_folder_path) + strlen(filename) + 2, "%s%s", pcap_files_folder_path, filename);
 
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
 
@@ -335,8 +335,8 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 }
 
                 // Allocate and construct alert and event file paths
-                char * alert_file_path =  malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 6);
-                char * event_file_path =  malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 6);
+                char * alert_file_path =  malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
+                char * event_file_path =  malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 8);
                 if (alert_file_path == NULL || event_file_path == NULL)
                 {
                     logger(1, "Memory allocation failed");
@@ -348,8 +348,8 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     exit(EXIT_FAILURE);
                 }
 
-                snprintf(alert_file_path, strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 6, "%s/%s/%s.json", current_directory,   alerts_folder_name,  filename);
-                snprintf(event_file_path, strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 6,"%s/%s/%s.json", current_directory,events_folder_name, filename);
+                snprintf(alert_file_path, strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", current_directory,   alerts_folder_name,  filename);
+                snprintf(event_file_path, strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", current_directory,events_folder_name, filename);
 
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
