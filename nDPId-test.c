@@ -2390,10 +2390,13 @@ int main(int argc, char ** argv)
             return 1;
         }
 
+        logger(0, "ASHWANI before renameCurrentTempFile");
+
         renameCurrentTempFile();
         remove(pcap_files[currentFileIndex]);
         free(pcap_files[currentFileIndex]);
         pcap_files[currentFileIndex] = NULL;
+        logger(0, "ASHWANI after renameCurrentTempFile");
 
 #ifdef ENABLE_ZLIB
         if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
