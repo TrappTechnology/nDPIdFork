@@ -4,6 +4,7 @@ extern "C" {
 
 void ConvertnDPIDataFormat(char* jsonStr, char** converted_json_str, int* createAlert);
 void DeletenDPIRisk(char* jsonStr, char** converted_json_str);
+int CheckSRCIPField(const char * json_str);
 
 #ifdef __cplusplus
 }
