@@ -2333,11 +2333,42 @@ void free_messages()
     head = NULL;
 }
 
+int check_src_ip_field(const char * json_str)
+{
+    struct json_object * parsed_json;
+    struct json_object * src_ip;
+
+    // Parse the JSON string
+    parsed_json = json_tokener_parse(json_str);
+    if (parsed_json == NULL)
+    {
+        logger(1, "Error parsing JSON string\n");
+        return 0; // Parsing failed, assume src_ip is not present
+    }
+
+    // Check for the src_ip field
+    if (json_object_object_get_ex(parsed_json, "src_ip", &src_ip))
+    {
+        json_object_put(parsed_json); // Free the parsed JSON object
+        return 1;                     // src_ip field is present
+    }
+    else
+    {
+        json_object_put(parsed_json); // Free the parsed JSON object
+        return 0;                     // src_ip field is not present
+    }
+}
+
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
     if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
     {
         return;
+    }
+
+    if (check_src_ip_field(json_str) == 0) 
+    {
+        return; 
     }
 
     FILE* serialization_fp = NULL;
