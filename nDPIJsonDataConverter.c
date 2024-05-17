@@ -1206,5 +1206,28 @@ void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
 
 }
 
+int CheckSRCIPField(const char * json_str)
+{
+    // Parse the JSON string
+    json_object * parsed_json = json_tokener_parse(json_str);
+    if (parsed_json == NULL)
+    {
+        logger(1, "Error parsing JSON string\n");
+        return 0; // Parsing failed, assume src_ip is not present
+    }
+
+    // Check for the src_ip field
+    json_object * srcIpObject;
+    if (json_object_object_get_ex(parsed_json, "src_ip", &srcIpObject))
+    {
+        json_object_put(parsed_json); // Free the parsed JSON object
+        return 1;                     // src_ip field is present
+    }
+
+    json_object_put(parsed_json); // Free the parsed JSON object
+    return 0;                     // src_ip field is not present
+    
+}
+
 
 
