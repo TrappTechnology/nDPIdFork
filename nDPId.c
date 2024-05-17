@@ -877,7 +877,7 @@ static void ndpi_comp_scan_walker(void const * const A, ndpi_VISIT which, int de
                     {
                         logger(1,
                                "zLib compression failed for flow %llu with error code: %d",
-                               flow->flow_extended.hashval,
+                               flow->flow_extended.flow_id,
                                ret);
                     }
                     else
@@ -2183,7 +2183,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
-    ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->hashval);
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
                                  flow_state_name_table[flow_ext->flow_basic.state]);
@@ -2785,7 +2785,7 @@ static void jsonize_packet_event(struct nDPId_reader_thread * const reader_threa
 
     if (event == PACKET_EVENT_PAYLOAD_FLOW)
     {
-        ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->hashval);
+        ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
         ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                      "flow_packet_id",
                                      flow_ext->packets_processed[FD_SRC2DST] + flow_ext->packets_processed[FD_DST2SRC]);
@@ -2928,7 +2928,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             logger(1,
                    "[%8llu, %4llu] internal error / invalid function call",
                    workflow->packets_captured,
-                   flow_ext->hashval);
+                   flow_ext->flow_id);
             break;
     }
 
@@ -2969,7 +2969,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
             logger(1,
                    "[%8llu, %4llu] internal error / invalid function call",
                    workflow->packets_captured,
-                   flow->flow_extended.hashval);
+                   flow->flow_extended.flow_id);
             break;
 
         case FLOW_EVENT_NOT_DETECTED:
@@ -2982,7 +2982,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                 logger(1,
                        "[%8llu, %4llu] ndpi_dpi2json failed for not-detected/guessed flow",
                        workflow->packets_captured,
-                       flow->flow_extended.hashval);
+                       flow->flow_extended.flow_id);
             }
             break;
 
@@ -2996,7 +2996,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                 logger(1,
                        "[%8llu, %4llu] ndpi_dpi2json failed for detected/detection-update flow",
                        workflow->packets_captured,
-                       flow->flow_extended.hashval);
+                       flow->flow_extended.flow_id);
             }
             break;
     }
@@ -4207,7 +4207,7 @@ static void ndpi_process_packet(uint8_t * const args,
         }
 
         workflow->total_active_flows++;
-        flow_to_process->flow_extended.hashval = MT_GET_AND_ADD(global_flow_id, 1);
+        flow_to_process->flow_extended.flow_id = MT_GET_AND_ADD(global_flow_id, 1);
 
         if (alloc_detection_data(flow_to_process) != 0)
         {
@@ -4270,7 +4270,7 @@ static void ndpi_process_packet(uint8_t * const args,
                     workflow->current_compression_diff += flow_to_process->info.detection_data_compressed_size;
                     logger(1,
                            "zLib decompression failed for existing flow %llu with error code: %d",
-                           flow_to_process->flow_extended.hashval,
+                           flow_to_process->flow_extended.flow_id,
                            ret);
                     return;
                 }
@@ -4483,7 +4483,7 @@ static void ndpi_log_flow_walker(void const * const A, ndpi_VISIT which, int dep
                        "[%2zu][%4llu][last-seen: %13llu][last-update: %13llu][idle-time: %7llu][time-until-timeout: "
                        "%7llu]",
                        reader_thread->array_index,
-                       flow->flow_extended.hashval,
+                       flow->flow_extended.flow_id,
                        (unsigned long long int)last_seen,
                        (unsigned long long int)flow->flow_extended.last_flow_update,
                        (unsigned long long int)idle_time,
@@ -4503,7 +4503,7 @@ static void ndpi_log_flow_walker(void const * const A, ndpi_VISIT which, int dep
                        "[%2zu][%4llu][last-seen: %13llu][last-update: %13llu][idle-time: %7llu][time-until-timeout: "
                        "%7llu]",
                        reader_thread->array_index,
-                       flow->flow_extended.hashval,
+                       flow->flow_extended.flow_id,
                        (unsigned long long int)last_seen,
                        (unsigned long long int)flow->flow_extended.last_flow_update,
                        (unsigned long long int)idle_time,
