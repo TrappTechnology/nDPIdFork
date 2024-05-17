@@ -2392,6 +2392,7 @@ int main(int argc, char ** argv)
 
         logger(0, "ASHWANI before renameCurrentTempFile");
 
+        free_messages();
         renameCurrentTempFile();
         remove(pcap_files[currentFileIndex]);
         free(pcap_files[currentFileIndex]);

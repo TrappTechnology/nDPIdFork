@@ -877,7 +877,7 @@ static void ndpi_comp_scan_walker(void const * const A, ndpi_VISIT which, int de
                     {
                         logger(1,
                                "zLib compression failed for flow %llu with error code: %d",
-                               flow->flow_extended.flow_id,
+                               flow->flow_extended.hashval,
                                ret);
                     }
                     else
@@ -2183,7 +2183,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
-    ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->hashval);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
                                  flow_state_name_table[flow_ext->flow_basic.state]);
@@ -2268,19 +2268,69 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
+// Define a linked list node to store each unique message
+typedef struct MessageNode
+{
+    char * message;
+    size_t length;
+    struct MessageNode * next;
+} MessageNode;
+
+// Head of the linked list
+static MessageNode * head = NULL;
+
+// Function to check for duplicates and add new messages
 int duplicate_data(const char * json_str, size_t json_msg_len)
 {
-    static const char * prev_message = NULL;
-    static size_t prev_length = 0;
+    MessageNode * current = head;
 
-    if (prev_length == json_msg_len && memcmp(prev_message, json_str, json_msg_len) == 0)
-    {       
-        return 1;
+    // Check if the current message is a duplicate
+    while (current != NULL)
+    {
+        if (current->length == json_msg_len && memcmp(current->message, json_str, json_msg_len) == 0)
+        {
+            return 1; // Duplicate found
+        }
+        current = current->next;
     }
 
-    prev_message = json_str;
-    prev_length = json_msg_len;
-    return 0;
+    // If not a duplicate, add the new message to the linked list
+    MessageNode * new_node = (MessageNode *)malloc(sizeof(MessageNode));
+    if (new_node == NULL)
+    {
+        logger(1, "Failed to allocate memory for new node");
+        return 0;
+    }
+
+    new_node->message = (char *)malloc(json_msg_len);
+    if (new_node->message == NULL)
+    {
+        logger(1, "Failed to allocate memory for message");
+        free(new_node);
+        return 0;
+    }
+
+    memcpy(new_node->message, json_str, json_msg_len);
+    new_node->length = json_msg_len;
+    new_node->next = head;
+    head = new_node;
+
+    return 0; // No duplicate
+}
+
+// Function to free the linked list memory
+void free_messages()
+{
+    MessageNode * current = head;
+    while (current != NULL)
+    {
+        MessageNode * temp = current;
+        current = current->next;
+        free(temp->message);
+        free(temp);
+    }
+    head = NULL;
 }
 
 static write_to_file(const char * json_str, size_t json_msg_len)
@@ -2355,6 +2405,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     free(converted_json_str);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
 static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
@@ -2734,7 +2785,7 @@ static void jsonize_packet_event(struct nDPId_reader_thread * const reader_threa
 
     if (event == PACKET_EVENT_PAYLOAD_FLOW)
     {
-        ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
+        ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->hashval);
         ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                      "flow_packet_id",
                                      flow_ext->packets_processed[FD_SRC2DST] + flow_ext->packets_processed[FD_DST2SRC]);
@@ -2877,7 +2928,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             logger(1,
                    "[%8llu, %4llu] internal error / invalid function call",
                    workflow->packets_captured,
-                   flow_ext->flow_id);
+                   flow_ext->hashval);
             break;
     }
 
@@ -2918,7 +2969,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
             logger(1,
                    "[%8llu, %4llu] internal error / invalid function call",
                    workflow->packets_captured,
-                   flow->flow_extended.flow_id);
+                   flow->flow_extended.hashval);
             break;
 
         case FLOW_EVENT_NOT_DETECTED:
@@ -2931,7 +2982,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                 logger(1,
                        "[%8llu, %4llu] ndpi_dpi2json failed for not-detected/guessed flow",
                        workflow->packets_captured,
-                       flow->flow_extended.flow_id);
+                       flow->flow_extended.hashval);
             }
             break;
 
@@ -2945,7 +2996,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                 logger(1,
                        "[%8llu, %4llu] ndpi_dpi2json failed for detected/detection-update flow",
                        workflow->packets_captured,
-                       flow->flow_extended.flow_id);
+                       flow->flow_extended.hashval);
             }
             break;
     }
@@ -4156,7 +4207,7 @@ static void ndpi_process_packet(uint8_t * const args,
         }
 
         workflow->total_active_flows++;
-        flow_to_process->flow_extended.flow_id = MT_GET_AND_ADD(global_flow_id, 1);
+        flow_to_process->flow_extended.hashval = MT_GET_AND_ADD(global_flow_id, 1);
 
         if (alloc_detection_data(flow_to_process) != 0)
         {
@@ -4219,7 +4270,7 @@ static void ndpi_process_packet(uint8_t * const args,
                     workflow->current_compression_diff += flow_to_process->info.detection_data_compressed_size;
                     logger(1,
                            "zLib decompression failed for existing flow %llu with error code: %d",
-                           flow_to_process->flow_extended.flow_id,
+                           flow_to_process->flow_extended.hashval,
                            ret);
                     return;
                 }
@@ -4432,7 +4483,7 @@ static void ndpi_log_flow_walker(void const * const A, ndpi_VISIT which, int dep
                        "[%2zu][%4llu][last-seen: %13llu][last-update: %13llu][idle-time: %7llu][time-until-timeout: "
                        "%7llu]",
                        reader_thread->array_index,
-                       flow->flow_extended.flow_id,
+                       flow->flow_extended.hashval,
                        (unsigned long long int)last_seen,
                        (unsigned long long int)flow->flow_extended.last_flow_update,
                        (unsigned long long int)idle_time,
@@ -4452,7 +4503,7 @@ static void ndpi_log_flow_walker(void const * const A, ndpi_VISIT which, int dep
                        "[%2zu][%4llu][last-seen: %13llu][last-update: %13llu][idle-time: %7llu][time-until-timeout: "
                        "%7llu]",
                        reader_thread->array_index,
-                       flow->flow_extended.flow_id,
+                       flow->flow_extended.hashval,
                        (unsigned long long int)last_seen,
                        (unsigned long long int)flow->flow_extended.last_flow_update,
                        (unsigned long long int)idle_time,
