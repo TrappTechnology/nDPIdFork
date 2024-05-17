@@ -9,6 +9,7 @@
 #define TRUE 1
 #define FALSE 0
 #define bool int
+#define RANDOM_UNINTIALIZED_NUMBER_VALUE -84742891
 
 // Define the structure for ndpiData
 struct NDPI_Risk
@@ -280,9 +281,9 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
     result.confidence_value = NULL;
     result.proto_id = NULL;
     result.proto_by_ip = NULL;
-    result.proto_by_ip_id = -84742891;
-    result.encrypted = -84742891;
-    result.category_id = 84742891;
+    result.proto_by_ip_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.encrypted = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.category_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.category = NULL;
 
     // Parse JSON string
@@ -473,14 +474,14 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     result.l4_proto = NULL;
     result.proto = NULL;
     result.breed = NULL;
-    result.flow_id = -84742891;
+    result.flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.event_start = NULL;
     result.event_end = NULL;
     result.event_duration = NULL;
-    result.xfer.source.bytes = -84742891;
-    result.xfer.source.packets = -84742891;
-    result.xfer.destination.bytes = -84742891;
-    result.xfer.destination.packets = -84742891;
+    result.xfer.source.bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.xfer.source.packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.xfer.destination.bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.xfer.destination.packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.hostname = NULL;
 
     // Parse JSON string
@@ -776,17 +777,17 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
         json_object_object_add(ndpiObj, "proto_by_ip", json_object_new_string(ndpi->proto_by_ip) );
     }
 
-    if (ndpi->proto_by_ip_id != -84742891)
+    if (ndpi->proto_by_ip_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "proto_by_ip_id", json_object_new_int(ndpi->proto_by_ip_id));
     }
 
-    if (ndpi->encrypted != -84742891)
+    if (ndpi->encrypted != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "encrypted", json_object_new_int(ndpi->encrypted));
     }
 
-    if (ndpi->category_id != -84742891)
+    if (ndpi->category_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "category_id", json_object_new_int(ndpi->category_id));
     }
@@ -1110,7 +1111,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
 
     json_object* xfer_object = json_object_new_object();
     bool addXfer = FALSE;
-    if (rootDataStructure.xfer.source.packets != -84742891)
+    if (rootDataStructure.xfer.source.packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object* packets_object = json_object_new_object();
         json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.source.packets));
@@ -1119,7 +1120,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
         addXfer = TRUE;
     }
 
-    if (rootDataStructure.xfer.destination.packets != -84742891)
+    if (rootDataStructure.xfer.destination.packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object* packets_object = json_object_new_object();
         json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.destination.packets));
