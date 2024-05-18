@@ -615,13 +615,13 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object * flow_src_tot_l4_payload_len_object;
     if (json_object_object_get_ex(root, "flow_src_tot_l4_payload_len", &flow_src_tot_l4_payload_len_object))
     {
-        result.xfer.flow_src_tot_l4_payload_len = json_object_get_int(flow_src_tot_l4_payload_len);
+        result.xfer.flow_src_tot_l4_payload_len = json_object_get_int(flow_src_tot_l4_payload_len_object);
     }
 
     json_object * flow_dst_tot_l4_payload_len_object;
     if (json_object_object_get_ex(root, "flow_dst_tot_l4_payload_len", &flow_dst_tot_l4_payload_len_object))
     {
-        result.xfer.flow_dst_tot_l4_payload_len = json_object_get_int(flow_dst_tot_l4_payload_len);
+        result.xfer.flow_dst_tot_l4_payload_len = json_object_get_int(flow_dst_tot_l4_payload_len_object);
     }
 
     json_object_put(root);
