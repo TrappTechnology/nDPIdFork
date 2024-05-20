@@ -962,7 +962,7 @@ static void add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStruct
     char* nDPIJsonString = create_nDPI_Json_String(&nDPIStructure);
     if (nDPIJsonString == NULL)
     {
-        fprintf(stderr, "Error parsing new ndpi JSON\n");
+        fprintf(stderr, "create_nDPI_Json_String routine returned empty string: Error parsing new ndpi JSON\n");
         return;
     }
 
@@ -1091,7 +1091,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     }
 
     // Flow starts here
-    if (rootDataStructure.flow_id != NULL)
+    if (rootDataStructure.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object* flow_id_object = json_object_new_object();
         json_object_object_add(flow_id_object, "id", json_object_new_int(rootDataStructure.flow_id));
