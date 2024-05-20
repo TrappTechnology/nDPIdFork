@@ -2483,6 +2483,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     write_to_file(json_msg, json_msg_len);
     ssize_t written;
+
+    logger(0, "Ashwani Before <write>");
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
@@ -2549,6 +2551,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
             set_collector_nonblock(reader_thread);
         }
     }
+
+        logger(0, "Ashwani After <write>");
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
@@ -2557,11 +2561,6 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     uint32_t json_msg_len;
 
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
-
-    char * converted_json_str = NULL;
-    int createAlert = 0;
-    ConvertnDPIDataFormat(json_msg, &converted_json_str, &createAlert);
-    free(converted_json_str);
 
     if (json_msg == NULL || json_msg_len == 0)
     {
