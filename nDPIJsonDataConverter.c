@@ -1169,6 +1169,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
 
 void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int* createAlert)
 {
+    fprintf(stderr, "ConvertnDPIDataFormat: %s\n", originalJsonStr);
     struct NDPI_Data ndpiData = getnDPIStructure(originalJsonStr);
     *createAlert = ndpiData.flow_risk_count;
 
