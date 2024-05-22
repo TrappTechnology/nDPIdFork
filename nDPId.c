@@ -610,11 +610,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 /*--------------------------------------------------------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
-struct PreviousJsonMessage
-{
-    const char * json_msg;
-    size_t json_msg_len;
-};
+
 /*--------------------------------------------------------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
@@ -2300,18 +2296,71 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
+// Define a linked list node to store each unique message
+typedef struct MessageNode
+{
+    char * message;
+    size_t length;
+    struct MessageNode * next;
+} MessageNode;
+
+// Head of the linked list
+static MessageNode * head = NULL;
+
+// Function to check for duplicates and add new messages
 int duplicate_data(const char * json_str, size_t json_msg_len)
 {
-    static PreviousJsonMessage prev_message = {"", 0};
+    MessageNode * current = head;
 
-    if (prev_message.json_msg_len == json_msg_len && std::memcmp(prev_message.json_msg, json_msg, json_msg_len) == 0)
-    {       
-        return;
+    // Check if the current message is a duplicate
+    while (current != NULL)
+    {
+        if (current->length == json_msg_len && memcmp(current->message, json_str, json_msg_len) == 0)
+        {
+            return 1; // Duplicate found
+        }
+        current = current->next;
     }
 
-    prev_message.json_msg = json_msg;
-    prev_message.json_msg_len = json_msg_len;
+    // If not a duplicate, add the new message to the linked list
+    MessageNode * new_node = (MessageNode *)malloc(sizeof(MessageNode));
+    if (new_node == NULL)
+    {
+        logger(1, "Failed to allocate memory for new node");
+        return 0;
+    }
+
+    new_node->message = (char *)malloc(json_msg_len);
+    if (new_node->message == NULL)
+    {
+        logger(1, "Failed to allocate memory for message");
+        free(new_node);
+        return 0;
+    }
+
+    memcpy(new_node->message, json_str, json_msg_len);
+    new_node->length = json_msg_len;
+    new_node->next = head;
+    head = new_node;
+
+    return 0; // No duplicate
 }
+
+// Function to free the linked list memory
+void free_messages()
+{
+    MessageNode * current = head;
+    while (current != NULL)
+    {
+        MessageNode * temp = current;
+        current = current->next;
+        free(temp->message);
+        free(temp);
+    }
+    head = NULL;
+}
+
 
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
@@ -2320,10 +2369,11 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         return;
     }
 
-    if (duplicate_data(json_str, json_msg_len)) 
+    logger(0, "Ashwani 1 : % s", json_str);
+    if (CheckSRCIPField(json_str) == 0) 
     {
-        logger(0, "Ashwani: duplicate message: %s", json_str);
-        return;
+        logger(0, "Ashwani 2 : Returning");
+        return; 
     }
 
     FILE* serialization_fp = NULL;
@@ -2334,6 +2384,10 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     if (converted_json_str != NULL)
     {
         int length = strlen(converted_json_str);
+        if (duplicate_data(converted_json_str, length))
+        {
+            return;
+        }
 
         if (length != 0)
         {
@@ -2385,6 +2439,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     free(converted_json_str);
 }
 
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
 static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
@@ -2456,6 +2511,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     write_to_file(json_msg, json_msg_len);
     ssize_t written;
+
+    logger(0, "Ashwani Before <write>");
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
@@ -2522,6 +2579,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
             set_collector_nonblock(reader_thread);
         }
     }
+
+        logger(0, "Ashwani After <write>");
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
@@ -2530,11 +2589,6 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     uint32_t json_msg_len;
 
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
-
-    char * converted_json_str = NULL;
-    int createAlert = 0;
-    ConvertnDPIDataFormat(json_msg, &converted_json_str, &createAlert);
-    free(converted_json_str);
 
     if (json_msg == NULL || json_msg_len == 0)
     {

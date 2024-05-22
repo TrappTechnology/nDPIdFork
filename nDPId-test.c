@@ -288,7 +288,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 
     number_of_valid_files_found = 0;
 
-    logger(0, "fetch_files_to_process 1");
     // Open the directory
     if ((dir = opendir(pcap_files_folder_path)) == NULL)
     {
@@ -296,7 +295,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         exit(EXIT_FAILURE);
     }
 
-    logger(0, "fetch_files_to_process 2");
     // Get the current directory
     char* current_directory = getcwd(NULL, 0);
     if (current_directory == NULL)
@@ -307,47 +305,76 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 
     logger(0, "current_directory is %s", current_directory);
 
-    logger(0, "fetch_files_to_process 3");
     // Read directory entries
     while ((entry = readdir(dir)) != NULL)
     {
-        logger(0, "fetch_files_to_process 4");
         if (entry->d_type == DT_REG)
         { 
-            logger(0, "fetch_files_to_process 5");
-            char * filename = entry->d_name;        
+    
+            char * filename = entry->d_name;
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
-                logger(0, "fetch_files_to_process 6");
+                // Allocate and construct the complete path of pcap file
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
-                sprintf(complete_path_of_pcap, "%s%s", pcap_files_folder_path, filename);
-                
+                if (complete_path_of_pcap == NULL)
+                {
+                    logger(1, "Memory allocation failed");
+                    free(current_directory);
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
+                snprintf(complete_path_of_pcap, strlen(pcap_files_folder_path) + strlen(filename) + 2, "%s%s", pcap_files_folder_path, filename);
+
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
 
+                // Remove the file extension
                 char * dot = strrchr(filename, '.');
                 if (dot != NULL)
                 {
                     *dot = '\0'; // Replace the dot with the null terminator
                 }
 
-                char * alert_file_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 6);
-                char * event_file_path = malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 6);
-                sprintf(alert_file_path, "%s/%s/%s.%s", current_directory, alerts_folder_name, filename, "json");
-                sprintf(event_file_path, "%s/%s/%s.%s", current_directory, events_folder_name, filename, "json");
+                // Allocate and construct alert and event file paths
+                char * alert_file_path =  malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
+                char * event_file_path =  malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 8);
+                if (alert_file_path == NULL || event_file_path == NULL)
+                {
+                    logger(1, "Memory allocation failed");
+                    free(current_directory);
+                    free(complete_path_of_pcap);
+                    free(alert_file_path);
+                    free(event_file_path);
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
 
-                logger(0, "fetch_files_to_process 7 alert file = %s", alert_file_path);
-                logger(0, "fetch_files_to_process 8 event file = %s", event_file_path);
+                snprintf(alert_file_path, strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", current_directory,   alerts_folder_name,  filename);
+                snprintf(event_file_path, strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", current_directory,events_folder_name, filename);
 
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
-               
-                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 4);
-                char * tmp_event_file_path = malloc(strlen(event_file_path) + 4);
-                sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
-                sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
-               
+
+                // Allocate and construct temporary alert and event file paths
+                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
+                char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
+                if (tmp_alert_file_path == NULL || tmp_event_file_path == NULL)
+                {
+                    logger(1, "Memory allocation failed");
+                    free(current_directory);
+                    free(complete_path_of_pcap);
+                    free(alert_file_path);
+                    free(event_file_path);
+                    free(tmp_alert_file_path);
+                    free(tmp_event_file_path);
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
+                snprintf(tmp_alert_file_path, strlen(alert_file_path) + 5, "%s.tmp", alert_file_path);
+                snprintf(tmp_event_file_path, strlen(event_file_path) + 5, "%s.tmp", event_file_path);
+
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
+
                 number_of_valid_files_found++;
             }
         }
@@ -1957,7 +1984,7 @@ int main(int argc, char ** argv)
     fetch_files_to_process_and_set_default_options(argv[1]);
 
     currentFileIndex = 0;
-    for (currentFileIndex = 0; currentFileIndex < 1; currentFileIndex++)
+    for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
 
@@ -2363,9 +2390,18 @@ int main(int argc, char ** argv)
             return 1;
         }
 
+        logger(0, "ASHWANI before renameCurrentTempFile");
+
+        free_messages();
         renameCurrentTempFile();
+        remove(pcap_files[currentFileIndex]);
         free(pcap_files[currentFileIndex]);
         pcap_files[currentFileIndex] = NULL;
+        free(generated_tmp_json_files_events[currentFileIndex]);
+        free(generated_tmp_json_files_alerts[currentFileIndex]);
+        free(generated_json_files_events[currentFileIndex]);
+        free(generated_json_files_alerts[currentFileIndex]);
+        logger(0, "ASHWANI after renameCurrentTempFile");
 
 #ifdef ENABLE_ZLIB
         if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
