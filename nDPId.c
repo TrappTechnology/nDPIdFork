@@ -208,6 +208,7 @@ struct nDPId_flow_extended
     ;
 
     unsigned long long int packets_processed[FD_COUNT];
+    unsigned long long int bytes[FD_COUNT];
     uint64_t first_seen;
     uint64_t last_flow_update;
 
@@ -2193,6 +2194,12 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                  "flow_dst_packets_processed",
                                  flow_ext->packets_processed[FD_DST2SRC]);
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
+                                 "src2dst_bytes",
+                                 flow_ext->bytes[FD_SRC2DST]);
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
+                                 "dst2src_bytes",
+                                 flow_ext->bytes[FD_DST2SRC]);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_first_seen", flow_ext->first_seen);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                  "flow_src_last_pkt_time",
@@ -4285,6 +4292,8 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     flow_to_process->flow_extended.packets_processed[direction]++;
+    flow_to_process->flow_extended.bytes[direction] = flow_to_process->flow_extended.bytes[direction] + header->caplen;
+    
     flow_to_process->flow_extended.total_l4_payload_len[direction] += l4_payload_len;
     workflow->packets_processed++;
     workflow->total_l4_payload_len += l4_payload_len;
