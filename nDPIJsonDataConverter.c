@@ -606,10 +606,22 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
         result.xfer.source.packets = json_object_get_int(flow_src_packets_processed_object);
     }
 
+    json_object * src2dst_bytes_object;
+    if (json_object_object_get_ex(root, "src2dst_bytes", &src2dst_bytes_object))
+    {
+        result.xfer.source.bytes = json_object_get_int(src2dst_bytes_object);
+    }
+
     json_object * flow_dst_packets_processed_object;
     if (json_object_object_get_ex(root, "flow_dst_packets_processed", &flow_dst_packets_processed_object))
     {
         result.xfer.destination.packets = json_object_get_int(flow_dst_packets_processed_object);
+    }
+
+    json_object * dst2src_bytes_object;
+    if (json_object_object_get_ex(root, "dst2src_bytes", &dst2src_bytes_object))
+    {
+        result.xfer.destination.bytes = json_object_get_int(dst2src_bytes_object);
     }
 
     json_object * flow_src_tot_l4_payload_len_object;
