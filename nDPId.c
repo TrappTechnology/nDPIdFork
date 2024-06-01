@@ -2489,8 +2489,6 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     write_to_file(json_msg, json_msg_len);
     ssize_t written;
 
-    return;
-
     logger(0, "ASHWANI: Before call to write");
 
     if (reader_thread->collector_sock_last_errno == 0 &&

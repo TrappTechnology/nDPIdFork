@@ -2013,26 +2013,26 @@ int main(int argc, char ** argv)
 
         pthread_t nDPIsrvd_thread;
         struct thread_return_value nDPIsrvd_return = {};
-        if (pthread_create(&nDPIsrvd_thread, NULL, nDPIsrvd_mainloop_thread, &nDPIsrvd_return) != 0)
-        {
-            continue;
-        }
+        //if (pthread_create(&nDPIsrvd_thread, NULL, nDPIsrvd_mainloop_thread, &nDPIsrvd_return) != 0)
+        //{
+        //    continue;
+        //}
 
         pthread_t distributor_thread;
         struct distributor_return_value distributor_return = {};
-        if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
-        {
-            continue;
-        }
+        //if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
+        //{
+        //    continue;
+        //}
 
         /* Try to gracefully shutdown all threads. */
-        while (thread_wait_for_termination(distributor_thread, 1, &distributor_return.thread_return_value) == 0)
-        {
-            if (THREADS_RETURNED_ERROR() != 0)
-            {
-                break;
-            }
-        }
+        //while (thread_wait_for_termination(distributor_thread, 1, &distributor_return.thread_return_value) == 0)
+        //{
+        //    if (THREADS_RETURNED_ERROR() != 0)
+        //    {
+        //        break;
+        //    }
+        //}
 
 
         while (thread_wait_for_termination(nDPId_thread, 1, &nDPId_return.thread_return_value) == 0)
@@ -2043,13 +2043,13 @@ int main(int argc, char ** argv)
             }
         }
 
-        while (thread_wait_for_termination(nDPIsrvd_thread, 1, &nDPIsrvd_return) == 0)
-        {
-            if (THREADS_RETURNED_ERROR() != 0)
-            {
-                break;
-            }
-        }
+        //while (thread_wait_for_termination(nDPIsrvd_thread, 1, &nDPIsrvd_return) == 0)
+        //{
+        //    if (THREADS_RETURNED_ERROR() != 0)
+        //    {
+        //        break;
+        //    }
+        //}
 
         logger(0, "%s", "All worker threads terminated..");
 
