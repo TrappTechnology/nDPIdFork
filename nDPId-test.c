@@ -2020,19 +2020,19 @@ int main(int argc, char ** argv)
 
         pthread_t distributor_thread;
         struct distributor_return_value distributor_return = {};
-        //if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
-        //{
-        //    continue;
-        //}
+        if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
+        {
+            continue;
+        }
 
         /* Try to gracefully shutdown all threads. */
-        //while (thread_wait_for_termination(distributor_thread, 1, &distributor_return.thread_return_value) == 0)
-        //{
-        //    if (THREADS_RETURNED_ERROR() != 0)
-        //    {
-        //        break;
-        //    }
-        //}
+        while (thread_wait_for_termination(distributor_thread, 1, &distributor_return.thread_return_value) == 0)
+        {
+            if (THREADS_RETURNED_ERROR() != 0)
+            {
+                break;
+            }
+        }
 
 
         while (thread_wait_for_termination(nDPId_thread, 1, &nDPId_return.thread_return_value) == 0)
