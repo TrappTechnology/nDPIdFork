@@ -2348,10 +2348,8 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         return;
     }
 
-    logger(0, "Ashwani 1 : % s", json_str);
     if (CheckSRCIPField(json_str) == 0) 
     {
-        logger(0, "Ashwani 2 : Returning");
         return; 
     }
 
@@ -2491,12 +2489,11 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     write_to_file(json_msg, json_msg_len);
     ssize_t written;
 
-    logger(0, "Ashwani Before <write>");
+    logger(0, "ASHWANI: Before call to write");
+
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
-        logger(0, "************\n***********\n***********");
-        logger(0, "Ashwani AAA");
         saved_errno = errno;
         if (saved_errno == EPIPE || written == 0)
         {
@@ -2520,13 +2517,11 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
         else if (collector_address.raw.sa_family == AF_UNIX)
         {
-            logger(0, "Ashwani 1");
             size_t pos = (written < 0 ? 0 : written);
             set_collector_block(reader_thread);
             while ((size_t)(written = write(reader_thread->collector_sockfd, newline_json_msg + pos, s_ret - pos)) !=
                    s_ret - pos)
             {
-                logger(0, "Ashwani 2");
                 saved_errno = errno;
                 if (saved_errno == EPIPE || written == 0)
                 {
@@ -2551,15 +2546,13 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                 else
                 {
                     pos += written;
-                    logger(0, "Ashwani 3");
                 }
             }
-            logger(0, "Ashwani 4");
             set_collector_nonblock(reader_thread);
         }
     }
 
-        logger(0, "Ashwani After <write>");
+      logger(0, "ASHWANI: After call to write");
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
@@ -2567,6 +2560,7 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     char * json_msg;
     uint32_t json_msg_len;
 
+    logger(0, "ASHWANI: serialize_and_send() START");
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
 
     if (json_msg == NULL || json_msg_len == 0)
@@ -2582,7 +2576,11 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
         reader_thread->workflow->total_events_serialized++;
         send_to_collector(reader_thread, json_msg, json_msg_len);
     }
+
+    logger(0, "ASHWANI: serialize_and_send() END A");
     ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
+    logger(0, "ASHWANI: serialize_and_send() END B");
+
 }
 
 /* Slightly modified code from: https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64 */
