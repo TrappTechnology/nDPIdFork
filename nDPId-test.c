@@ -1189,10 +1189,11 @@ static enum nDPIsrvd_callback_return distributor_json_printer(struct nDPIsrvd_so
         }
     }
 
-    printf("%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "llu%.*s",
-           sock->buffer.json_message_length - NETWORK_BUFFER_LENGTH_DIGITS,
-           nDPIsrvd_json_buffer_length(sock),
-           nDPIsrvd_json_buffer_string(sock));
+    // Ashwani: This prevents the output to stdout
+    //printf("%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "llu%.*s",
+    //       sock->buffer.json_message_length - NETWORK_BUFFER_LENGTH_DIGITS,
+    //       nDPIsrvd_json_buffer_length(sock),
+    //       nDPIsrvd_json_buffer_string(sock));
 
     logger(0, "distributor_json_printer END");
     return CALLBACK_OK;
