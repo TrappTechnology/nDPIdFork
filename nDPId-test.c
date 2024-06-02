@@ -2400,8 +2400,6 @@ int main(int argc, char ** argv)
             return 1;
         }
 
-        logger(0, "ASHWANI before renameCurrentTempFile");
-
         free_messages();
         renameCurrentTempFile();
         remove(pcap_files[currentFileIndex]);
@@ -2411,7 +2409,6 @@ int main(int argc, char ** argv)
         free(generated_tmp_json_files_alerts[currentFileIndex]);
         free(generated_json_files_events[currentFileIndex]);
         free(generated_json_files_alerts[currentFileIndex]);
-        logger(0, "ASHWANI after renameCurrentTempFile");
 
 #ifdef ENABLE_ZLIB
         if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
