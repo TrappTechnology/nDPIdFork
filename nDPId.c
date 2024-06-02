@@ -2493,66 +2493,66 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     write(reader_thread->collector_sockfd, "", 0);
 
-    if (reader_thread->collector_sock_last_errno == 0 &&
-        (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
-    {
-        saved_errno = errno;
-        if (saved_errno == EPIPE || written == 0)
-        {
-            logger(1,
-                   "[%8llu, %zu] Lost connection to nDPIsrvd Collector",
-                   workflow->packets_captured,
-                   reader_thread->array_index);
-        }
-        if (saved_errno != EAGAIN)
-        {
-            if (saved_errno == ECONNREFUSED)
-            {
-                logger(1,
-                       "[%8llu, %zu] %s to %s refused by endpoint",
-                       workflow->packets_captured,
-                       reader_thread->array_index,
-                       (collector_address.raw.sa_family == AF_UNIX ? "Connection" : "Datagram"),
-                       get_cmdarg(&nDPId_options.collector_address));
-            }
-            reader_thread->collector_sock_last_errno = saved_errno;
-        }
-        else if (collector_address.raw.sa_family == AF_UNIX)
-        {
-            size_t pos = (written < 0 ? 0 : written);
-            set_collector_block(reader_thread);
-            while ((size_t)(written = write(reader_thread->collector_sockfd, newline_json_msg + pos, s_ret - pos)) !=
-                   s_ret - pos)
-            {
-                saved_errno = errno;
-                if (saved_errno == EPIPE || written == 0)
-                {
-                    logger(1,
-                           "[%8llu, %zu] Lost connection to nDPIsrvd Collector",
-                           workflow->packets_captured,
-                           reader_thread->array_index);
-                    reader_thread->collector_sock_last_errno = saved_errno;
-                    break;
-                }
-                else if (written < 0)
-                {
-                    logger(1,
-                           "[%8llu, %zu] Send data (blocking I/O) to nDPIsrvd Collector at %s failed: %s",
-                           workflow->packets_captured,
-                           reader_thread->array_index,
-                           get_cmdarg(&nDPId_options.collector_address),
-                           strerror(saved_errno));
-                    reader_thread->collector_sock_last_errno = saved_errno;
-                    break;
-                }
-                else
-                {
-                    pos += written;
-                }
-            }
-            set_collector_nonblock(reader_thread);
-        }
-    }
+    //if (reader_thread->collector_sock_last_errno == 0 &&
+    //    (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
+    //{
+    //    saved_errno = errno;
+    //    if (saved_errno == EPIPE || written == 0)
+    //    {
+    //        logger(1,
+    //               "[%8llu, %zu] Lost connection to nDPIsrvd Collector",
+    //               workflow->packets_captured,
+    //               reader_thread->array_index);
+    //    }
+    //    if (saved_errno != EAGAIN)
+    //    {
+    //        if (saved_errno == ECONNREFUSED)
+    //        {
+    //            logger(1,
+    //                   "[%8llu, %zu] %s to %s refused by endpoint",
+    //                   workflow->packets_captured,
+    //                   reader_thread->array_index,
+    //                   (collector_address.raw.sa_family == AF_UNIX ? "Connection" : "Datagram"),
+    //                   get_cmdarg(&nDPId_options.collector_address));
+    //        }
+    //        reader_thread->collector_sock_last_errno = saved_errno;
+    //    }
+    //    else if (collector_address.raw.sa_family == AF_UNIX)
+    //    {
+    //        size_t pos = (written < 0 ? 0 : written);
+    //        set_collector_block(reader_thread);
+    //        while ((size_t)(written = write(reader_thread->collector_sockfd, newline_json_msg + pos, s_ret - pos)) !=
+    //               s_ret - pos)
+    //        {
+    //            saved_errno = errno;
+    //            if (saved_errno == EPIPE || written == 0)
+    //            {
+    //                logger(1,
+    //                       "[%8llu, %zu] Lost connection to nDPIsrvd Collector",
+    //                       workflow->packets_captured,
+    //                       reader_thread->array_index);
+    //                reader_thread->collector_sock_last_errno = saved_errno;
+    //                break;
+    //            }
+    //            else if (written < 0)
+    //            {
+    //                logger(1,
+    //                       "[%8llu, %zu] Send data (blocking I/O) to nDPIsrvd Collector at %s failed: %s",
+    //                       workflow->packets_captured,
+    //                       reader_thread->array_index,
+    //                       get_cmdarg(&nDPId_options.collector_address),
+    //                       strerror(saved_errno));
+    //                reader_thread->collector_sock_last_errno = saved_errno;
+    //                break;
+    //            }
+    //            else
+    //            {
+    //                pos += written;
+    //            }
+    //        }
+    //        set_collector_nonblock(reader_thread);
+    //    }
+    //}
 
    logger(0, "ASHWANI: After call to write");
 }
