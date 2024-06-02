@@ -815,7 +815,6 @@ static enum nDPIsrvd_callback_return distributor_json_callback(struct nDPIsrvd_s
                                                                struct nDPIsrvd_thread_data * const thread_data,
                                                                struct nDPIsrvd_flow * const flow)
 {
-    logger(0, "distributor_json_callback START");
     struct distributor_global_user_data * const global_stats =
         (struct distributor_global_user_data *)sock->global_user_data;
     struct distributor_instance_user_data * instance_stats =
@@ -1049,7 +1048,6 @@ static enum nDPIsrvd_callback_return distributor_json_callback(struct nDPIsrvd_s
             }
         }
     }
-    logger(0, "distributor_json_callback END");
     return CALLBACK_OK;
 callback_error:
     logger(1, "%s", "Distributor error..");
@@ -1060,7 +1058,6 @@ static void distributor_instance_cleanup_callback(struct nDPIsrvd_socket * const
                                                   struct nDPIsrvd_instance * const instance,
                                                   enum nDPIsrvd_cleanup_reason reason)
 {
-    logger(0, "distributor_instance_cleanup_callback START");
     struct distributor_global_user_data * const global_stats =
         (struct distributor_global_user_data *)sock->global_user_data;
     struct nDPIsrvd_thread_data * current_thread_data;
@@ -1083,8 +1080,6 @@ static void distributor_instance_cleanup_callback(struct nDPIsrvd_socket * const
         global_stats->thread_user_data.flow_idle_count += tud->flow_idle_count;
     }
     global_stats->instance_user_data = *(struct distributor_instance_user_data *)instance->instance_user_data;
-
-    logger(0, "distributor_instance_cleanup_callback END");
 }
 
 static void distributor_flow_cleanup_callback(struct nDPIsrvd_socket * const sock,
@@ -1093,7 +1088,6 @@ static void distributor_flow_cleanup_callback(struct nDPIsrvd_socket * const soc
                                               struct nDPIsrvd_flow * const flow,
                                               enum nDPIsrvd_cleanup_reason reason)
 {
-    logger(0, "distributor_flow_cleanup_callback START");
     struct distributor_global_user_data * const global_stats =
         (struct distributor_global_user_data *)sock->global_user_data;
     struct distributor_flow_user_data * const flow_stats = (struct distributor_flow_user_data *)flow->flow_user_data;
@@ -1153,8 +1147,6 @@ static void distributor_flow_cleanup_callback(struct nDPIsrvd_socket * const soc
         global_stats->total_l4_payload_len += flow_stats->flow_total_l4_data_len;
         global_stats->cur_idle_flows--;
     }
-
-    logger(0, "distributor_flow_cleanup_callback END");
 }
 
 static enum nDPIsrvd_callback_return distributor_json_mock_buff_callback(
@@ -1174,7 +1166,6 @@ static enum nDPIsrvd_callback_return distributor_json_printer(struct nDPIsrvd_so
     (void)instance;
     (void)thread_data;
     (void)flow;
-    logger(0, "distributor_json_printer START");
     {
         struct nDPIsrvd_json_token const * const daemon_event_name = TOKEN_GET_SZ(sock, "daemon_event_name");
 
@@ -1195,7 +1186,6 @@ static enum nDPIsrvd_callback_return distributor_json_printer(struct nDPIsrvd_so
     //       nDPIsrvd_json_buffer_length(sock),
     //       nDPIsrvd_json_buffer_string(sock));
 
-    logger(0, "distributor_json_printer END");
     return CALLBACK_OK;
 }
 
