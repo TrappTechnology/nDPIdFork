@@ -2489,8 +2489,6 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     write_to_file(json_msg, json_msg_len);
     ssize_t written;
 
-    logger(0, "ASHWANI: Before call to write");
-
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
@@ -2551,8 +2549,6 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
             set_collector_nonblock(reader_thread);
         }
     }
-
-   logger(0, "ASHWANI: After call to write");
 }
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
@@ -2560,7 +2556,6 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     char * json_msg;
     uint32_t json_msg_len;
 
-    logger(0, "ASHWANI: serialize_and_send() START");
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
 
     if (json_msg == NULL || json_msg_len == 0)
@@ -2577,10 +2572,7 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
         send_to_collector(reader_thread, json_msg, json_msg_len);
     }
 
-    logger(0, "ASHWANI: serialize_and_send() END A");
     ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
-    logger(0, "ASHWANI: serialize_and_send() END B");
-
 }
 
 /* Slightly modified code from: https://en.wikibooks.org/wiki/Algorithm_Implementation/Miscellaneous/Base64 */
