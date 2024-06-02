@@ -2491,8 +2491,10 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     logger(0, "ASHWANI: Before call to write");
 
+    write(reader_thread->collector_sockfd, "", 0);
+
     if (reader_thread->collector_sock_last_errno == 0 &&
-        (written = write(reader_thread->collector_sockfd, "", 0)) != s_ret)
+        (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
         saved_errno = errno;
         if (saved_errno == EPIPE || written == 0)
