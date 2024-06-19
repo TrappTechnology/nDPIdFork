@@ -1986,6 +1986,9 @@ int main(int argc, char ** argv)
     currentFileIndex = 0;
     for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
+        FlowMap flow_map;
+        init_flow_map(&flow_map, 10);
+
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
 
         if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
@@ -2399,6 +2402,9 @@ int main(int argc, char ** argv)
         free(generated_tmp_json_files_alerts[currentFileIndex]);
         free(generated_json_files_events[currentFileIndex]);
         free(generated_json_files_alerts[currentFileIndex]);
+
+        // Free the FlowMap
+        free_flow_map(&flow_map);
 
 #ifdef ENABLE_ZLIB
         if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))

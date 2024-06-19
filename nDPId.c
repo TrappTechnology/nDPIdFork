@@ -608,11 +608,55 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                                          struct nDPId_flow * const flow,
                                          enum flow_event event);
 
-/*--------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------Ashwani added code starts here------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
 
-/*--------------------------------------------------------------------------------------------------------------------*/
+// Define a structure to hold the flow id and JSON string
+typedef struct
+{
+    int flow_id;
+    char * json_str;
+} FlowEntry;
+
+// Define a structure to manage the dynamic array of FlowEntry
+typedef struct
+{
+    FlowEntry * entries;
+    size_t size;
+    size_t capacity;
+} FlowMap;
+
+// Initialize the FlowMap
+void init_flow_map(FlowMap * map, size_t initial_capacity)
+{
+    map->entries = malloc(initial_capacity * sizeof(FlowEntry));
+    map->size = 0;
+    map->capacity = initial_capacity;
+}
+
+// Free the FlowMap
+void free_flow_map(FlowMap * map)
+{
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        free(map->entries[i].json_str);
+    }
+    free(map->entries);
+}
+
+// Ensure capacity of the FlowMap
+void ensure_capacity(FlowMap * map)
+{
+    if (map->size >= map->capacity)
+    {
+        map->capacity *= 2;
+        map->entries = realloc(map->entries, map->capacity * sizeof(FlowEntry));
+    }
+}
+
+
+/*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
 {
