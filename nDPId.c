@@ -655,6 +655,28 @@ void ensure_capacity(FlowMap * map)
     }
 }
 
+// Add or update an entry in the FlowMap
+void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str)
+{
+    // Check if the flow_id already exists
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        if (map->entries[i].flow_id == flow_id)
+        {
+            // Update existing entry
+            free(map->entries[i].json_str);
+            map->entries[i].json_str = strdup(json_str);
+            return;
+        }
+    }
+
+    // Add new entry
+    ensure_capacity(map);
+    map->entries[map->size].flow_id = flow_id;
+    map->entries[map->size].json_str = strdup(json_str);
+    map->size++;
+}
+
 
 /*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
 
@@ -2387,6 +2409,7 @@ void free_messages()
 
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
+    logger(0, "write_to_file");
     if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
     {
         return;
@@ -4583,6 +4606,7 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 
 static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
 {
+    logger(0, "run_pcap_loop start");
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
 
@@ -4774,6 +4798,8 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
             nio_free(&io);
         }
     }
+
+     logger(0, "run_pcap_loop end");
 }
 
 static void break_pcap_loop(struct nDPId_reader_thread * const reader_thread)
