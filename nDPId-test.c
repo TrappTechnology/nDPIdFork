@@ -815,6 +815,7 @@ static enum nDPIsrvd_callback_return distributor_json_callback(struct nDPIsrvd_s
                                                                struct nDPIsrvd_thread_data * const thread_data,
                                                                struct nDPIsrvd_flow * const flow)
 {
+    logger(0, "Ashwani: distributor_json_callback");
     struct distributor_global_user_data * const global_stats =
         (struct distributor_global_user_data *)sock->global_user_data;
     struct distributor_instance_user_data * instance_stats =
@@ -1594,8 +1595,9 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
-   
+    logger(0, "Ashwani Kumar: before <run_pcap_loop>");
     run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+    logger(0, "Ashwani Kumar: after <run_pcap_loop>");
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
