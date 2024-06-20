@@ -4614,8 +4614,10 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
     {
         if (reader_thread->workflow->is_pcap_file != 0)
         {
+            logger(0, "Ashwani: before pcap_loop");
             switch (pcap_loop(reader_thread->workflow->pcap_handle, -1, &ndpi_process_packet, (uint8_t *)reader_thread))
             {
+                logger(0, "Ashwani: Inside Switch");
                 case PCAP_ERROR:
                     logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
                     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
@@ -4769,8 +4771,9 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
                     }
                     else
 #endif
-                        if (fd == pcap_fd)
+                    if (fd == pcap_fd)
                     {
+                        logger(0, "Ashwani: fd == pcap_fd");
                         switch (pcap_dispatch(
                             reader_thread->workflow->pcap_handle, -1, ndpi_process_packet, (uint8_t *)reader_thread))
                         {
@@ -4795,6 +4798,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
                 }
             }
 
+            logger(0, "before nio_free call");
             nio_free(&io);
         }
     }
