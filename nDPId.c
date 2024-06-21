@@ -600,7 +600,7 @@ static char * const subopt_token[] = {[MAX_FLOWS_PER_THREAD] = "max-flows-per-th
 static void sighandler(int signum);
 static WARN_UNUSED int processing_threads_error_or_eof(void);
 static void free_workflow(struct nDPId_workflow ** const workflow);
-static void serialize_and_send(struct nDPId_reader_thread * const reader_thread);
+static void serialize_and_send(unsigned long long int flow_id, struct nDPId_reader_thread * const reader_thread);
 static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                                struct nDPId_flow_extended * const flow_ext,
                                enum flow_event event);
@@ -611,6 +611,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 /*--------------------------------------------------Ashwani added code starts here------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
+
 
 // Define a structure to hold the flow id and JSON string
 typedef struct
@@ -677,6 +678,31 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str)
     map->size++;
 }
 
+void write_flow_map_to_json(FlowMap * map, const char * filename)
+{
+    FILE * fp = fopen(filename, "w");
+    if (!fp)
+    {
+        perror("Unable to open output file");
+        return;
+    }
+
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        fputs(map->entries[i].json_str, fp);
+        fputs("\n", fp); // Add newline for each JSON object for readability
+    }
+
+    fclose(fp);
+}
+
+
+static FlowMap * flow_map_ref = NULL;
+
+void write_flow_map_file(const char * filename)
+{
+    write_flow_map_to_json(flow_map_ref, filename);
+}
 
 /*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
 
@@ -2245,7 +2271,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
     }
 
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "global_ts_usec", workflow->last_global_time);
-    serialize_and_send(reader_thread);
+    serialize_and_send(flow_ext->flow_id, reader_thread);
 }
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
@@ -2406,14 +2432,87 @@ void free_messages()
     head = NULL;
 }
 
+//static write_to_file(unsigned long long int flow_id, const char * json_str, size_t json_msg_len)
+//{
+//    logger(0, "write_to_file");
+//    if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL)
+//    {
+//        return;
+//    }
+//
+//    if (CheckSRCIPField(json_str) == 0)
+//    {
+//        return;
+//    }
+//
+//    FILE * serialization_fp = NULL;
+//    char * converted_json_str = NULL;
+//    int createAlert = 0;
+//    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
+//
+//    if (converted_json_str != NULL)
+//    {
+//        int length = strlen(converted_json_str);
+//        if (duplicate_data(converted_json_str, length))
+//        {
+//            return;
+//        }
+//
+//        if (length != 0)
+//        {
+//            if (createAlert)
+//            {
+//                serialization_fp = fopen(generated_tmp_json_files_alert, "a");
+//                if (serialization_fp == NULL)
+//                {
+//                    logger(2, "Unable to create file %s: %s\n", generated_tmp_json_files_alert, strerror(errno));
+//                }
+//                else
+//                {
+//                    int length = strlen(converted_json_str);
+//                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+//                    fclose(serialization_fp);
+//                }
+//            }
+//
+//            char * converted_json_str_no_risk = NULL;
+//            if (createAlert)
+//            {
+//                DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
+//            }
+//
+//            serialization_fp = fopen(generated_tmp_json_files_event, "a");
+//            if (serialization_fp == NULL)
+//            {
+//                logger(0, "Unable to create file %s: %s\n", generated_tmp_json_files_event, strerror(errno));
+//            }
+//            else
+//            {
+//                if (createAlert)
+//                {
+//                    int length = strlen(converted_json_str_no_risk);
+//                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str_no_risk);
+//                }
+//                else
+//                {
+//                    int length = strlen(converted_json_str);
+//                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+//                }
+//                fclose(serialization_fp);
+//            }
+//
+//            free(converted_json_str_no_risk);
+//        }
+//    }
+//
+//    free(converted_json_str);
+//}
 
-static write_to_file(const char * json_str, size_t json_msg_len)
+
+
+static write_to_file(unsigned long long int flow_id, const char * json_str, size_t json_msg_len)
 {
-    logger(0, "write_to_file");
-    if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
-    {
-        return;
-    }
+    logger(0, "write_to_file start");
 
     if (CheckSRCIPField(json_str) == 0) 
     {
@@ -2437,54 +2536,43 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         {
             if (createAlert)
             {
-                serialization_fp = fopen(generated_tmp_json_files_alert, "a");
-                if (serialization_fp == NULL)
-                {
-                    logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_alert,  strerror(errno));
-                }
-                else
-                {
-                    int length = strlen(converted_json_str);
-                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
-                    fclose(serialization_fp);
-                }
+                //serialization_fp = fopen(generated_tmp_json_files_alert, "a");
+                //if (serialization_fp == NULL)
+                //{
+                //    logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_alert,  strerror(errno));
+                //}
+                //else
+                //{
+                //    int length = strlen(converted_json_str);
+                //    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+                //    fclose(serialization_fp);
+                //}
             }
 
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-            }
-
-            serialization_fp = fopen(generated_tmp_json_files_event, "a");
-            if (serialization_fp == NULL)
-            {
-                logger(0, "Unable to create file %s: %s\n",  generated_tmp_json_files_event,  strerror(errno));
+                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk);
             }
             else
-            {
-                if (createAlert)
-                {
-                    int length = strlen(converted_json_str_no_risk);
-                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str_no_risk);
-                }
-                else
-                {
-                    int length = strlen(converted_json_str);
-                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
-                }
-                fclose(serialization_fp);
-            }
-
+             {
+                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str);                  
+             }
+                
             free(converted_json_str_no_risk);
         }
     }
 
+   
     free(converted_json_str);
+
+    logger(0, "write_to_file end");
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
-static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
+static void send_to_collector(unsigned long long int flow_id,
+                              struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
@@ -2553,7 +2641,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
     }
 
-    write_to_file(json_msg, json_msg_len);
+    write_to_file(flow_id, json_msg, json_msg_len);
     ssize_t written;
 
     if (reader_thread->collector_sock_last_errno == 0 &&
@@ -2618,7 +2706,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
     }
 }
 
-static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
+static void serialize_and_send(unsigned long long int flow_id, struct nDPId_reader_thread * const reader_thread)
 {
     char * json_msg;
     uint32_t json_msg_len;
@@ -2636,7 +2724,7 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     else
     {
         reader_thread->workflow->total_events_serialized++;
-        send_to_collector(reader_thread, json_msg, json_msg_len);
+        send_to_collector(flow_id, reader_thread, json_msg, json_msg_len);
     }
 
     ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
@@ -2901,7 +2989,7 @@ static void jsonize_packet_event(struct nDPId_reader_thread * const reader_threa
                reader_thread->workflow->packets_captured,
                reader_thread->array_index);
     }
-    serialize_and_send(reader_thread);
+    serialize_and_send(flow_ext->flow_id,reader_thread);
 }
 
 /* I decided against ndpi_flow2json as it does not fulfill my needs. */
@@ -3001,7 +3089,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             break;
     }
 
-    serialize_and_send(reader_thread);
+    serialize_and_send(flow_ext->flow_id, reader_thread);
 }
 
 static void jsonize_flow_detection_event(struct nDPId_reader_thread * const reader_thread,
@@ -3070,7 +3158,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
             break;
     }
 
-    serialize_and_send(reader_thread);
+    serialize_and_send(flow_ext->flow_id, reader_thread);
 }
 
 static void internal_format_error(ndpi_serializer * const serializer, char const * const format, uint32_t format_index)
@@ -3267,7 +3355,7 @@ __attribute__((format(printf, 3, 4))) static void jsonize_error_eventf(struct nD
     }
 
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "global_ts_usec", workflow->last_global_time);
-    serialize_and_send(reader_thread);
+    serialize_and_send(flow_ext->flow_id, reader_thread);
 }
 
 /* See: https://en.wikipedia.org/wiki/MurmurHash#MurmurHash3 */
@@ -4604,9 +4692,10 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 }
 #endif
 
-static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
+static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, FlowMap* flow_map_input, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
 {
     logger(0, "run_pcap_loop start");
+    flow_map_ref = flow_map_input;
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
 

@@ -1552,6 +1552,7 @@ error:
 
 static void * nDPId_mainloop_thread(void * const arg)
 {
+    logger(0, "Ashwani Kumar: nDPId_mainloop_thread START");
     struct nDPId_return_value * const nrv = (struct nDPId_return_value *)arg;
     struct thread_return_value * const trr = &nrv->thread_return_value;
 
@@ -1595,8 +1596,10 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
+    FlowMap flow_map;
+    init_flow_map(&flow_map, 10);
     logger(0, "Ashwani Kumar: before <run_pcap_loop>");
-    run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+    run_pcap_loop(&reader_threads[0], &flow_map, generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
     logger(0, "Ashwani Kumar: after <run_pcap_loop>");
 
     process_remaining_flows();
@@ -1630,6 +1633,10 @@ static void * nDPId_mainloop_thread(void * const arg)
 error:
     free_reader_threads();
     close(mock_pipefds[PIPE_nDPId]);
+ 
+    write_flow_map_file(generated_tmp_json_files_events[currentFileIndex]);
+    // Free the FlowMap
+    free_flow_map(&flow_map);
 
     logger(0, "%s", "nDPId worker thread exits..");
     return NULL;
@@ -1988,9 +1995,6 @@ int main(int argc, char ** argv)
     currentFileIndex = 0;
     for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
-        FlowMap flow_map;
-        init_flow_map(&flow_map, 10);
-
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
         logger(0, "processing of %s file started", pcap_files[currentFileIndex]);
 
@@ -2406,9 +2410,6 @@ int main(int argc, char ** argv)
         free(generated_tmp_json_files_alerts[currentFileIndex]);
         free(generated_json_files_events[currentFileIndex]);
         free(generated_json_files_alerts[currentFileIndex]);
-
-        // Free the FlowMap
-        free_flow_map(&flow_map);
 
 #ifdef ENABLE_ZLIB
         if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
