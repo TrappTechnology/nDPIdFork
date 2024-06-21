@@ -1190,7 +1190,7 @@ void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int
     struct Root_data rootData = getRootDataStructure(originalJsonStr);
     if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE) 
     {
-        *flow_id = rootData.flow_id
+        *flow_id = rootData.flow_id;
     }
 
     add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
