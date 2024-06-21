@@ -600,7 +600,7 @@ static char * const subopt_token[] = {[MAX_FLOWS_PER_THREAD] = "max-flows-per-th
 static void sighandler(int signum);
 static WARN_UNUSED int processing_threads_error_or_eof(void);
 static void free_workflow(struct nDPId_workflow ** const workflow);
-static void serialize_and_send(unsigned long long int flow_id, struct nDPId_reader_thread * const reader_thread);
+static void serialize_and_send(struct nDPId_reader_thread * const reader_thread);
 static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                                struct nDPId_flow_extended * const flow_ext,
                                enum flow_event event);
@@ -2271,7 +2271,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
     }
 
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "global_ts_usec", workflow->last_global_time);
-    serialize_and_send(flow_ext->flow_id, reader_thread);
+    serialize_and_send(reader_thread);
 }
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
@@ -2510,7 +2510,7 @@ void free_messages()
 
 
 
-static write_to_file(unsigned long long int flow_id, const char * json_str, size_t json_msg_len)
+static write_to_file(const char * json_str, size_t json_msg_len)
 {
     logger(0, "write_to_file start");
 
@@ -2522,7 +2522,8 @@ static write_to_file(unsigned long long int flow_id, const char * json_str, size
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
     int createAlert = 0;
-    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
+    unsigned long long int flow_id = 834264320534;
+    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
     if (converted_json_str != NULL)
     {
@@ -2621,7 +2622,7 @@ static void send_to_collector(unsigned long long int flow_id,
                        workflow->packets_captured,
                        reader_thread->array_index,
                        get_cmdarg(&nDPId_options.collector_address));
-                jsonize_daemon(reader_thread, DAEMON_EVENT_RECONNECT);
+                jsonize_daemon(flow_id, reader_thread, DAEMON_EVENT_RECONNECT);
             }
         }
         else
@@ -2706,7 +2707,7 @@ static void send_to_collector(unsigned long long int flow_id,
     }
 }
 
-static void serialize_and_send(unsigned long long int flow_id, struct nDPId_reader_thread * const reader_thread)
+static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
 {
     char * json_msg;
     uint32_t json_msg_len;
@@ -2724,7 +2725,7 @@ static void serialize_and_send(unsigned long long int flow_id, struct nDPId_read
     else
     {
         reader_thread->workflow->total_events_serialized++;
-        send_to_collector(flow_id, reader_thread, json_msg, json_msg_len);
+        send_to_collector(reader_thread, json_msg, json_msg_len);
     }
 
     ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
@@ -2989,7 +2990,7 @@ static void jsonize_packet_event(struct nDPId_reader_thread * const reader_threa
                reader_thread->workflow->packets_captured,
                reader_thread->array_index);
     }
-    serialize_and_send(flow_ext->flow_id,reader_thread);
+    serialize_and_send(reader_thread);
 }
 
 /* I decided against ndpi_flow2json as it does not fulfill my needs. */
@@ -3089,7 +3090,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             break;
     }
 
-    serialize_and_send(flow_ext->flow_id, reader_thread);
+    serialize_and_send(reader_thread);
 }
 
 static void jsonize_flow_detection_event(struct nDPId_reader_thread * const reader_thread,
@@ -3158,7 +3159,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
             break;
     }
 
-    serialize_and_send(flow_ext->flow_id, reader_thread);
+    serialize_and_send(reader_thread);
 }
 
 static void internal_format_error(ndpi_serializer * const serializer, char const * const format, uint32_t format_index)
@@ -3355,7 +3356,7 @@ __attribute__((format(printf, 3, 4))) static void jsonize_error_eventf(struct nD
     }
 
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "global_ts_usec", workflow->last_global_time);
-    serialize_and_send(flow_ext->flow_id, reader_thread);
+    serialize_and_send(reader_thread);
 }
 
 /* See: https://en.wikipedia.org/wiki/MurmurHash#MurmurHash3 */
