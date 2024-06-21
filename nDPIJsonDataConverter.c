@@ -513,7 +513,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
 
     // dest_ip and dst_port data
     json_object* dest_ip;
-    if (json_object_object_get_ex(root, "dest_ip", &dest_ip))
+    if (json_object_object_get_ex(root, "dst_ip", &dest_ip))
     {
         result.dest_ip = strDuplicate(json_object_get_string(dest_ip));
     }
