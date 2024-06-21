@@ -2572,8 +2572,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
-static void send_to_collector(unsigned long long int flow_id,
-                              struct nDPId_reader_thread * const reader_thread,
+static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
@@ -2622,7 +2621,7 @@ static void send_to_collector(unsigned long long int flow_id,
                        workflow->packets_captured,
                        reader_thread->array_index,
                        get_cmdarg(&nDPId_options.collector_address));
-                jsonize_daemon(flow_id, reader_thread, DAEMON_EVENT_RECONNECT);
+                jsonize_daemon(reader_thread, DAEMON_EVENT_RECONNECT);
             }
         }
         else
@@ -2642,7 +2641,7 @@ static void send_to_collector(unsigned long long int flow_id,
         }
     }
 
-    write_to_file(flow_id, json_msg, json_msg_len);
+    write_to_file(json_msg, json_msg_len);
     ssize_t written;
 
     if (reader_thread->collector_sock_last_errno == 0 &&
@@ -4924,7 +4923,7 @@ static void * processing_thread(void * const ndpi_thread_arg)
         jsonize_daemon(reader_thread, DAEMON_EVENT_INIT);
     }
 
-    run_pcap_loop(reader_thread, NULL, NULL);
+    run_pcap_loop(reader_thread, NULL, NULL, NULL);
     set_collector_block(reader_thread);
     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
     return NULL;
