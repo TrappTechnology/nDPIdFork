@@ -1179,7 +1179,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     }
 }
 
-void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int* createAlert)
+void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int* createAlert, unsigned long long int* flow_id)
 {
     struct NDPI_Data ndpiData = getnDPIStructure(originalJsonStr);
     *createAlert = ndpiData.flow_risk_count;
@@ -1188,6 +1188,11 @@ void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int
     add_nDPI_Data(&root_object, ndpiData);
 
     struct Root_data rootData = getRootDataStructure(originalJsonStr);
+    if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE) 
+    {
+        *flow_id = rootData.flow_id
+    }
+
     add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
 
     *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
