@@ -618,6 +618,7 @@ typedef struct
 {
     int flow_id;
     char * json_str;
+    char * json_str_alert;
 } FlowEntry;
 
 // Define a structure to manage the dynamic array of FlowEntry
@@ -642,6 +643,7 @@ void free_flow_map(FlowMap * map)
     for (size_t i = 0; i < map->size; ++i)
     {
         free(map->entries[i].json_str);
+        free(map->entries[i].json_str_alert);
     }
     free(map->entries);
 }
@@ -657,7 +659,7 @@ void ensure_capacity(FlowMap * map)
 }
 
 // Add or update an entry in the FlowMap
-void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str)
+void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str, const char * json_str_alert)
 {
     // Check if the flow_id already exists
     for (size_t i = 0; i < map->size; ++i)
@@ -665,8 +667,19 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str)
         if (map->entries[i].flow_id == flow_id)
         {
             // Update existing entry
-            free(map->entries[i].json_str);
-            map->entries[i].json_str = strdup(json_str);
+            if (json_str != NULL)
+            {
+                free(map->entries[i].json_str);
+                map->entries[i].json_str = strdup(json_str);
+            }
+
+            // Update existing entry
+            if (json_str_alert != NULL)
+            {
+                free(map->entries[i].json_str_alert);
+                map->entries[i].json_str_alert = strdup(json_str_alert);
+            }
+
             return;
         }
     }
@@ -675,10 +688,16 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str)
     ensure_capacity(map);
     map->entries[map->size].flow_id = flow_id;
     map->entries[map->size].json_str = strdup(json_str);
+    map->entries[map->size].json_str_alert = NULL;
+    if (json_str_alert != NULL)
+    {
+        map->entries[map->size].json_str_alert = strdup(json_str_alert);
+    }
+
     map->size++;
 }
 
-void write_flow_map_to_json(FlowMap * map, const char * filename)
+void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 {
     FILE * fp = fopen(filename, "w");
     if (!fp)
@@ -696,13 +715,32 @@ void write_flow_map_to_json(FlowMap * map, const char * filename)
     fclose(fp);
 }
 
+void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
+{
+    FILE * fp = fopen(filename, "w");
+    if (!fp)
+    {
+        perror("Unable to open output file");
+        return;
+    }
+
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        fputs(map->entries[i].json_str_alert, fp);
+        fputs("\n", fp); // Add newline for each JSON object for readability
+    }
+
+    fclose(fp);
+}
+
+
+void write_flow_map_file(const char * events_tmp_json_file, const char * alerts_tmp_json_file)
+{
+    write_flow_map_to_json(flow_map_ref, events_tmp_json_file);
+    write_flow_map_to_json(flow_map_ref, alerts_tmp_json_file);
+}
 
 static FlowMap * flow_map_ref = NULL;
-
-void write_flow_map_file(const char * filename)
-{
-    write_flow_map_to_json(flow_map_ref, filename);
-}
 
 /*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
 
@@ -2537,6 +2575,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         {
             if (createAlert)
             {
+                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str);        
                 //serialization_fp = fopen(generated_tmp_json_files_alert, "a");
                 //if (serialization_fp == NULL)
                 //{
@@ -2554,11 +2593,11 @@ static write_to_file(const char * json_str, size_t json_msg_len)
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk);
+                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
             }
             else
              {
-                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str);                  
+                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);                  
              }
                 
             free(converted_json_str_no_risk);

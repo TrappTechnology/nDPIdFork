@@ -1634,7 +1634,7 @@ error:
     free_reader_threads();
     close(mock_pipefds[PIPE_nDPId]);
  
-    write_flow_map_file(generated_tmp_json_files_events[currentFileIndex]);
+    write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
     // Free the FlowMap
     free_flow_map(&flow_map);
 
