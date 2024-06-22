@@ -747,7 +747,7 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
     }
 
     logger(0, "Ashwani: write_flow_map_to_alert_json: end 1");
-    if (!fp)
+    if (fp != NULL)
     {
         logger(0, "Ashwani: write_flow_map_to_alert_json: end 2");
         fclose(fp);
