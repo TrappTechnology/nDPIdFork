@@ -719,6 +719,7 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
+    FILE * fp = NULL;
     for (size_t i = 0; i < map->size; ++i)
     {
         if (map->entries[i].json_str_alert != NULL)
