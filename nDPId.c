@@ -728,8 +728,11 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 
     for (size_t i = 0; i < map->size; ++i)
     {
-        fputs(map->entries[i].json_str_alert, fp);
-        fputs("\n", fp); // Add newline for each JSON object for readability
+        if (map->entries[i].json_str_alert != NULL)
+        {
+            fputs(map->entries[i].json_str_alert, fp);
+            fputs("\n", fp); // Add newline for each JSON object for readability
+        }
     }
 
     fclose(fp);
