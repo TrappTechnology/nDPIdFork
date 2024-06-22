@@ -642,12 +642,15 @@ void init_flow_map(FlowMap * map, size_t initial_capacity)
 // Free the FlowMap
 void free_flow_map(FlowMap * map)
 {
+    logger(0, "Ashwani: free_flow_map start");
     for (size_t i = 0; i < map->size; ++i)
     {
         free(map->entries[i].json_str);
         free(map->entries[i].json_str_alert);
     }
     free(map->entries);
+
+    logger(0, "Ashwani: free_flow_map end");
 }
 
 // Ensure capacity of the FlowMap
@@ -741,8 +744,10 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
         }
     }
 
-    fclose(fp);
-}
+    if (!fp)
+    {        
+        fclose(fp);
+    }
 
 
 void write_flow_map_file(const char * events_tmp_json_file, const char * alerts_tmp_json_file)
