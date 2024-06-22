@@ -720,8 +720,10 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
     FILE * fp = NULL;
+    logger(0, "Ashwani: write_flow_map_to_alert_json: %d", map->size);
     for (size_t i = 0; i < map->size; ++i)
     {
+        logger(0, "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
         if (map->entries[i].json_str_alert != NULL)
         {
             if (!fp)
@@ -746,7 +748,7 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 void write_flow_map_file(const char * events_tmp_json_file, const char * alerts_tmp_json_file)
 {
     write_flow_map_to_event_json(flow_map_ref, events_tmp_json_file);
-    //write_flow_map_to_alert_json(flow_map_ref, alerts_tmp_json_file);
+    write_flow_map_to_alert_json(flow_map_ref, alerts_tmp_json_file);
 }
 
 /*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
