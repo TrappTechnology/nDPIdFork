@@ -730,7 +730,7 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
         if (map->entries[i].json_str_alert != NULL)
         {
             logger(0, "Ashwani: check 1");
-            if (!fp)
+            if (fp == NULL)
             {
                 logger(0, "Ashwani: check 2");
                 fp = fopen(filename, "w");
