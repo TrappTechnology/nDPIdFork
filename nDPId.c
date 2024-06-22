@@ -2573,22 +2573,6 @@ static write_to_file(const char * json_str, size_t json_msg_len)
 
         if (length != 0)
         {
-            if (createAlert)
-            {
-                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str);        
-                //serialization_fp = fopen(generated_tmp_json_files_alert, "a");
-                //if (serialization_fp == NULL)
-                //{
-                //    logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_alert,  strerror(errno));
-                //}
-                //else
-                //{
-                //    int length = strlen(converted_json_str);
-                //    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
-                //    fclose(serialization_fp);
-                //}
-            }
-
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
