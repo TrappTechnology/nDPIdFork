@@ -746,7 +746,7 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 void write_flow_map_file(const char * events_tmp_json_file, const char * alerts_tmp_json_file)
 {
     write_flow_map_to_event_json(flow_map_ref, events_tmp_json_file);
-    write_flow_map_to_alert_json(flow_map_ref, alerts_tmp_json_file);
+    //write_flow_map_to_alert_json(flow_map_ref, alerts_tmp_json_file);
 }
 
 /*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
