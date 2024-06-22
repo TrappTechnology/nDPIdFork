@@ -611,7 +611,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 /*--------------------------------------------------Ashwani added code starts here------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
-static FlowMap * flow_map_ref = NULL;
+
 
 // Define a structure to hold the flow id and JSON string
 typedef struct
@@ -628,6 +628,8 @@ typedef struct
     size_t size;
     size_t capacity;
 } FlowMap;
+
+static FlowMap * flow_map_ref = NULL;
 
 // Initialize the FlowMap
 void init_flow_map(FlowMap * map, size_t initial_capacity)
