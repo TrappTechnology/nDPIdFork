@@ -2586,7 +2586,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     printf("Ashwani json_str = %s", json_str);
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
-    logger(0, "Ashwani ConvertnDPIDataFormat");
+    logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
     if (converted_json_str != NULL)
     {
         logger(0, "Ashwani converted_json_str = %s", converted_json_str);
@@ -2613,7 +2613,8 @@ static write_to_file(const char * json_str, size_t json_msg_len)
             else
              {
                 logger(0, "Ashwani write_to_file 4");
-                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);                  
+                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);     
+                 logger(0, "Ashwani write_to_file 5");
              }
                 
             free(converted_json_str_no_risk);
