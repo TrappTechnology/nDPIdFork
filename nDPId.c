@@ -2571,9 +2571,11 @@ void free_messages()
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
     logger(0, "write_to_file start");
+    logger(0, "write_to_file %s", json_str);
 
     if (CheckSRCIPField(json_str) == 0) 
     {
+        logger(0, "write_to_file EXITING");
         return; 
     }
 
