@@ -2597,6 +2597,8 @@ static write_to_file(const char * json_str, size_t json_msg_len)
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
+                fprintf("Ashwani converted_json_str = %s", converted_json_str);
+                fprintf("Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
             }
             else
