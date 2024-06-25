@@ -2591,13 +2591,17 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     {
         logger(0, "Ashwani converted_json_str = %s", converted_json_str);
         int length = strlen(converted_json_str);
+        logger(0, "Ashwani write_to_file 1");
         if (duplicate_data(converted_json_str, length))
         {
+            logger(0, "Ashwani write_to_file duplicate_data");
             return;
         }
 
+        logger(0, "Ashwani write_to_file 2");
         if (length != 0)
         {
+            logger(0, "Ashwani write_to_file 3");
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
@@ -2608,6 +2612,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
             }
             else
              {
+                logger(0, "Ashwani write_to_file 4");
                  add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);                  
              }
                 
