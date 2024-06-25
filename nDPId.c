@@ -2619,6 +2619,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
+    logger(0, "Ashwani: json_msg: %s", json_msg);
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     int saved_errno;
     int s_ret;
