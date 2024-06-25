@@ -2583,7 +2583,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
-    logger(0, "Ashwani json_str = %s", json_str);
+    printf("Ashwani json_str = %s", json_str);
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
     logger(0, "Ashwani ConvertnDPIDataFormat");
