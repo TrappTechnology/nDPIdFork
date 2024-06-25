@@ -2587,7 +2587,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
     logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
-    if (converted_json_str != NULL)
+    if (flow_id != 834264320534 && converted_json_str != NULL)
     {
         logger(0, "Ashwani converted_json_str = %s", converted_json_str);
         int length = strlen(converted_json_str);
@@ -2614,13 +2614,12 @@ static write_to_file(const char * json_str, size_t json_msg_len)
              {
                 logger(0, "Ashwani write_to_file 4");
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);     
-                 logger(0, "Ashwani write_to_file 5");
+                logger(0, "Ashwani write_to_file 5");
              }
                 
             free(converted_json_str_no_risk);
         }
     }
-
    
     free(converted_json_str);
 
