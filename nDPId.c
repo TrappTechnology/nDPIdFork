@@ -2581,10 +2581,13 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
+    logger(0, "Ashwani json_str = %s", json_str);
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
+    logger(0, "Ashwani ConvertnDPIDataFormat");
     if (converted_json_str != NULL)
     {
+        logger(0, "Ashwani converted_json_str = %s", converted_json_str);
         int length = strlen(converted_json_str);
         if (duplicate_data(converted_json_str, length))
         {
@@ -2597,8 +2600,8 @@ static write_to_file(const char * json_str, size_t json_msg_len)
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-                fprintf("Ashwani converted_json_str = %s", converted_json_str);
-                fprintf("Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
+                logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
+                logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
             }
             else
@@ -2621,7 +2624,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
-    logger(0, "Ashwani: json_msg: %s", json_msg);
+    //logger(0, "Ashwani: json_msg: %s", json_msg);
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     int saved_errno;
     int s_ret;
