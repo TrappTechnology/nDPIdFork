@@ -293,7 +293,7 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     endif()
 endif()
 
-find_library(NDPI_LIB NAMES ndpi PATHS /usr/local/lib NO_DEFAULT_PATH)
+find_library(NDPI_LIB NAMES ndpi PATHS /usr/lib NO_DEFAULT_PATH)
 
 # Ensure the library was found
 if(NOT NDPI_LIB)
