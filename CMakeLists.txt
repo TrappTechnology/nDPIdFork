@@ -375,7 +375,7 @@ endif()
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
-target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
                             "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
                             "-pthread")
@@ -389,7 +389,7 @@ target_compile_definitions(nDPId-test PRIVATE -D_GNU_SOURCE=1 -DNO_MAIN=1 -DPKG_
                                               ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS} ${NDPID_TEST_MPROF_DEFS})
 target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
-target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                  "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
                                  "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
                                  "-pthread")
@@ -410,7 +410,7 @@ if(BUILD_EXAMPLES)
     target_compile_definitions(nDPIsrvd-captured PRIVATE ${NDPID_DEFS})
     target_include_directories(nDPIsrvd-captured PRIVATE
                                "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" "${CMAKE_SOURCE_DIR}" ${NDPID_DEPS_INC})
-    target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+    target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}"
                                             "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}")
 
