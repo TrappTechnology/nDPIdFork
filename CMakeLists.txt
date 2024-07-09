@@ -293,6 +293,15 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     endif()
 endif()
 
+find_library(NDPI_LIB NAMES ndpi PATHS /usr/local/lib NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT NDPI_LIB)
+    message(FATAL_ERROR "Could not find libndpi.a")
+else()
+    message(STATUS "Found libndpi.a at ${NDPI_LIB}")
+endif()
+
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
     add_definitions("-DLIBNDPI_STATIC=1")
     set(STATIC_LIBNDPI_INC "${STATIC_LIBNDPI_INSTALLDIR}/include/ndpi")
