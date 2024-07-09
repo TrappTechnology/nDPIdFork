@@ -1,4 +1,9 @@
 cmake_minimum_required(VERSION 3.12.4)
+
+set(PROJECT_VERSION "1.0.0")
+# Print the project version at the beginning
+message(STATUS "Configuring project version ${PROJECT_VERSION}")
+
 project(nDPId C)
 if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
@@ -345,6 +350,8 @@ endif()
 pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
 if(NOT pkgcfg_lib_PCAP_pcap)
     pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+else()
+    message(STATUS "Found libpcap: ${pkgcfg_lib_PCAP_pcap_LIBRARIES}")
 endif()
 if(NOT pkgcfg_lib_PCAP_pcap)
     find_package(PCAP "1.9.0" REQUIRED)
@@ -354,6 +361,7 @@ endif()
 find_package(json-c CONFIG)
 
 if(json-c_FOUND)
+    message(STATUS "Found json-c library: ${json-c_LIBRARIES}")
     # Link the json-c library to your target
     target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
     target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
