@@ -355,7 +355,7 @@ find_library(PCAP_LIB NAMES pcap PATHS /usr/lib/x86_64-linux-gnu/ NO_DEFAULT_PAT
 if(NOT PCAP_LIB)
     message(FATAL_ERROR "Could not find libpcap.a")
 else()
-    message(STATUS "Found libndpi.a at ${PCAP_LIB}")
+    message(STATUS "Found libpcap.a at ${PCAP_LIB}")
 endif()
 
 #pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
@@ -368,25 +368,36 @@ endif()
 #    find_package(PCAP "1.9.0" REQUIRED)
 #endif()
 
-# Find json-c package
-find_package(json-c CONFIG)
 
-if(json-c_FOUND)
-    message(STATUS "Found json-c library: ${json-c_LIBRARIES}")
-    # Link the json-c library to your target
-    target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
-    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT JSON_C_LIB)
+    message(FATAL_ERROR "Could not find libjson-c.a")
 else()
-    # Handle error if json-c is not found
-    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
+    message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
 endif()
+
+
+# Find json-c package
+# find_package(json-c CONFIG)
+
+# if(json-c_FOUND)
+#    message(STATUS "Found json-c library: ${json-c_LIBRARIES}")
+#    # Link the json-c library to your target
+#    target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+#    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+# else()
+    # Handle error if json-c is not found
+#    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
+# endif()
 
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
+                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}"
                             "-pthread")
 
 target_compile_definitions(nDPIsrvd PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS})
@@ -400,7 +411,7 @@ target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                  "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
+                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}"
                                  "-pthread")
 
 if(BUILD_EXAMPLES)
