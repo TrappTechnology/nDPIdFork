@@ -257,6 +257,15 @@ if(ENABLE_SANITIZER AND ENABLE_SANITIZER_THREAD)
     message(FATAL_ERROR "ENABLE_SANITIZER and ENABLE_SANITIZER_THREAD can not be used together!")
 endif()
 
+find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT JSON_C_LIB)
+    message(FATAL_ERROR "Could not find libjson-c.a")
+else()
+    message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
+endif()
+
 if(BUILD_NDPI)
     include(ExternalProject)
     ExternalProject_Add(
@@ -375,17 +384,6 @@ endif()
 #if(NOT pkgcfg_lib_PCAP_pcap)
 #    find_package(PCAP "1.9.0" REQUIRED)
 #endif()
-
-
-find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
-
-# Ensure the library was found
-if(NOT JSON_C_LIB)
-    message(FATAL_ERROR "Could not find libjson-c.a")
-else()
-    message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
-endif()
-
 
 # Find json-c package
 # find_package(json-c CONFIG)
