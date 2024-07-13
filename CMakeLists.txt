@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.12.4)
 set(PROJECT_VERSION "1.0.0")
 # Print the project version at the beginning
 message(STATUS "Configuring project version ${PROJECT_VERSION}")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
 
 project(nDPId C)
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -298,7 +300,7 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     endif()
 endif()
 
-find_library(NDPI_LIB NAMES ndpi PATHS /usr/lib NO_DEFAULT_PATH)
+find_library(NDPI_LIB NAMES ndpi PATHS /usr/lib/ NO_DEFAULT_PATH)
 
 # Ensure the library was found
 if(NOT NDPI_LIB)
