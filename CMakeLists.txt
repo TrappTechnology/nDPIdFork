@@ -114,6 +114,7 @@ else()
     endif()
 endif()
 
+option(STATIC_LIBNDPI_INSTALLDIR "Setting STATIC_LIBNDPI_INSTALLDIR to ON." ON)
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     message(STATUS "Ashwani if (STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)")
     option(NDPI_WITH_GCRYPT "Link static libndpi library against libgcrypt." OFF)
