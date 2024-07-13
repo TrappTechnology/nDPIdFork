@@ -1,4 +1,10 @@
 cmake_minimum_required(VERSION 3.12.4)
+
+set(PROJECT_VERSION "1.0.0")
+# Print the project version at the beginning
+message(STATUS "Configuring project version ${PROJECT_VERSION}")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+
 project(nDPId C)
 if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
@@ -293,6 +299,15 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     endif()
 endif()
 
+find_library(NDPI_LIB NAMES ndpi PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT NDPI_LIB)
+    message(FATAL_ERROR "Could not find libndpi.a")
+else()
+    message(STATUS "Found libndpi.a at ${NDPI_LIB}")
+endif()
+
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
     add_definitions("-DLIBNDPI_STATIC=1")
     set(STATIC_LIBNDPI_INC "${STATIC_LIBNDPI_INSTALLDIR}/include/ndpi")
@@ -320,11 +335,13 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
     unset(DEFAULT_NDPI_INCLUDE CACHE)
     unset(pkgcfg_lib_NDPI_ndpi CACHE)
 else()
+    message(STATUS "Executing the path to find pkgcfg_lib_NDPI_ndpi...")
+    unset(pkgcfg_lib_NDPI_ndpi CACHE)
     if(NOT NDPI_NO_PKGCONFIG)
-        pkg_check_modules(NDPI REQUIRED libndpi>=4.9.0)
-        if(NOT pkgcfg_lib_NDPI_ndpi)
-            find_package(NDPI "4.9.0" REQUIRED)
-        endif()
+#        pkg_check_modules(NDPI REQUIRED libndpi>=4.9.0)
+#        if(NOT pkgcfg_lib_NDPI_ndpi)
+#            find_package(NDPI "4.9.0" REQUIRED)
+#        endif()
 
         unset(STATIC_LIBNDPI_INC CACHE)
         unset(STATIC_LIBNDPI_LIB CACHE)
@@ -333,32 +350,55 @@ else()
     set(DEFAULT_NDPI_INCLUDE ${NDPI_INCLUDE_DIRS})
 endif()
 
-pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
-if(NOT pkgcfg_lib_PCAP_pcap)
-    pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT PCAP_LIB)
+    message(FATAL_ERROR "Could not find libpcap.a")
+else()
+    message(STATUS "Found libpcap.a at ${PCAP_LIB}")
 endif()
-if(NOT pkgcfg_lib_PCAP_pcap)
-    find_package(PCAP "1.9.0" REQUIRED)
+
+#pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
+#if(NOT pkgcfg_lib_PCAP_pcap)
+#    pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+#else()
+#    message(STATUS "Found libpcap: ${pkgcfg_lib_PCAP_pcap_LIBRARIES}")
+#endif()
+#if(NOT pkgcfg_lib_PCAP_pcap)
+#    find_package(PCAP "1.9.0" REQUIRED)
+#endif()
+
+
+find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT JSON_C_LIB)
+    message(FATAL_ERROR "Could not find libjson-c.a")
+else()
+    message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
 endif()
+
 
 # Find json-c package
-find_package(json-c CONFIG)
+# find_package(json-c CONFIG)
 
-if(json-c_FOUND)
-    # Link the json-c library to your target
-    target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
-    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
-else()
+# if(json-c_FOUND)
+#    message(STATUS "Found json-c library: ${json-c_LIBRARIES}")
+#    # Link the json-c library to your target
+#    target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+#    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+# else()
     # Handle error if json-c is not found
-    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
-endif()
+#    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
+# endif()
 
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
-target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
+                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}"
                             "-pthread")
 
 target_compile_definitions(nDPIsrvd PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS})
@@ -370,9 +410,9 @@ target_compile_definitions(nDPId-test PRIVATE -D_GNU_SOURCE=1 -DNO_MAIN=1 -DPKG_
                                               ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS} ${NDPID_TEST_MPROF_DEFS})
 target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
-target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                  "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
+                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}"
                                  "-pthread")
 
 if(BUILD_EXAMPLES)
@@ -391,7 +431,7 @@ if(BUILD_EXAMPLES)
     target_compile_definitions(nDPIsrvd-captured PRIVATE ${NDPID_DEFS})
     target_include_directories(nDPIsrvd-captured PRIVATE
                                "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" "${CMAKE_SOURCE_DIR}" ${NDPID_DEPS_INC})
-    target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+    target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}"
                                             "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}")
 
