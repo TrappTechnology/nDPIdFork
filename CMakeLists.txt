@@ -94,6 +94,7 @@ endif()
 option(BUILD_NDPI "Clone and build nDPI from github." ON)
 
 if(BUILD_NDPI)
+    message(STATUS "Ashwani BUILD_NDPI")
     option(BUILD_NDPI_FORCE_GIT_UPDATE "Forcefully instruments nDPI build script to update the git submodule." OFF)
     unset(NDPI_NO_PKGCONFIG CACHE)
     unset(STATIC_LIBNDPI_INSTALLDIR CACHE)
