@@ -324,6 +324,7 @@ endif()
     # message(STATUS "Found libndpi.a at ${NDPI_LIB}")
 # endif()
 
+
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
     message(STATUS "       Ashwani <if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)>")
     add_definitions("-DLIBNDPI_STATIC=1")
