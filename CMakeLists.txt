@@ -374,7 +374,7 @@ else()
     set(DEFAULT_NDPI_INCLUDE ${NDPI_INCLUDE_DIRS})
 endif()
 
-find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/libpcap/ NO_DEFAULT_PATH)
 
 # Ensure the library was found
 if(NOT PCAP_LIB)
