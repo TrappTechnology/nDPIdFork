@@ -374,24 +374,24 @@ else()
     set(DEFAULT_NDPI_INCLUDE ${NDPI_INCLUDE_DIRS})
 endif()
 
-# find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
-# # Ensure the library was found
-# if(NOT PCAP_LIB)
-    # message(FATAL_ERROR "Could not find libpcap.a")
-# else()
-    # message(STATUS "Found libpcap.a at ${PCAP_LIB}")
-# endif()
-
-pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
-if(NOT pkgcfg_lib_PCAP_pcap)
-   pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+# Ensure the library was found
+if(NOT PCAP_LIB)
+    message(FATAL_ERROR "Could not find libpcap.a")
 else()
-   message(STATUS "Found libpcap: ${pkgcfg_lib_PCAP_pcap_LIBRARIES}")
+    message(STATUS "Found libpcap.a at ${PCAP_LIB}")
 endif()
-if(NOT pkgcfg_lib_PCAP_pcap)
-   find_package(PCAP "1.9.0" REQUIRED)
-endif()
+
+# pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
+# if(NOT pkgcfg_lib_PCAP_pcap)
+   # pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+# else()
+   # message(STATUS "Found libpcap: ${pkgcfg_lib_PCAP_pcap_LIBRARIES}")
+# endif()
+# if(NOT pkgcfg_lib_PCAP_pcap)
+   # find_package(PCAP "1.9.0" REQUIRED)
+# endif()
 
 # Find json-c package
 # find_package(json-c CONFIG)
