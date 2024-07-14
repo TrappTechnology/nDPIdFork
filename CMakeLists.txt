@@ -297,8 +297,8 @@ if(BUILD_NDPI)
     )
 
     set(STATIC_LIBNDPI_INSTALLDIR "${CMAKE_BINARY_DIR}/libnDPI")
-    add_dependencies(nDPId libnDPI libjson-c)
-    add_dependencies(nDPId-test libnDPI libjson-c)
+    add_dependencies(nDPId libnDPI )
+    add_dependencies(nDPId-test libnDPI)
 endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
