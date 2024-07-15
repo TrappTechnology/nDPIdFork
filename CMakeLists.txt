@@ -417,6 +417,9 @@ endif()
 #    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
 # endif()
 
+pkg_check_modules(DBUS REQUIRED dbus-1)
+pkg_check_modules(SYSTEMD REQUIRED libsystemd)
+
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
