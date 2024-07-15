@@ -418,7 +418,18 @@ endif()
 # endif()
 
 pkg_check_modules(DBUS REQUIRED dbus-1)
+if(DBUS_FOUND)
+    message(STATUS "Found dbus-1: ${DBUS_LIBRARIES}")
+else()
+    message(FATAL_ERROR "Could not find dbus-1 library")
+endif()
+
 pkg_check_modules(SYSTEMD REQUIRED libsystemd)
+if(SYSTEMD_FOUND)
+    message(STATUS "Found libsystemd: ${SYSTEMD_LIBRARIES}")
+else()
+    message(FATAL_ERROR "Could not find libsystemd library")
+endif()
 
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
