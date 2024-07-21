@@ -74,11 +74,11 @@ if(NOT MATH_FUNCTION_EXISTS AND NOT NEED_LINKING_AGAINST_LIBM)
     endif()
 endif()
 
-if(NEED_LINKING_AGAINST_LIBM)
-    set(LIBM_LIB "-lm")
-else()
-    set(LIBM_LIB "")
-endif()
+# if(NEED_LINKING_AGAINST_LIBM)
+    # set(LIBM_LIB "-lm")
+# else()
+    # set(LIBM_LIB "")
+# endif()
 
 option(ENABLE_COVERAGE "Generate a code coverage report using lcov/genhtml." OFF)
 option(ENABLE_SANITIZER "Enable ASAN/LSAN/UBSAN." OFF)
@@ -421,7 +421,7 @@ else()
     message(STATUS "Found libc.a at ${LIB_C}")
 endif()
 
-
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic -lc -Wl,-Bdynamic")
 
 # pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
 # if(NOT pkgcfg_lib_PCAP_pcap)
