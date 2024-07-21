@@ -313,7 +313,7 @@ endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     if(NDPI_WITH_GCRYPT)
-        find_package(GCRYPT "1.4.2" REQUIRED)
+ #       find_package(GCRYPT "1.4.2" REQUIRED)
     endif()
 
     if(NDPI_WITH_PCRE)
