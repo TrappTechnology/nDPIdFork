@@ -4,6 +4,7 @@ set(PROJECT_VERSION "1.0.0")
 # Print the project version at the beginning
 message(STATUS "Configuring project version ${PROJECT_VERSION}")
 set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(BUILD_SHARED_LIBS OFF)
 
 project(nDPId C)
 if(CMAKE_COMPILER_IS_GNUCXX)
@@ -412,6 +413,7 @@ else()
     message(STATUS "Found libm.a at ${LIB_MATH}")
 endif()
 
+set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic -lc -Wl,-Bdynamic")
 find_library(LIB_C NAMES c PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
 # Ensure the library was found
@@ -421,7 +423,29 @@ else()
     message(STATUS "Found libc.a at ${LIB_C}")
 endif()
 
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic -lc -Wl,-Bdynamic")
+
+find_library(LIB_GCRYPT NAMES grypt PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT LIB_GCRYPT)
+    message(FATAL_ERROR "Could not find libgrypt.a")
+else()
+    message(STATUS "Found libgrypt.a at ${LIB_GCRYPT}")
+endif()
+
+
+
+find_library(LIB_GCRYPT_ERROR NAMES grypt-error PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT LIB_GCRYPT_ERROR)
+    message(FATAL_ERROR "Could not find libgrypt-error.a")
+else()
+    message(STATUS "Found libgrypt-error.a at ${LIB_GCRYPT_ERROR}")
+endif()
+
+
+
 
 # pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
 # if(NOT pkgcfg_lib_PCAP_pcap)
@@ -467,7 +491,7 @@ target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_V
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}" "${DBUS_LIB}" ${DBUS_LIBRARIES} ${SYSTEMD_LIBRARIES}
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${LIB_MATH}" "${LIB_C}"
+                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${LIB_MATH}" "${LIB_C}" "${LIB_GCRYPT}" "${LIB_GCRYPT_ERROR}"
                             "-pthread")
 
 target_compile_definitions(nDPIsrvd PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS})
@@ -480,7 +504,7 @@ target_compile_definitions(nDPId-test PRIVATE -D_GNU_SOURCE=1 -DNO_MAIN=1 -DPKG_
 target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}" "${DBUS_LIB}" ${DBUS_LIBRARIES} ${SYSTEMD_LIBRARIES}
-                                 "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
+                                 "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}" "${LIB_GCRYPT}" "${LIB_GCRYPT_ERROR}"
                                  "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${LIB_MATH}" "${LIB_C}"
                                  "-pthread")
 
@@ -501,7 +525,7 @@ if(BUILD_EXAMPLES)
     target_include_directories(nDPIsrvd-captured PRIVATE
                                "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" "${CMAKE_SOURCE_DIR}" ${NDPID_DEPS_INC})
     target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}" "${DBUS_LIB}" ${DBUS_LIBRARIES} ${SYSTEMD_LIBRARIES}
-                                            "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${LIB_MATH}" "${LIB_C}"
+                                            "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${LIB_MATH}" "${LIB_C}" "${LIB_GCRYPT}" "${LIB_GCRYPT_ERROR}"
                                             "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}")
 
     add_executable(nDPIsrvd-analysed examples/c-analysed/c-analysed.c utils.c)
