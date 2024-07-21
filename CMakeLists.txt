@@ -424,7 +424,7 @@ else()
 endif()
 
 
-find_library(LIB_GCRYPT NAMES grypt PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+find_library(LIB_GCRYPT NAMES gcrypt PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
 # Ensure the library was found
 if(NOT LIB_GCRYPT)
@@ -435,7 +435,7 @@ endif()
 
 
 
-find_library(LIB_GCRYPT_ERROR NAMES grypt-error PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+find_library(LIB_GCRYPT_ERROR NAMES gcrypt-error PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
 # Ensure the library was found
 if(NOT LIB_GCRYPT_ERROR)
