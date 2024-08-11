@@ -1,4 +1,11 @@
 cmake_minimum_required(VERSION 3.12.4)
+
+set(PROJECT_VERSION "1.0.0")
+# Print the project version at the beginning
+message(STATUS "Configuring project version ${PROJECT_VERSION}")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+set(BUILD_SHARED_LIBS OFF)
+
 project(nDPId C)
 if(CMAKE_COMPILER_IS_GNUCXX)
     execute_process(COMMAND ${CMAKE_C_COMPILER} -dumpversion OUTPUT_VARIABLE GCC_VERSION)
@@ -68,11 +75,11 @@ if(NOT MATH_FUNCTION_EXISTS AND NOT NEED_LINKING_AGAINST_LIBM)
     endif()
 endif()
 
-if(NEED_LINKING_AGAINST_LIBM)
-    set(LIBM_LIB "-lm")
-else()
-    set(LIBM_LIB "")
-endif()
+# if(NEED_LINKING_AGAINST_LIBM)
+    # set(LIBM_LIB "-lm")
+# else()
+    # set(LIBM_LIB "")
+# endif()
 
 option(ENABLE_COVERAGE "Generate a code coverage report using lcov/genhtml." OFF)
 option(ENABLE_SANITIZER "Enable ASAN/LSAN/UBSAN." OFF)
@@ -85,14 +92,18 @@ if(BUILD_EXAMPLES)
 option(ENABLE_DBUS "Build DBus notification example." OFF)
 option(ENABLE_CURL "Build influxdb data write example." OFF)
 endif()
-option(BUILD_NDPI "Clone and build nDPI from github." OFF)
+option(BUILD_NDPI "Clone and build nDPI from github." ON)
+
 if(BUILD_NDPI)
+    message(STATUS "Ashwani BUILD_NDPI")
     option(BUILD_NDPI_FORCE_GIT_UPDATE "Forcefully instruments nDPI build script to update the git submodule." OFF)
     unset(NDPI_NO_PKGCONFIG CACHE)
     unset(STATIC_LIBNDPI_INSTALLDIR CACHE)
 else()
+    message(STATUS "Ashwani 1")
     option(NDPI_NO_PKGCONFIG "Do not use pkgconfig to search for libnDPI." OFF)
     if(NDPI_NO_PKGCONFIG)
+        message(STATUS "Ashwani 11")
         set(STATIC_LIBNDPI_INSTALLDIR "/opt/libnDPI/usr" CACHE STRING "Path to a installation directory of libnDPI e.g. /opt/libnDPI/usr")
         if(STATIC_LIBNDPI_INSTALLDIR STREQUAL "")
             message(FATAL_ERROR "STATIC_LIBNDPI_INSTALLDIR can not be an empty string within your configuration!")
@@ -103,10 +114,12 @@ else()
 endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
+    message(STATUS "Ashwani if (STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)")
     option(NDPI_WITH_GCRYPT "Link static libndpi library against libgcrypt." OFF)
     option(NDPI_WITH_PCRE "Link static libndpi library against libpcre." OFF)
     option(NDPI_WITH_MAXMINDDB "Link static libndpi library against libmaxminddb." OFF)
 else()
+    message(STATUS "Ashwani else (STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)")
     unset(NDPI_WITH_GCRYPT CACHE)
     unset(NDPI_WITH_PCRE CACHE)
     unset(NDPI_WITH_MAXMINDDB CACHE)
@@ -137,6 +150,7 @@ if(CMAKE_CROSSCOMPILING)
 endif()
 
 if(BUILD_NDPI)
+    message(STATUS "Ashwani if(BUILD_NDPI)")
     enable_testing()
     add_test(NAME run_tests
              COMMAND "${CMAKE_SOURCE_DIR}/test/run_tests.sh"
@@ -244,6 +258,15 @@ if(ENABLE_SANITIZER AND ENABLE_SANITIZER_THREAD)
     message(FATAL_ERROR "ENABLE_SANITIZER and ENABLE_SANITIZER_THREAD can not be used together!")
 endif()
 
+find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT JSON_C_LIB)
+    message(FATAL_ERROR "Could not find libjson-c.a")
+else()
+    message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
+endif()
+
 if(BUILD_NDPI)
     include(ExternalProject)
     ExternalProject_Add(
@@ -275,8 +298,8 @@ if(BUILD_NDPI)
     )
 
     set(STATIC_LIBNDPI_INSTALLDIR "${CMAKE_BINARY_DIR}/libnDPI")
-    add_dependencies(nDPId libnDPI libjson-c)
-    add_dependencies(nDPId-test libnDPI libjson-c)
+    add_dependencies(nDPId libnDPI )
+    add_dependencies(nDPId-test libnDPI)
 endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
@@ -293,19 +316,36 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     endif()
 endif()
 
+# find_library(NDPI_LIB NAMES ndpi PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT NDPI_LIB)
+    # message(FATAL_ERROR "Could not find libndpi.a")
+# else()
+    # message(STATUS "Found libndpi.a at ${NDPI_LIB}")
+# endif()
+
+
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
+    message(STATUS "       Ashwani <if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)>")
     add_definitions("-DLIBNDPI_STATIC=1")
     set(STATIC_LIBNDPI_INC "${STATIC_LIBNDPI_INSTALLDIR}/include/ndpi")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
+        message(STATUS "       Ashwani <if(CMAKE_SIZEOF_VOID_P EQUAL 8)>")
         if(EXISTS "${STATIC_LIBNDPI_INSTALLDIR}/lib64/libndpi.a")
+            message(STATUS "       Ashwani < set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib64/libndpi.a")>")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib64/libndpi.a")
         else()
+            message(STATUS "       Ashwani <set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")>")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")
         endif()
     else()
+        message(STATUS "       Ashwani <else()>")
         if(EXISTS "${STATIC_LIBNDPI_INSTALLDIR}/lib32/libndpi.a")
+            message(STATUS "       Ashwani <set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib32/libndpi.a")>")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib32/libndpi.a")
         else()
+            message(STATUS "       Ashwani <set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")>")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")
         endif()
     endif()
@@ -320,11 +360,13 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
     unset(DEFAULT_NDPI_INCLUDE CACHE)
     unset(pkgcfg_lib_NDPI_ndpi CACHE)
 else()
+    message(STATUS "Executing the path to find pkgcfg_lib_NDPI_ndpi...")
+    unset(pkgcfg_lib_NDPI_ndpi CACHE)
     if(NOT NDPI_NO_PKGCONFIG)
-        pkg_check_modules(NDPI REQUIRED libndpi>=4.9.0)
-        if(NOT pkgcfg_lib_NDPI_ndpi)
-            find_package(NDPI "4.9.0" REQUIRED)
-        endif()
+#        pkg_check_modules(NDPI REQUIRED libndpi>=4.9.0)
+#        if(NOT pkgcfg_lib_NDPI_ndpi)
+#            find_package(NDPI "4.9.0" REQUIRED)
+#        endif()
 
         unset(STATIC_LIBNDPI_INC CACHE)
         unset(STATIC_LIBNDPI_LIB CACHE)
@@ -333,32 +375,114 @@ else()
     set(DEFAULT_NDPI_INCLUDE ${NDPI_INCLUDE_DIRS})
 endif()
 
-pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
-if(NOT pkgcfg_lib_PCAP_pcap)
-    pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/libpcap/ NO_DEFAULT_PATH)
+
+# Ensure the library was found
+if(NOT PCAP_LIB)
+    message(FATAL_ERROR "Could not find libpcap.a")
+else()
+    message(STATUS "Found libpcap.a at ${PCAP_LIB}")
 endif()
-if(NOT pkgcfg_lib_PCAP_pcap)
-    find_package(PCAP "1.9.0" REQUIRED)
-endif()
+
+
+# find_library(DBUS_LIB NAMES dbus-1 PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT DBUS_LIB)
+#     message(FATAL_ERROR "Could not find libdbus-1.a")
+# else()
+#     message(STATUS "Found libdbus-1.a at ${DBUS_LIB}")
+# endif()
+
+
+# find_library(LIB_MATH NAMES m PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT LIB_MATH)
+#     message(FATAL_ERROR "Could not find libm.a")
+# else()
+#     message(STATUS "Found libm.a at ${LIB_MATH}")
+# endif()
+
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic -lc -Wl,-Bdynamic")
+# find_library(LIB_C NAMES c PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT LIB_C)
+#     message(FATAL_ERROR "Could not find libc.a")
+# else()
+#     message(STATUS "Found libc.a at ${LIB_C}")
+# endif()
+
+
+# find_library(LIB_GCRYPT NAMES gcrypt PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT LIB_GCRYPT)
+#     message(FATAL_ERROR "Could not find libgrypt.a")
+# else()
+#     message(STATUS "Found libgrypt.a at ${LIB_GCRYPT}")
+# endif()
+
+
+
+# find_library(LIB_GPG_ERROR NAMES gpg-error PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT LIB_GPG_ERROR)
+#     message(FATAL_ERROR "Could not find libgpg-error.a")
+# else()
+#     message(STATUS "Found libgpg-error.a at ${LIB_GPG_ERROR}")
+# endif()
+
+
+
+
+# pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
+# if(NOT pkgcfg_lib_PCAP_pcap)
+   # pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
+# else()
+   # message(STATUS "Found libpcap: ${pkgcfg_lib_PCAP_pcap_LIBRARIES}")
+# endif()
+# if(NOT pkgcfg_lib_PCAP_pcap)
+   # find_package(PCAP "1.9.0" REQUIRED)
+# endif()
 
 # Find json-c package
-find_package(json-c CONFIG)
+# find_package(json-c CONFIG)
 
-if(json-c_FOUND)
-    # Link the json-c library to your target
-    target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
-    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
-else()
+# if(json-c_FOUND)
+#    message(STATUS "Found json-c library: ${json-c_LIBRARIES}")
+#    # Link the json-c library to your target
+#    target_link_libraries(nDPId-test /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+#    target_link_libraries(nDPId /usr/lib/x86_64-linux-gnu/libjson-c.so.5)
+# else()
     # Handle error if json-c is not found
-    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
-endif()
+#    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
+# endif()
+
+# pkg_check_modules(DBUS REQUIRED dbus-1)
+# if(DBUS_FOUND)
+#     message(STATUS "Found dbus-1: ${DBUS_LIBRARIES}")
+# else()
+#     message(FATAL_ERROR "Could not find dbus-1 library")
+# endif()
+
+# pkg_check_modules(SYSTEMD REQUIRED libsystemd)
+# if(SYSTEMD_FOUND)
+#     message(STATUS "Found libsystemd: ${SYSTEMD_LIBRARIES}")
+# else()
+#     message(FATAL_ERROR "Could not find libsystemd library")
+# endif()
+
+include_directories(${PCAP_INCLUDE_DIRS} ${DBUS_INCLUDE_DIRS} ${SYSTEMD_INCLUDE_DIRS})
 
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
-target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
+target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}" "${DBUS_LIB}" ${DBUS_LIBRARIES} ${SYSTEMD_LIBRARIES}
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
+                              "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${LIB_MATH}" "${LIB_C}" "${LIB_GCRYPT}" "${LIB_GPG_ERROR}"
                             "-pthread")
 
 target_compile_definitions(nDPIsrvd PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS})
@@ -370,9 +494,9 @@ target_compile_definitions(nDPId-test PRIVATE -D_GNU_SOURCE=1 -DNO_MAIN=1 -DPKG_
                                               ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS} ${NDPID_TEST_MPROF_DEFS})
 target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
-target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
-                                 "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}"
+target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}" "${DBUS_LIB}" ${DBUS_LIBRARIES} ${SYSTEMD_LIBRARIES}
+                                 "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}" "${LIB_GCRYPT}" "${LIB_GPG_ERROR}"
+                                  "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${LIB_MATH}" "${LIB_C}"
                                  "-pthread")
 
 if(BUILD_EXAMPLES)
@@ -391,9 +515,9 @@ if(BUILD_EXAMPLES)
     target_compile_definitions(nDPIsrvd-captured PRIVATE ${NDPID_DEFS})
     target_include_directories(nDPIsrvd-captured PRIVATE
                                "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" "${CMAKE_SOURCE_DIR}" ${NDPID_DEPS_INC})
-    target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${pkgcfg_lib_NDPI_ndpi}"
-                                            "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}"
-                                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}")
+    target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}" "${DBUS_LIB}" ${DBUS_LIBRARIES} ${SYSTEMD_LIBRARIES}
+                                            "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${LIB_MATH}" "${LIB_C}" "${LIB_GCRYPT}" "${LIB_GPG_ERROR}"
+                                            "${PCAP_LIBRARY}")
 
     add_executable(nDPIsrvd-analysed examples/c-analysed/c-analysed.c utils.c)
     target_compile_definitions(nDPIsrvd-analysed PRIVATE ${NDPID_DEFS})
