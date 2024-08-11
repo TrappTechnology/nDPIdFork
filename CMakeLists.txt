@@ -364,22 +364,22 @@ else()
     set(DEFAULT_NDPI_INCLUDE ${NDPI_INCLUDE_DIRS})
 endif()
 
-# find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/libpcap/ NO_DEFAULT_PATH)
+find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/libpcapFromOther/ NO_DEFAULT_PATH)
 
-# # Ensure the library was found
-# if(NOT PCAP_LIB)
-#     message(FATAL_ERROR "Could not find libpcap.a")
-# else()
-#     message(STATUS "Found libpcap.a at ${PCAP_LIB}")
+# Ensure the library was found
+if(NOT PCAP_LIB)
+    message(FATAL_ERROR "Could not find libpcap.a")
+else()
+    message(STATUS "Found libpcap.a at ${PCAP_LIB}")
+endif()
+
+# pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
+# if(NOT pkgcfg_lib_PCAP_pcap)
+#     pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
 # endif()
-
-pkg_check_modules(PCAP libpcap>=1.9.0) # no *.pc file before 1.9.0
-if(NOT pkgcfg_lib_PCAP_pcap)
-    pkg_check_modules(PCAP libpcap>=1.8.1) # seems like some distributions provide their own *.pc file for 1.8.1 (e.g. Ubuntu-18.04)
-endif()
-if(NOT pkgcfg_lib_PCAP_pcap)
-    find_package(PCAP "1.9.0" REQUIRED)
-endif()
+# if(NOT pkgcfg_lib_PCAP_pcap)
+#     find_package(PCAP "1.9.0" REQUIRED)
+# endif()
 
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
