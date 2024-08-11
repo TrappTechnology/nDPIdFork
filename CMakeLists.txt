@@ -385,14 +385,14 @@ else()
 endif()
 
 
-# find_library(DBUS_LIB NAMES dbus-1 PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+find_library(DBUS_LIB NAMES dbus-1 PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
-# # Ensure the library was found
-# if(NOT DBUS_LIB)
-#     message(FATAL_ERROR "Could not find libdbus-1.a")
-# else()
-#     message(STATUS "Found libdbus-1.a at ${DBUS_LIB}")
-# endif()
+# Ensure the library was found
+if(NOT DBUS_LIB)
+    message(FATAL_ERROR "Could not find libdbus-1.a")
+else()
+    message(STATUS "Found libdbus-1.a at ${DBUS_LIB}")
+endif()
 
 
 # find_library(LIB_MATH NAMES m PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
@@ -482,7 +482,7 @@ target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_V
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}"
+                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${DBUS_LIB}"
                             "-pthread")
 
 target_compile_definitions(nDPIsrvd PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS})
@@ -496,7 +496,7 @@ target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                  "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}"
+                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" "${DBUS_LIB}"
                                  "-pthread")
 
 if(BUILD_EXAMPLES)
@@ -517,7 +517,7 @@ if(BUILD_EXAMPLES)
                                "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" "${CMAKE_SOURCE_DIR}" ${NDPID_DEPS_INC})
     target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}"
-                               "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}")
+                               "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}") "${DBUS_LIB}"
     add_executable(nDPIsrvd-analysed examples/c-analysed/c-analysed.c utils.c)
     target_compile_definitions(nDPIsrvd-analysed PRIVATE ${NDPID_DEFS})
     target_include_directories(nDPIsrvd-analysed PRIVATE ${NDPID_DEPS_INC})
