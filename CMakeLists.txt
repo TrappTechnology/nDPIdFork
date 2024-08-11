@@ -317,25 +317,25 @@ if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
 endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)
-    message(STATUS "       Ashwani <if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI)>")
+    message(STATUS "Ashwani A")
     add_definitions("-DLIBNDPI_STATIC=1")
     set(STATIC_LIBNDPI_INC "${STATIC_LIBNDPI_INSTALLDIR}/include/ndpi")
     if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        message(STATUS "       Ashwani <if(CMAKE_SIZEOF_VOID_P EQUAL 8)>")
+        message(STATUS "Ashwani B")
         if(EXISTS "${STATIC_LIBNDPI_INSTALLDIR}/lib64/libndpi.a")
-            message(STATUS "       Ashwani < set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib64/libndpi.a")>")
+            message(STATUS "Ashwani C")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib64/libndpi.a")
         else()
-            message(STATUS "       Ashwani <set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")>")
+            message(STATUS "Ashwani D")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")
         endif()
     else()
-        message(STATUS "       Ashwani <else()>")
+        message(STATUS "Ashwani E>")
         if(EXISTS "${STATIC_LIBNDPI_INSTALLDIR}/lib32/libndpi.a")
-            message(STATUS "       Ashwani <set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib32/libndpi.a")>")
+            message(STATUS "Ashwani F")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib32/libndpi.a")
         else()
-            message(STATUS "       Ashwani <set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")>")
+            message(STATUS "Ashwani G")
             set(STATIC_LIBNDPI_LIB "${STATIC_LIBNDPI_INSTALLDIR}/lib/libndpi.a")
         endif()
     endif()
@@ -364,21 +364,21 @@ else()
     set(DEFAULT_NDPI_INCLUDE ${NDPI_INCLUDE_DIRS})
 endif()
 
-find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/libpcap/ NO_DEFAULT_PATH)
+# find_library(PCAP_LIB NAMES pcap PATHS /home/acoma/repositories/libpcap/ NO_DEFAULT_PATH)
 
-# Ensure the library was found
-if(NOT PCAP_LIB)
-    message(FATAL_ERROR "Could not find libpcap.a")
-else()
-    message(STATUS "Found libpcap.a at ${PCAP_LIB}")
-endif()
+# # Ensure the library was found
+# if(NOT PCAP_LIB)
+#     message(FATAL_ERROR "Could not find libpcap.a")
+# else()
+#     message(STATUS "Found libpcap.a at ${PCAP_LIB}")
+# endif()
 
 target_compile_options(nDPId PRIVATE "-pthread")
 target_compile_definitions(nDPId PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS} ${ZLIB_DEFS})
 target_include_directories(nDPId PRIVATE "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                             "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" 
+                            "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" 
                             "-pthread")
 
 target_compile_definitions(nDPIsrvd PRIVATE -D_GNU_SOURCE=1 -DPKG_VERSION=\"${PKG_VERSION}\" -DGIT_VERSION=\"${GIT_VERSION}\" ${NDPID_DEFS} ${EPOLL_DEFS})
@@ -392,7 +392,7 @@ target_include_directories(nDPId-test PRIVATE
                            "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" ${NDPID_DEPS_INC})
 target_link_libraries(nDPId-test "${STATIC_LIBNDPI_LIB}" "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                  "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}" "${pkgcfg_lib_ZLIB_z}"
-                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}" "${LIBM_LIB}" "${JSON_C_LIB}" 
+                                 "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}"  "${LIBM_LIB}" "${JSON_C_LIB}" 
                                  "-pthread")
 
 if(BUILD_EXAMPLES)
@@ -413,7 +413,7 @@ if(BUILD_EXAMPLES)
                                "${STATIC_LIBNDPI_INC}" "${DEFAULT_NDPI_INCLUDE}" "${CMAKE_SOURCE_DIR}" ${NDPID_DEPS_INC})
     target_link_libraries(nDPIsrvd-captured "${pkgcfg_lib_PCAP_pcap}" "${PCAP_LIB}" "${pkgcfg_lib_NDPI_ndpi}" "${NDPI_LIB}"
                                "${pkgcfg_lib_PCRE_pcre2-8}" "${pkgcfg_lib_MAXMINDDB_maxminddb}"
-                               "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" "${PCAP_LIBRARY}") 
+                               "${GCRYPT_LIBRARY}" "${GCRYPT_ERROR_LIBRARY}" ) 
     add_executable(nDPIsrvd-analysed examples/c-analysed/c-analysed.c utils.c)
     target_compile_definitions(nDPIsrvd-analysed PRIVATE ${NDPID_DEFS})
     target_include_directories(nDPIsrvd-analysed PRIVATE ${NDPID_DEPS_INC})
