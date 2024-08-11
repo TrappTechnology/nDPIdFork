@@ -267,15 +267,6 @@ else()
     message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
 endif()
 
-find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
-
-# Ensure the library was found
-if(NOT JSON_C_LIB)
-    message(FATAL_ERROR "Could not find libjson-c.a")
-else()
-    message(STATUS "Found libjson-c.a at ${JSON_C_LIB}")
-endif()
-
 if(BUILD_NDPI)
     include(ExternalProject)
     ExternalProject_Add(
@@ -313,7 +304,7 @@ endif()
 
 if(STATIC_LIBNDPI_INSTALLDIR OR BUILD_NDPI OR NDPI_NO_PKGCONFIG)
     if(NDPI_WITH_GCRYPT)
- #       find_package(GCRYPT "1.4.2" REQUIRED)
+        find_package(GCRYPT "1.4.2" REQUIRED)
     endif()
 
     if(NDPI_WITH_PCRE)
@@ -394,55 +385,55 @@ else()
 endif()
 
 
-find_library(DBUS_LIB NAMES dbus-1 PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+# find_library(DBUS_LIB NAMES dbus-1 PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
-# Ensure the library was found
-if(NOT DBUS_LIB)
-    message(FATAL_ERROR "Could not find libdbus-1.a")
-else()
-    message(STATUS "Found libdbus-1.a at ${DBUS_LIB}")
-endif()
-
-
-find_library(LIB_MATH NAMES m PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
-
-# Ensure the library was found
-if(NOT LIB_MATH)
-    message(FATAL_ERROR "Could not find libm.a")
-else()
-    message(STATUS "Found libm.a at ${LIB_MATH}")
-endif()
-
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic -lc -Wl,-Bdynamic")
-find_library(LIB_C NAMES c PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
-
-# Ensure the library was found
-if(NOT LIB_C)
-    message(FATAL_ERROR "Could not find libc.a")
-else()
-    message(STATUS "Found libc.a at ${LIB_C}")
-endif()
+# # Ensure the library was found
+# if(NOT DBUS_LIB)
+#     message(FATAL_ERROR "Could not find libdbus-1.a")
+# else()
+#     message(STATUS "Found libdbus-1.a at ${DBUS_LIB}")
+# endif()
 
 
-find_library(LIB_GCRYPT NAMES gcrypt PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+# find_library(LIB_MATH NAMES m PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
-# Ensure the library was found
-if(NOT LIB_GCRYPT)
-    message(FATAL_ERROR "Could not find libgrypt.a")
-else()
-    message(STATUS "Found libgrypt.a at ${LIB_GCRYPT}")
-endif()
+# # Ensure the library was found
+# if(NOT LIB_MATH)
+#     message(FATAL_ERROR "Could not find libm.a")
+# else()
+#     message(STATUS "Found libm.a at ${LIB_MATH}")
+# endif()
+
+# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-Bstatic -lc -Wl,-Bdynamic")
+# find_library(LIB_C NAMES c PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT LIB_C)
+#     message(FATAL_ERROR "Could not find libc.a")
+# else()
+#     message(STATUS "Found libc.a at ${LIB_C}")
+# endif()
+
+
+# find_library(LIB_GCRYPT NAMES gcrypt PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+
+# # Ensure the library was found
+# if(NOT LIB_GCRYPT)
+#     message(FATAL_ERROR "Could not find libgrypt.a")
+# else()
+#     message(STATUS "Found libgrypt.a at ${LIB_GCRYPT}")
+# endif()
 
 
 
-find_library(LIB_GPG_ERROR NAMES gpg-error PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
+# find_library(LIB_GPG_ERROR NAMES gpg-error PATHS /home/acoma/repositories/nDPIdStaticLibFolder/ NO_DEFAULT_PATH)
 
-# Ensure the library was found
-if(NOT LIB_GPG_ERROR)
-    message(FATAL_ERROR "Could not find libgpg-error.a")
-else()
-    message(STATUS "Found libgpg-error.a at ${LIB_GPG_ERROR}")
-endif()
+# # Ensure the library was found
+# if(NOT LIB_GPG_ERROR)
+#     message(FATAL_ERROR "Could not find libgpg-error.a")
+# else()
+#     message(STATUS "Found libgpg-error.a at ${LIB_GPG_ERROR}")
+# endif()
 
 
 
@@ -470,19 +461,19 @@ endif()
 #    message(FATAL_ERROR "json-c library not found. Please make sure it is installed.")
 # endif()
 
-pkg_check_modules(DBUS REQUIRED dbus-1)
-if(DBUS_FOUND)
-    message(STATUS "Found dbus-1: ${DBUS_LIBRARIES}")
-else()
-    message(FATAL_ERROR "Could not find dbus-1 library")
-endif()
+# pkg_check_modules(DBUS REQUIRED dbus-1)
+# if(DBUS_FOUND)
+#     message(STATUS "Found dbus-1: ${DBUS_LIBRARIES}")
+# else()
+#     message(FATAL_ERROR "Could not find dbus-1 library")
+# endif()
 
-pkg_check_modules(SYSTEMD REQUIRED libsystemd)
-if(SYSTEMD_FOUND)
-    message(STATUS "Found libsystemd: ${SYSTEMD_LIBRARIES}")
-else()
-    message(FATAL_ERROR "Could not find libsystemd library")
-endif()
+# pkg_check_modules(SYSTEMD REQUIRED libsystemd)
+# if(SYSTEMD_FOUND)
+#     message(STATUS "Found libsystemd: ${SYSTEMD_LIBRARIES}")
+# else()
+#     message(FATAL_ERROR "Could not find libsystemd library")
+# endif()
 
 include_directories(${PCAP_INCLUDE_DIRS} ${DBUS_INCLUDE_DIRS} ${SYSTEMD_INCLUDE_DIRS})
 
