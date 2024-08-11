@@ -357,7 +357,6 @@ else()
 #        if(NOT pkgcfg_lib_NDPI_ndpi)
 #            find_package(NDPI "4.9.0" REQUIRED)
 #        endif()
-
         unset(STATIC_LIBNDPI_INC CACHE)
         unset(STATIC_LIBNDPI_LIB CACHE)
     endif()
