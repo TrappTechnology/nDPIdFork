@@ -4059,20 +4059,19 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     // Ashwani Start       
-    {        
-        u_int64_t time_ms = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
+            
+    u_int64_t time_ms = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
    
-        /* safety check */
-        if(workflow->last_time > time_ms) 
-        {
-            /* printf("\nWARNING: timestamp bug in the pcap file (ts delta: %llu, repairing)\n", ndpi_thread_info[thread_id].last_time - time); */
-            time_ms = workflow->last_time;
-        }
+     /* safety check */
+     if(workflow->last_time > time_ms) 
+     {
+          /* printf("\nWARNING: timestamp bug in the pcap file (ts delta: %llu, repairing)\n", ndpi_thread_info[thread_id].last_time - time); */
+          time_ms = workflow->last_time;
+     }
 
-       
-        /* update last time value */
-        workflow->last_time = time_ms;
-    }
+     /* update last time value */
+     workflow->last_time = time_ms;
+    
     // Ashwani End 
 
     if (type == ETH_P_IP)
