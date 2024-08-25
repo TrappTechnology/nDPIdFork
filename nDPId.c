@@ -2367,7 +2367,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     timeinfo = gmtime(&start_seconds);
     char datetime_start_str[30];
     strftime(datetime_start_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
-    ndpi_serialize_string_string(serializer, "event_start", datetime_start_str);
+    ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_start", datetime_start_str);
 
     // Ashwani - END
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
