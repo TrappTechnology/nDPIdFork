@@ -36,6 +36,8 @@
 #include "utils.h"
 #include "ReadJsonConfiguration.h"
 
+#define TICK_RESOLUTION 1000
+
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
 #endif
@@ -213,6 +215,9 @@ struct nDPId_flow_extended
     uint64_t first_seen;
     uint64_t last_flow_update;
 
+    uint64_t first_seen_ms;
+    uint64_t last_seen_ms;
+
     struct nDPId_flow_analysis * flow_analysis;
     unsigned long long int total_l4_payload_len[FD_COUNT];
     struct ndpi_proto detected_l7_protocol;
@@ -263,6 +268,7 @@ struct nDPId_flow
 
 struct nDPId_workflow
 {
+    uint64_t last_time;
     pcap_t * pcap_handle;
 
     MT_VALUE(error_or_eof, uint8_t);
@@ -2366,14 +2372,25 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_first_seen", flow_ext->first_seen);
 
     // Ashwani - START
-
-    double f = (double)flow_ext->first_seen;
+    double f = (double)flow_ext->first_seen_ms, l = (double)flow_ext->last_seen_ms;
     time_t start_seconds = f / 1000;
     struct tm * timeinfo;
     timeinfo = gmtime(&start_seconds);
     char datetime_start_str[30];
     strftime(datetime_start_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+
+    time_t end_seconds = l / 1000;
+    timeinfo = gmtime(&end_seconds);
+    char datetime_end_str[30];
+    strftime(datetime_end_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_start", datetime_start_str);
+    ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_end", datetime_end_str);
+
+    long long nanoseconds = (end_seconds - start_seconds) * 1000000;
+
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "event_duration", nanoseconds);
+
 
     // Ashwani - END
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
@@ -4040,6 +4057,29 @@ static void ndpi_process_packet(uint8_t * const args,
     {
         return;
     }
+
+    // Ashwani Start       
+    {
+        u_int64_t time_ms = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
+
+        /* safety check */
+        if(workflow->last_time > time_ms) 
+        {
+            /* printf("\nWARNING: timestamp bug in the pcap file (ts delta: %llu, repairing)\n", ndpi_thread_info[thread_id].last_time - time); */
+            time_ms = workflow->last_time;
+        }
+
+        /* update last time value */
+        workflow->last_time = time_ms;
+
+        if(flow_to_process->flow_extended.first_seen_ms == 0)
+        {
+            flow_to_process->flow_extended.first_seen_ms = time_ms;
+        }    
+
+        flow_to_process->flow_extended.last_seen_ms = time_ms;
+    }
+    // Ashwani End 
 
     if (type == ETH_P_IP)
     {

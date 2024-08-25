@@ -584,17 +584,16 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     }
 
     json_object * event_end;
-    if (json_object_object_get_ex(root, "end", &event_end))
+    if (json_object_object_get_ex(root, "event_end", &event_end))
     {
         result.event_end = strDuplicate(json_object_get_string(event_end));
     }
 
     json_object * event_duration;
-    if (json_object_object_get_ex(root, "duration", &event_duration))
+    if (json_object_object_get_ex(root, "event_duration", &event_duration))
     {
         result.event_duration = strDuplicate(json_object_get_string(event_duration));
     }
-
 
 
     // xfer
