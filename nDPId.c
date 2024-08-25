@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <time.h>
 #if !defined(__FreeBSD__) && !defined(__APPLE__)
 #include <sys/signalfd.h>
 #endif
@@ -2130,6 +2131,9 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
     {
         case L3_IP:
             ndpi_serialize_string_string(serializer, "l3_proto", "ip4");
+            // Ashwani start
+            ndpi_serialize_string_uint32(serializer, "ip", 4);
+            //Ashwani end
             if (inet_ntop(AF_INET, &flow_basic->src.v4.ip, src_name, sizeof(src_name)) == NULL)
             {
                 logger(1, "Could not convert IPv4 source ip to string: %s", strerror(errno));
@@ -2141,6 +2145,9 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             break;
         case L3_IP6:
             ndpi_serialize_string_string(serializer, "l3_proto", "ip6");
+            // Ashwani start
+            ndpi_serialize_string_uint32(serializer, "ip", 6);
+            // Ashwani end
             if (inet_ntop(AF_INET6, &flow_basic->src.v6.ip[0], src_name, sizeof(src_name)) == NULL)
             {
                 logger(1, "Could not convert IPv6 source ip to string: %s", strerror(errno));
@@ -2351,6 +2358,18 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
                                  "dst2src_bytes",
                                  flow_ext->bytes[FD_DST2SRC]);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_first_seen", flow_ext->first_seen);
+
+    // Ashwani - START
+
+    double f = (double)flow_ext->first_seen;
+    time_t start_seconds = f / 1000;
+    struct tm * timeinfo;
+    timeinfo = gmtime(&start_seconds);
+    char datetime_start_str[30];
+    strftime(datetime_start_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+    ndpi_serialize_string_string(serializer, "event_start", datetime_start_str);
+
+    // Ashwani - END
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                  "flow_src_last_pkt_time",
                                  flow_ext->flow_basic.last_pkt_time[FD_SRC2DST]);

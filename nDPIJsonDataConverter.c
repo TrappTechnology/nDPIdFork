@@ -526,11 +526,11 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     }
     
     // network object
-    json_object* l3_proto;
-    if (json_object_object_get_ex(root, "l3_proto", &l3_proto))
-    {
-        result.l3_proto = strDuplicate(json_object_get_string(l3_proto));
-    }
+    //json_object* l3_proto;
+    //if (json_object_object_get_ex(root, "l3_proto", &l3_proto))
+    //{
+    //    result.l3_proto = strDuplicate(json_object_get_string(l3_proto));
+    //}
 
     json_object* ip;
     if (json_object_object_get_ex(root, "ip", &ip))
@@ -577,26 +577,24 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
   
     // event
     json_object* event_object;
-    if (json_object_object_get_ex(root, "event", &event_object))
+
+    if (json_object_object_get_ex(root, "event_start", &event_start))
     {
-        json_object* event_start;
-        if (json_object_object_get_ex(event_object, "start", &event_start))
-        {
-            result.event_start = strDuplicate(json_object_get_string(event_start));
-        }
-
-        json_object* event_end;
-        if (json_object_object_get_ex(event_object, "end", &event_end))
-        {
-            result.event_end = strDuplicate(json_object_get_string(event_end));
-        }
-
-        json_object* event_duration;
-        if (json_object_object_get_ex(event_object, "duration", &event_duration))
-        {
-            result.event_duration = strDuplicate(json_object_get_string(event_duration));
-        }
+        result.event_start = strDuplicate(json_object_get_string(event_start));
     }
+
+    json_object * event_end;
+    if (json_object_object_get_ex(root, "end", &event_end))
+    {
+        result.event_end = strDuplicate(json_object_get_string(event_end));
+    }
+
+    json_object * event_duration;
+    if (json_object_object_get_ex(root, "duration", &event_duration))
+    {
+        result.event_duration = strDuplicate(json_object_get_string(event_duration));
+    }
+
 
 
     // xfer
@@ -926,10 +924,10 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
         free(rootData->dst_port);
     }
 
-    if (rootData->l3_proto != NULL)
-    {
-        free(rootData->l3_proto);
-    }
+    //if (rootData->l3_proto != NULL)
+    //{
+    //    free(rootData->l3_proto);
+    //}
 
     if (rootData->l4_proto != NULL)
     {
