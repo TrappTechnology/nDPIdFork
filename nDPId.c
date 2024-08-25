@@ -4060,8 +4060,10 @@ static void ndpi_process_packet(uint8_t * const args,
 
     // Ashwani Start       
     {
+        logger (0, "Ashwani stage 1");
         u_int64_t time_ms = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
 
+        logger (0, "Ashwani stage 2");
         /* safety check */
         if(workflow->last_time > time_ms) 
         {
@@ -4069,15 +4071,20 @@ static void ndpi_process_packet(uint8_t * const args,
             time_ms = workflow->last_time;
         }
 
+        logger (0, "Ashwani stage 3");
         /* update last time value */
         workflow->last_time = time_ms;
 
+        logger (0, "Ashwani stage 4");
         if(flow_to_process->flow_extended.first_seen_ms == 0)
         {
+             logger (0, "Ashwani stage 4-2");
             flow_to_process->flow_extended.first_seen_ms = time_ms;
         }    
 
+        logger (0, "Ashwani stage 5");
         flow_to_process->flow_extended.last_seen_ms = time_ms;
+        logger (0, "Ashwani stage 6");
     }
     // Ashwani End 
 
