@@ -2123,6 +2123,7 @@ static void check_for_flow_updates(struct nDPId_reader_thread * const reader_thr
 
 static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_flow_basic const * const flow_basic)
 {
+    logger(0, "Ashwani jsonize_l3_l4 START");
     ndpi_serializer * const serializer = &workflow->ndpi_serializer;
     char src_name[48] = {};
     char dst_name[48] = {};
@@ -2130,6 +2131,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
     switch (flow_basic->l3_type)
     {
         case L3_IP:
+            logger(0, "Ashwani L3_IP");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip4");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 4);
@@ -2144,6 +2146,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             }
             break;
         case L3_IP6:
+            logger(0, "Ashwani L3_IP6");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip6");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 6);
@@ -2161,6 +2164,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             ndpi_patchIPv6Address(src_name), ndpi_patchIPv6Address(dst_name);
             break;
         default:
+            logger(0, "Ashwani default");
             ndpi_serialize_string_string(serializer, "l3_proto", "unknown");
     }
 
@@ -2193,6 +2197,8 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             ndpi_serialize_string_uint32(serializer, "l4_proto", flow_basic->l4_protocol);
             break;
     }
+
+     logger(0, "Ashwani jsonize_l3_l4 END");
 }
 
 static void jsonize_basic(struct nDPId_reader_thread * const reader_thread, int serialize_thread_id)
