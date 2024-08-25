@@ -576,7 +576,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     }
   
     // event
-    json_object* event_object;
+    json_object * event_start;
 
     if (json_object_object_get_ex(root, "event_start", &event_start))
     {
