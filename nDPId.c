@@ -4566,6 +4566,19 @@ static void ndpi_process_packet(uint8_t * const args,
         flow_to_process->flow_extended.min_l4_payload_len[direction] = l4_payload_len;
     }
 
+    // Ashwani Starts here
+    logger(0, "Ashwani stage 11");
+    if (flow_to_process->flow_extended.first_seen_ms == 0)
+    {
+        logger(0, "Ashwani stage 11-2");
+        flow_to_process->flow_extended.first_seen_ms = time_ms;
+    }
+
+    logger(0, "Ashwani stage 22");
+    flow_to_process->flow_extended.last_seen_ms = time_ms;
+    logger(0, "Ashwani stage 33");
+    // Ashwani Ends here
+
     if (is_new_flow != 0)
     {
         last_pkt_time = flow_to_process->flow_extended.first_seen =
@@ -4575,19 +4588,6 @@ static void ndpi_process_packet(uint8_t * const args,
         flow_to_process->flow_extended.max_l4_payload_len[direction] = l4_payload_len;
         flow_to_process->flow_extended.min_l4_payload_len[direction] = l4_payload_len;
 
-        // Ashwani Starts here
-        logger(0, "Ashwani stage 11");
-        if (flow_to_process->flow_extended.first_seen_ms == 0)
-        {
-            logger(0, "Ashwani stage 11-2");
-            flow_to_process->flow_extended.first_seen_ms = time_ms;
-        }
-
-        logger(0, "Ashwani stage 22");
-        flow_to_process->flow_extended.last_seen_ms = time_ms;
-        logger(0, "Ashwani stage 33");
-
-        // Ashwani Ends here
         jsonize_flow_event(reader_thread, &flow_to_process->flow_extended, FLOW_EVENT_NEW);
     }
 
