@@ -507,7 +507,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object* src_port;
     if (json_object_object_get_ex(root, "src_port", &src_port))
     {
-        result.src_port = json_object_get_int(src_port));
+        result.src_port = json_object_get_int(src_port);
     }
     
 
@@ -522,7 +522,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object* dst_port;
     if (json_object_object_get_ex(root, "dst_port", &dst_port))
     {
-        result.dst_port = json_object_get_int(dst_port));
+        result.dst_port = json_object_get_int(dst_port);
     }
     
     // network object
