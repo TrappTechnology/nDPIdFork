@@ -649,7 +649,7 @@ void init_flow_map(FlowMap * map, size_t initial_capacity)
 // Free the FlowMap
 void free_flow_map(FlowMap * map)
 {
-    logger(0, "Ashwani: free_flow_map start");
+    //logger(0, "Ashwani: free_flow_map start");
     for (size_t i = 0; i < map->size; ++i)
     {
         free(map->entries[i].json_str);
@@ -657,7 +657,7 @@ void free_flow_map(FlowMap * map)
     }
     free(map->entries);
 
-    logger(0, "Ashwani: free_flow_map end");
+    //logger(0, "Ashwani: free_flow_map end");
 }
 
 // Ensure capacity of the FlowMap
@@ -730,16 +730,16 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
     FILE * fp = NULL;
-    logger(0, "Ashwani: write_flow_map_to_alert_json: %d", map->size);
+    //logger(0, "Ashwani: write_flow_map_to_alert_json: %d", map->size);
     for (size_t i = 0; i < map->size; ++i)
     {
-        logger(0, "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
+        //logger(0, "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
         if (map->entries[i].json_str_alert != NULL)
         {
-            logger(0, "Ashwani: check 1");
+            //logger(0, "Ashwani: check 1");
             if (fp == NULL)
             {
-                logger(0, "Ashwani: check 2");
+                //logger(0, "Ashwani: check 2");
                 fp = fopen(filename, "w");
                 if (!fp)
                 {
@@ -753,13 +753,13 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
         }
     }
 
-    logger(0, "Ashwani: write_flow_map_to_alert_json: end 1");
+    //logger(0, "Ashwani: write_flow_map_to_alert_json: end 1");
     if (fp != NULL)
     {
-        logger(0, "Ashwani: write_flow_map_to_alert_json: end 2");
+        //logger(0, "Ashwani: write_flow_map_to_alert_json: end 2");
         fclose(fp);
     }
-    logger(0, "Ashwani: write_flow_map_to_alert_json: end final");
+    //logger(0, "Ashwani: write_flow_map_to_alert_json: end final");
 }
 
 
@@ -2129,7 +2129,7 @@ static void check_for_flow_updates(struct nDPId_reader_thread * const reader_thr
 
 static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_flow_basic const * const flow_basic)
 {
-    logger(0, "Ashwani jsonize_l3_l4 START");
+    //logger(0, "Ashwani jsonize_l3_l4 START");
     ndpi_serializer * const serializer = &workflow->ndpi_serializer;
     char src_name[48] = {};
     char dst_name[48] = {};
@@ -2137,7 +2137,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
     switch (flow_basic->l3_type)
     {
         case L3_IP:
-            logger(0, "Ashwani L3_IP");
+            //logger(0, "Ashwani L3_IP");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip4");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 4);
@@ -2152,7 +2152,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             }
             break;
         case L3_IP6:
-            logger(0, "Ashwani L3_IP6");
+           // logger(0, "Ashwani L3_IP6");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip6");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 6);
@@ -2170,7 +2170,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             ndpi_patchIPv6Address(src_name), ndpi_patchIPv6Address(dst_name);
             break;
         default:
-            logger(0, "Ashwani default");
+            //logger(0, "Ashwani default");
             ndpi_serialize_string_string(serializer, "l3_proto", "unknown");
     }
 
@@ -2204,7 +2204,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             break;
     }
 
-     logger(0, "Ashwani jsonize_l3_l4 END");
+     //logger(0, "Ashwani jsonize_l3_l4 END");
 }
 
 static void jsonize_basic(struct nDPId_reader_thread * const reader_thread, int serialize_thread_id)
@@ -2625,38 +2625,38 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
-    printf("Ashwani json_str = %s", json_str);
+    //printf("Ashwani json_str = %s", json_str);
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
-    logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
+    //logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
     if (flow_id != 834264320534 && converted_json_str != NULL)
     {
-        logger(0, "Ashwani converted_json_str = %s", converted_json_str);
+        //logger(0, "Ashwani converted_json_str = %s", converted_json_str);
         int length = strlen(converted_json_str);
-        logger(0, "Ashwani write_to_file 1");
+        //logger(0, "Ashwani write_to_file 1");
         if (duplicate_data(converted_json_str, length))
         {
-            logger(0, "Ashwani write_to_file duplicate_data");
+            //logger(0, "Ashwani write_to_file duplicate_data");
             return;
         }
 
-        logger(0, "Ashwani write_to_file 2");
+        //logger(0, "Ashwani write_to_file 2");
         if (length != 0)
         {
-            logger(0, "Ashwani write_to_file 3");
+            //logger(0, "Ashwani write_to_file 3");
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-                logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
-                logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
+                //logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
+                //logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
             }
             else
              {
-                logger(0, "Ashwani write_to_file 4");
+                //logger(0, "Ashwani write_to_file 4");
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);     
-                logger(0, "Ashwani write_to_file 5");
+                //logger(0, "Ashwani write_to_file 5");
              }
                 
             free(converted_json_str_no_risk);
@@ -2665,7 +2665,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
    
     free(converted_json_str);
 
-    logger(0, "write_to_file end");
+    //logger(0, "write_to_file end");
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -2685,7 +2685,8 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-
+     logger(0, "\nAshwaniKumar: json_msg: %s\n", newline_json_msg);
+    
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
         logger(1,
@@ -4567,16 +4568,16 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     // Ashwani Starts here
-    logger(0, "Ashwani stage 11");
+    //logger(0, "Ashwani stage 11");
     if (flow_to_process->flow_extended.first_seen_ms == 0)
     {
-        logger(0, "Ashwani stage 11-2");
+        //logger(0, "Ashwani stage 11-2");
         flow_to_process->flow_extended.first_seen_ms = time_ms;
     }
 
-    logger(0, "Ashwani stage 22");
+    //logger(0, "Ashwani stage 22");
     flow_to_process->flow_extended.last_seen_ms = time_ms;
-    logger(0, "Ashwani stage 33");
+   // logger(0, "Ashwani stage 33");
     // Ashwani Ends here
 
     if (is_new_flow != 0)
@@ -4831,12 +4832,12 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, Flow
     {
         if (reader_thread->workflow->is_pcap_file != 0)
         {
-            logger(0, "Ashwani: before pcap_loop");
+            // logger(0, "Ashwani: before pcap_loop");
             switch (pcap_loop(reader_thread->workflow->pcap_handle, -1, &ndpi_process_packet, (uint8_t *)reader_thread))
             {
-                logger(0, "Ashwani: Inside Switch");
+                // logger(0, "Ashwani: Inside Switch");
                 case PCAP_ERROR:
-                    logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
+                    //logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
                     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
                     return;
                 case PCAP_ERROR_BREAK:
@@ -4990,7 +4991,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, Flow
 #endif
                     if (fd == pcap_fd)
                     {
-                        logger(0, "Ashwani: fd == pcap_fd");
+                        //logger(0, "Ashwani: fd == pcap_fd");
                         switch (pcap_dispatch(
                             reader_thread->workflow->pcap_handle, -1, ndpi_process_packet, (uint8_t *)reader_thread))
                         {
