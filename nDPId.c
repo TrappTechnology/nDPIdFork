@@ -3109,14 +3109,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, flow_event_name_table[FLOW_EVENT_INVALID]);
     }
 
-    // Ashwani Starts here
-    printf("\nAshwani HOST SERVER NAME START");
-    struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
-    printf("\nAshwani HOST SERVER NAME START 2");
-    ndpi_serialize_string_string(&workflow->ndpi_serializer, "hostname",  flow->info.detection_data->flow.host_server_name);
-    printf("\nAshwani: HOSTNAME %s");
-    printf("\nAshwani HOST SERVER NAME End");
-    // Ashwani End here
+
 
     jsonize_basic(reader_thread, 1);
     jsonize_flow(workflow, flow_ext);
@@ -3149,6 +3142,19 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                 struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
 
                 ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
+                // Ashwani Starts here
+                printf("\nAshwani HOST SERVER NAME START First");
+               
+                if (flow->info != NULL)
+                {
+                    ndpi_serialize_string_string(&workflow->ndpi_serializer,
+                                                 "hostname",
+                                                 flow->info.detection_data->flow.host_server_name);
+                }
+                printf("\nAshwani: HOSTNAME %s");
+                printf("\nAshwani HOST SERVER NAME End");
+                // Ashwani End here
+
                 ndpi_serialize_proto(workflow->ndpi_struct,
                                      &workflow->ndpi_serializer,
                                      flow->finished.risk,
@@ -3177,6 +3183,19 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                 if (flow->info.detection_completed != 0)
                 {
                     ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
+                    // Ashwani Starts here
+                    printf("\nAshwani HOST SERVER NAME START Second");
+
+                    if (flow->info != NULL)
+                    {
+                        ndpi_serialize_string_string(&workflow->ndpi_serializer,
+                                                     "hostname",
+                                                     flow->info.detection_data->flow.host_server_name);
+                    }
+                    printf("\nAshwani: HOSTNAME %s");
+                    printf("\nAshwani HOST SERVER NAME End");
+                    // Ashwani End here
+
                     ndpi_serialize_proto(workflow->ndpi_struct,
                                          &workflow->ndpi_serializer,
                                          flow->info.detection_data->flow.risk,
