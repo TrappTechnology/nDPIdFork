@@ -3144,13 +3144,11 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                 ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
                 // Ashwani Starts here
                 printf("\nAshwani HOST SERVER NAME START First");
-               
-                if (flow->info != NULL)
-                {
+
                     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                                  "hostname",
                                                  flow->info.detection_data->flow.host_server_name);
-                }
+               
                 printf("\nAshwani: HOSTNAME %s");
                 printf("\nAshwani HOST SERVER NAME End");
                 // Ashwani End here
@@ -3186,12 +3184,10 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                     // Ashwani Starts here
                     printf("\nAshwani HOST SERVER NAME START Second");
 
-                    if (flow->info != NULL)
-                    {
                         ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                                      "hostname",
                                                      flow->info.detection_data->flow.host_server_name);
-                    }
+                   
                     printf("\nAshwani: HOSTNAME %s");
                     printf("\nAshwani HOST SERVER NAME End");
                     // Ashwani End here
