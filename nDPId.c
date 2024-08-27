@@ -3109,16 +3109,19 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, flow_event_name_table[FLOW_EVENT_INVALID]);
     }
 
-
+     printf("\nAshwani: SERVER 1");
 
     jsonize_basic(reader_thread, 1);
     jsonize_flow(workflow, flow_ext);
     jsonize_l3_l4(workflow, &flow_ext->flow_basic);
 
+     printf("\nAshwani: SERVER 2");
+
     switch (event)
     {
         case FLOW_EVENT_INVALID:
         case FLOW_EVENT_COUNT:
+            printf("\nAshwani: SERVER 3 ");
             break;
 
         case FLOW_EVENT_NEW:
@@ -3126,6 +3129,8 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
         case FLOW_EVENT_IDLE:
         case FLOW_EVENT_UPDATE:
         case FLOW_EVENT_ANALYSE:
+
+            printf("\nAshwani: SERVER 4 ");
             ndpi_serialize_string_int32(&workflow->ndpi_serializer,
                                         "flow_datalink",
                                         pcap_datalink(reader_thread->workflow->pcap_handle));
@@ -3135,10 +3140,12 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
 
             if (event == FLOW_EVENT_ANALYSE)
             {
+                printf("\nAshwani: SERVER 5 ");
                 jsonize_data_analysis(reader_thread, flow_ext);
             }
             if (flow_ext->flow_basic.state == FS_FINISHED)
             {
+                printf("\nAshwani: SERVER 6 ");
                 struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
 
                 ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
@@ -3162,6 +3169,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             }
             else if (flow_ext->flow_basic.state == FS_INFO)
             {
+                printf("\nAshwani: SERVER 7 ");
                 struct nDPId_flow * const flow = (struct nDPId_flow *)flow_ext;
 
 #ifdef ENABLE_ZLIB
@@ -3180,6 +3188,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
 
                 if (flow->info.detection_completed != 0)
                 {
+                    printf("\nAshwani: SERVER 8 ");
                     ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
                     // Ashwani Starts here
                     printf("\nAshwani HOST SERVER NAME START Second");
@@ -3206,6 +3215,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
         case FLOW_EVENT_GUESSED:
         case FLOW_EVENT_DETECTED:
         case FLOW_EVENT_DETECTION_UPDATE:
+            printf("\nAshwani: SERVER 9 ");
             logger(1,
                    "[%8llu, %4llu] internal error / invalid function call",
                    workflow->packets_captured,
