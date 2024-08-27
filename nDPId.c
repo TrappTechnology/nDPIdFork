@@ -3148,6 +3148,8 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                 printf("\nAshwani: SERVER 6 ");
                 struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
 
+                printf("\nAshwani: SERVER 6 2");
+
                 ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
                 // Ashwani Starts here
                 printf("\nAshwani HOST SERVER NAME START First");
