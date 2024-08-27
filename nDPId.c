@@ -2685,7 +2685,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-     logger(0, "\nAshwaniKumar: json_msg: %s\n", newline_json_msg);
+     printf("\nAshwaniKumar: json_msg: %s\n", json_msg);
     
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
