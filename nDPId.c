@@ -2353,6 +2353,23 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
+    printf("\nAshwani: SERVER 6 ");
+    struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
+
+    printf("\nAshwani: SERVER 6 2");
+
+    ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
+    // Ashwani Starts here
+    printf("\nAshwani HOST SERVER NAME START First");
+
+    ndpi_serialize_string_string(&workflow->ndpi_serializer,
+                                 "hostname",
+                                 flow->info.detection_data->flow.host_server_name);
+
+    printf("\nAshwani: HOSTNAME %s");
+    printf("\nAshwani HOST SERVER NAME End");
+    // Ashwani End here
+
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
@@ -3145,22 +3162,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             }
             if (flow_ext->flow_basic.state == FS_FINISHED)
             {
-                printf("\nAshwani: SERVER 6 ");
-                struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
 
-                printf("\nAshwani: SERVER 6 2");
-
-                ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
-                // Ashwani Starts here
-                printf("\nAshwani HOST SERVER NAME START First");
-
-                    ndpi_serialize_string_string(&workflow->ndpi_serializer,
-                                                 "hostname",
-                                                 flow->info.detection_data->flow.host_server_name);
-               
-                printf("\nAshwani: HOSTNAME %s");
-                printf("\nAshwani HOST SERVER NAME End");
-                // Ashwani End here
 
                 ndpi_serialize_proto(workflow->ndpi_struct,
                                      &workflow->ndpi_serializer,
