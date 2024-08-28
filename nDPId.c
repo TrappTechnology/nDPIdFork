@@ -2364,6 +2364,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     //if (detection_data != NULL)
     {
         printf("\nAshwani: SERVER 6 4");
+        printf("\n Ashwani SERVER NAME = %s", &flow->info.detection_data->flow.host_server_name);
         ndpi_serialize_string_string(&workflow->ndpi_serializer, "hostname", &flow->info.detection_data->flow.host_server_name);
         printf("\nAshwani: SERVER 6 5");
     }
