@@ -2358,7 +2358,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
 
     printf("\nAshwani: SERVER 6 2");
 
-    nDPId_detection_data * detection_data = flow->info.detection_data;
+    struct nDPId_detection_data * detection_data = flow->info.detection_data;
 
     printf("\nAshwani: SERVER 6 3") ;
     if (detection_data != NULL)
