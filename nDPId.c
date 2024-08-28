@@ -3163,7 +3163,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             if (flow_ext->flow_basic.state == FS_FINISHED)
             {
 
-
+                struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
                 ndpi_serialize_proto(workflow->ndpi_struct,
                                      &workflow->ndpi_serializer,
                                      flow->finished.risk,
