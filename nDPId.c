@@ -2358,9 +2358,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
 
     printf("\nAshwani: SERVER 6 2");
 
-    ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
-    // Ashwani Starts here
-    printf("\nAshwani HOST SERVER NAME START First");
+
 
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "hostname",
