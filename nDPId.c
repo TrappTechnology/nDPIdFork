@@ -3567,8 +3567,12 @@ static uint32_t calculate_ndpi_flow_struct_hash(struct ndpi_flow_struct const * 
         hash += ndpi_flow->excluded_protocol_bitmask.fds_bits[i];
     }
 
+    logger (0, "Ashwani calculate_ndpi_flow_struct_hash START\n");
+    logger (0, "Ashwani host_server_name is %s", ndpi_flow->host_server_name);
     size_t host_server_name_len =
         strnlen((const char *)ndpi_flow->host_server_name, sizeof(ndpi_flow->host_server_name));
+
+    logger (0, "Ashwani calculate_ndpi_flow_struct_hash EDN\n");
     hash += host_server_name_len;
     hash += murmur3_32((uint8_t const *)&ndpi_flow->host_server_name,
                        sizeof(ndpi_flow->host_server_name),
