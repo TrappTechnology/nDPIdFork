@@ -2351,6 +2351,115 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
     serialize_and_send(reader_thread);
 }
 
+static void ndpi_tls2json(ndpi_serializer * serializer, struct ndpi_flow_struct * flow)
+{
+    logger(0, "Ashwani : ndpi_tls2json START");
+    if (flow->protos.tls_quic.ssl_version)
+    {
+        logger(0, "Ashwani : ndpi_tls2json Inside 1");
+        char buf[64];
+        char notBefore[32], notAfter[32];
+        struct tm a, b, *before = NULL, *after = NULL;
+        u_int i, off;
+        u_int8_t unknown_tls_version;
+        char version[16], unknown_cipher[8];
+
+        ndpi_ssl_version2str(version, sizeof(version), flow->protos.tls_quic.ssl_version, &unknown_tls_version);
+
+        if (flow->protos.tls_quic.notBefore)
+        {
+            before = ndpi_gmtime_r((const time_t *)&flow->protos.tls_quic.notBefore, &a);
+        }
+        if (flow->protos.tls_quic.notAfter)
+        {
+            after = ndpi_gmtime_r((const time_t *)&flow->protos.tls_quic.notAfter, &b);
+        }
+
+        if (!unknown_tls_version)
+        {
+            logger(0, "Ashwani : ndpi_tls2json Inside 2");
+            ndpi_serialize_start_of_block(serializer, "tls");
+            ndpi_serialize_string_string(serializer, "version", version);
+
+            if (flow->protos.tls_quic.server_names)
+            {
+                ndpi_serialize_string_string(serializer, "server_names", flow->protos.tls_quic.server_names);
+            }
+
+            // if(before)
+            //{
+            //  strftime(notBefore, sizeof(notBefore), "%Y-%m-%d %H:%M:%S", before);
+            //  ndpi_serialize_string_string(serializer, "notbefore", notBefore);
+            //}
+
+            // if(after)
+            //{
+            //  strftime(notAfter, sizeof(notAfter), "%Y-%m-%d %H:%M:%S", after);
+            //  ndpi_serialize_string_string(serializer, "notafter", notAfter);
+            //}
+
+            ndpi_serialize_string_string(serializer, "ja3", flow->protos.tls_quic.ja3_client);
+            ndpi_serialize_string_string(serializer, "ja3s", flow->protos.tls_quic.ja3_server);
+            ndpi_serialize_string_string(serializer, "ja4", flow->protos.tls_quic.ja4_client);
+            ndpi_serialize_string_uint32(serializer, "unsafe_cipher", flow->protos.tls_quic.server_unsafe_cipher);
+            ndpi_serialize_string_string(serializer,
+                                         "cipher",
+                                         ndpi_cipher2str(flow->protos.tls_quic.server_cipher, unknown_cipher));
+
+            if (flow->protos.tls_quic.issuerDN)
+            {
+                ndpi_serialize_string_string(serializer, "issuerDN", flow->protos.tls_quic.issuerDN);
+            }
+            if (flow->protos.tls_quic.subjectDN)
+            {
+                ndpi_serialize_string_string(serializer, "subjectDN", flow->protos.tls_quic.subjectDN);
+            }
+            if (flow->protos.tls_quic.advertised_alpns)
+            {
+                ndpi_serialize_string_string(serializer, "advertised_alpns", flow->protos.tls_quic.advertised_alpns);
+            }
+            if (flow->protos.tls_quic.negotiated_alpn)
+            {
+                ndpi_serialize_string_string(serializer, "negotiated_alpn", flow->protos.tls_quic.negotiated_alpn);
+            }
+            if (flow->protos.tls_quic.tls_supported_versions)
+            {
+                ndpi_serialize_string_string(serializer,
+                                             "tls_supported_versions",
+                                             flow->protos.tls_quic.tls_supported_versions);
+            }
+
+            if (flow->protos.tls_quic.sha1_certificate_fingerprint[0] != '\0')
+            {
+                for (i = 0, off = 0; i < 20; i++)
+                {
+                    int rc = ndpi_snprintf(&buf[off],
+                                           sizeof(buf) - off,
+                                           "%s%02X",
+                                           (i > 0) ? ":" : "",
+                                           flow->protos.tls_quic.sha1_certificate_fingerprint[i] & 0xFF);
+
+                    if (rc <= 0)
+                        break;
+                    else
+                        off += rc;
+                }
+
+                ndpi_serialize_string_string(serializer, "fingerprint", buf);
+            }
+
+            ndpi_serialize_string_uint32(serializer, "blocks", flow->l4.tcp.tls.num_tls_blocks);
+#ifdef TLS_HANDLE_SIGNATURE_ALGORITMS
+            ndpi_serialize_string_uint32(serializer, "sig_algs", flow->protos.tls_quic.num_tls_signature_algorithms);
+#endif
+
+            ndpi_serialize_end_of_block(serializer);
+        }
+    }
+
+       logger(0, "Ashwani : ndpi_tls2json END");
+}
+
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
     printf("\nAshwani: SERVER 6 ");
@@ -2372,6 +2481,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     printf("\nAshwani HOST SERVER NAME End");
     // Ashwani End here
 
+    ndpi_tls2json(&workflow->ndpi_serializer, &flow->info.detection_data->flow);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
