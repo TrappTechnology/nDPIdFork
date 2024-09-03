@@ -2383,6 +2383,7 @@ static void ndpi_tls2json(ndpi_serializer * serializer, struct ndpi_flow_struct 
 
             if (flow->protos.tls_quic.server_names)
             {
+                logger(0, "Ashwani : ndpi_tls2json Inside 3");
                 ndpi_serialize_string_string(serializer, "server_names", flow->protos.tls_quic.server_names);
             }
 
@@ -2408,10 +2409,12 @@ static void ndpi_tls2json(ndpi_serializer * serializer, struct ndpi_flow_struct 
 
             if (flow->protos.tls_quic.issuerDN)
             {
+                logger(0, "Ashwani : ndpi_tls2json Inside 4");
                 ndpi_serialize_string_string(serializer, "issuerDN", flow->protos.tls_quic.issuerDN);
             }
             if (flow->protos.tls_quic.subjectDN)
             {
+                logger(0, "Ashwani : ndpi_tls2json Inside 5");
                 ndpi_serialize_string_string(serializer, "subjectDN", flow->protos.tls_quic.subjectDN);
             }
             if (flow->protos.tls_quic.advertised_alpns)
