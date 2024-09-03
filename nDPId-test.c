@@ -816,7 +816,7 @@ static enum nDPIsrvd_callback_return distributor_json_callback(struct nDPIsrvd_s
                                                                struct nDPIsrvd_thread_data * const thread_data,
                                                                struct nDPIsrvd_flow * const flow)
 {
-    logger(0, "Ashwani: distributor_json_callback ");
+    //logger(0, "Ashwani: distributor_json_callback ");
     struct distributor_global_user_data * const global_stats =
         (struct distributor_global_user_data *)sock->global_user_data;
     struct distributor_instance_user_data * instance_stats =
