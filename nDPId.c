@@ -2484,7 +2484,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     printf("\nAshwani HOST SERVER NAME End");
     // Ashwani End here
 
-    ndpi_tls2json(&workflow->ndpi_serializer, &flow->info.detection_data->flow);
+    //ndpi_tls2json(&workflow->ndpi_serializer, &flow->info.detection_data->flow);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
