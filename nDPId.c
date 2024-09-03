@@ -2625,38 +2625,38 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
-    printf("Ashwani json_str = %s", json_str);
+
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
-    logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
+    //logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
     if (flow_id != 834264320534 && converted_json_str != NULL)
     {
-        logger(0, "Ashwani converted_json_str = %s", converted_json_str);
+        //logger(0, "Ashwani converted_json_str = %s", converted_json_str);
         int length = strlen(converted_json_str);
-        logger(0, "Ashwani write_to_file 1");
+        //logger(0, "Ashwani write_to_file 1");
         if (duplicate_data(converted_json_str, length))
         {
-            logger(0, "Ashwani write_to_file duplicate_data");
+            //logger(0, "Ashwani write_to_file duplicate_data");
             return;
         }
 
-        logger(0, "Ashwani write_to_file 2");
+        //logger(0, "Ashwani write_to_file 2");
         if (length != 0)
         {
-            logger(0, "Ashwani write_to_file 3");
+            //logger(0, "Ashwani write_to_file 3");
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-                logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
-                logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
+                //logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
+               // logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
             }
             else
              {
-                logger(0, "Ashwani write_to_file 4");
+                //logger(0, "Ashwani write_to_file 4");
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);     
-                logger(0, "Ashwani write_to_file 5");
+                //logger(0, "Ashwani write_to_file 5");
              }
                 
             free(converted_json_str_no_risk);
@@ -2685,7 +2685,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-
+    printf("Ashwani json_str is\n, %s\n", json_str);
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
         logger(1,
