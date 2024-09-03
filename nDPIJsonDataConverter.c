@@ -966,13 +966,13 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
 
 }
 
-static void add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructure)
+static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructure)
 {
     char* nDPIJsonString = create_nDPI_Json_String(&nDPIStructure);
     if (nDPIJsonString == NULL)
     {
         fprintf(stderr, "create_nDPI_Json_String routine returned empty string: Error parsing new ndpi JSON\n");
-        return;
+        return -1;
     }
 
     json_object* newNDPIObject = json_tokener_parse(nDPIJsonString);
@@ -980,11 +980,12 @@ static void add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStruct
     {
         fprintf(stderr, "Error parsing JSON string\n");
         free(nDPIJsonString); // Free allocated memory for JSON string
-        return;
+        return -1;
     }
 
     json_object_object_add(*root_object, "ndpi", newNDPIObject);
     free(nDPIJsonString); // Free allocated memory for JSON string if not needed anymore
+    return 1;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
@@ -1171,17 +1172,19 @@ void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int
     *createAlert = ndpiData.flow_risk_count;
 
     json_object* root_object = json_object_new_object();
-    add_nDPI_Data(&root_object, ndpiData);
-
-    struct Root_data rootData = getRootDataStructure(originalJsonStr);
-    if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE) 
+    struct Root_data rootData;
+    if (add_nDPI_Data(&root_object, ndpiData))
     {
-        *flow_id = rootData.flow_id;
+        rootData = getRootDataStructure(originalJsonStr);
+        if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+        {
+            *flow_id = rootData.flow_id;
+        }
+
+        add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
+
+        *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
     }
-
-    add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
-
-    *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
 
     FreeConvertnDPIDataFormat(&ndpiData);
     json_object_put(root_object);
