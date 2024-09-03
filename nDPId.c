@@ -2625,7 +2625,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
-    printf("Ashwani json_str = %s", json_str);
+    //printf("Ashwani json_str = %s", json_str);
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
     logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
@@ -2685,7 +2685,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-
+    printf("\nAshwaniKumar: json_msg: %s\n", json_msg);
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
         logger(1,
@@ -4567,16 +4567,16 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     // Ashwani Starts here
-    logger(0, "Ashwani stage 11");
+    //logger(0, "Ashwani stage 11");
     if (flow_to_process->flow_extended.first_seen_ms == 0)
     {
-        logger(0, "Ashwani stage 11-2");
+        //logger(0, "Ashwani stage 11-2");
         flow_to_process->flow_extended.first_seen_ms = time_ms;
     }
 
-    logger(0, "Ashwani stage 22");
+    //logger(0, "Ashwani stage 22");
     flow_to_process->flow_extended.last_seen_ms = time_ms;
-    logger(0, "Ashwani stage 33");
+    //logger(0, "Ashwani stage 33");
     // Ashwani Ends here
 
     if (is_new_flow != 0)
