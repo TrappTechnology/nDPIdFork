@@ -649,7 +649,7 @@ void init_flow_map(FlowMap * map, size_t initial_capacity)
 // Free the FlowMap
 void free_flow_map(FlowMap * map)
 {
-    //logger(0, "Ashwani: free_flow_map start");
+    logger(0, "Ashwani: free_flow_map start");
     for (size_t i = 0; i < map->size; ++i)
     {
         free(map->entries[i].json_str);
@@ -657,7 +657,7 @@ void free_flow_map(FlowMap * map)
     }
     free(map->entries);
 
-    //logger(0, "Ashwani: free_flow_map end");
+    logger(0, "Ashwani: free_flow_map end");
 }
 
 // Ensure capacity of the FlowMap
@@ -730,16 +730,16 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
     FILE * fp = NULL;
-    //logger(0, "Ashwani: write_flow_map_to_alert_json: %d", map->size);
+    logger(0, "Ashwani: write_flow_map_to_alert_json: %d", map->size);
     for (size_t i = 0; i < map->size; ++i)
     {
-        //logger(0, "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
+        logger(0, "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
         if (map->entries[i].json_str_alert != NULL)
         {
-            //logger(0, "Ashwani: check 1");
+            logger(0, "Ashwani: check 1");
             if (fp == NULL)
             {
-                //logger(0, "Ashwani: check 2");
+                logger(0, "Ashwani: check 2");
                 fp = fopen(filename, "w");
                 if (!fp)
                 {
@@ -753,13 +753,13 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
         }
     }
 
-    //logger(0, "Ashwani: write_flow_map_to_alert_json: end 1");
+    logger(0, "Ashwani: write_flow_map_to_alert_json: end 1");
     if (fp != NULL)
     {
-        //logger(0, "Ashwani: write_flow_map_to_alert_json: end 2");
+        logger(0, "Ashwani: write_flow_map_to_alert_json: end 2");
         fclose(fp);
     }
-    //logger(0, "Ashwani: write_flow_map_to_alert_json: end final");
+    logger(0, "Ashwani: write_flow_map_to_alert_json: end final");
 }
 
 
@@ -2129,7 +2129,7 @@ static void check_for_flow_updates(struct nDPId_reader_thread * const reader_thr
 
 static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_flow_basic const * const flow_basic)
 {
-    //logger(0, "Ashwani jsonize_l3_l4 START");
+    logger(0, "Ashwani jsonize_l3_l4 START");
     ndpi_serializer * const serializer = &workflow->ndpi_serializer;
     char src_name[48] = {};
     char dst_name[48] = {};
@@ -2137,7 +2137,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
     switch (flow_basic->l3_type)
     {
         case L3_IP:
-            //logger(0, "Ashwani L3_IP");
+            logger(0, "Ashwani L3_IP");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip4");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 4);
@@ -2152,7 +2152,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             }
             break;
         case L3_IP6:
-           // logger(0, "Ashwani L3_IP6");
+            logger(0, "Ashwani L3_IP6");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip6");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 6);
@@ -2170,7 +2170,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             ndpi_patchIPv6Address(src_name), ndpi_patchIPv6Address(dst_name);
             break;
         default:
-            //logger(0, "Ashwani default");
+            logger(0, "Ashwani default");
             ndpi_serialize_string_string(serializer, "l3_proto", "unknown");
     }
 
@@ -2204,7 +2204,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             break;
     }
 
-     //logger(0, "Ashwani jsonize_l3_l4 END");
+     logger(0, "Ashwani jsonize_l3_l4 END");
 }
 
 static void jsonize_basic(struct nDPId_reader_thread * const reader_thread, int serialize_thread_id)
@@ -2351,140 +2351,8 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
     serialize_and_send(reader_thread);
 }
 
-static void ndpi_tls2json(ndpi_serializer * serializer, struct ndpi_flow_struct * flow)
-{
-    logger(0, "Ashwani : ndpi_tls2json START");
-    if (flow->protos.tls_quic.ssl_version)
-    {
-        logger(0, "Ashwani : ndpi_tls2json Inside 1");
-        char buf[64];
-        char notBefore[32], notAfter[32];
-        struct tm a, b, *before = NULL, *after = NULL;
-        u_int i, off;
-        u_int8_t unknown_tls_version;
-        char version[16], unknown_cipher[8];
-
-        ndpi_ssl_version2str(version, sizeof(version), flow->protos.tls_quic.ssl_version, &unknown_tls_version);
-
-        if (flow->protos.tls_quic.notBefore)
-        {
-            before = ndpi_gmtime_r((const time_t *)&flow->protos.tls_quic.notBefore, &a);
-        }
-        if (flow->protos.tls_quic.notAfter)
-        {
-            after = ndpi_gmtime_r((const time_t *)&flow->protos.tls_quic.notAfter, &b);
-        }
-
-        if (!unknown_tls_version)
-        {
-            logger(0, "Ashwani : ndpi_tls2json Inside 2");
-            ndpi_serialize_start_of_block(serializer, "tls");
-            ndpi_serialize_string_string(serializer, "version", version);
-
-            if (flow->protos.tls_quic.server_names)
-            {
-                logger(0, "Ashwani : ndpi_tls2json Inside 3");
-                ndpi_serialize_string_string(serializer, "server_names", flow->protos.tls_quic.server_names);
-            }
-
-            // if(before)
-            //{
-            //  strftime(notBefore, sizeof(notBefore), "%Y-%m-%d %H:%M:%S", before);
-            //  ndpi_serialize_string_string(serializer, "notbefore", notBefore);
-            //}
-
-            // if(after)
-            //{
-            //  strftime(notAfter, sizeof(notAfter), "%Y-%m-%d %H:%M:%S", after);
-            //  ndpi_serialize_string_string(serializer, "notafter", notAfter);
-            //}
-
-            ndpi_serialize_string_string(serializer, "ja3", flow->protos.tls_quic.ja3_client);
-            ndpi_serialize_string_string(serializer, "ja3s", flow->protos.tls_quic.ja3_server);
-            ndpi_serialize_string_string(serializer, "ja4", flow->protos.tls_quic.ja4_client);
-            ndpi_serialize_string_uint32(serializer, "unsafe_cipher", flow->protos.tls_quic.server_unsafe_cipher);
-            ndpi_serialize_string_string(serializer,
-                                         "cipher",
-                                         ndpi_cipher2str(flow->protos.tls_quic.server_cipher, unknown_cipher));
-
-            if (flow->protos.tls_quic.issuerDN)
-            {
-                logger(0, "Ashwani : ndpi_tls2json Inside 4");
-                ndpi_serialize_string_string(serializer, "issuerDN", flow->protos.tls_quic.issuerDN);
-            }
-            if (flow->protos.tls_quic.subjectDN)
-            {
-                logger(0, "Ashwani : ndpi_tls2json Inside 5");
-                ndpi_serialize_string_string(serializer, "subjectDN", flow->protos.tls_quic.subjectDN);
-            }
-            if (flow->protos.tls_quic.advertised_alpns)
-            {
-                ndpi_serialize_string_string(serializer, "advertised_alpns", flow->protos.tls_quic.advertised_alpns);
-            }
-            if (flow->protos.tls_quic.negotiated_alpn)
-            {
-                ndpi_serialize_string_string(serializer, "negotiated_alpn", flow->protos.tls_quic.negotiated_alpn);
-            }
-            if (flow->protos.tls_quic.tls_supported_versions)
-            {
-                ndpi_serialize_string_string(serializer,
-                                             "tls_supported_versions",
-                                             flow->protos.tls_quic.tls_supported_versions);
-            }
-
-            if (flow->protos.tls_quic.sha1_certificate_fingerprint[0] != '\0')
-            {
-                for (i = 0, off = 0; i < 20; i++)
-                {
-                    int rc = ndpi_snprintf(&buf[off],
-                                           sizeof(buf) - off,
-                                           "%s%02X",
-                                           (i > 0) ? ":" : "",
-                                           flow->protos.tls_quic.sha1_certificate_fingerprint[i] & 0xFF);
-
-                    if (rc <= 0)
-                        break;
-                    else
-                        off += rc;
-                }
-
-                ndpi_serialize_string_string(serializer, "fingerprint", buf);
-            }
-
-            ndpi_serialize_string_uint32(serializer, "blocks", flow->l4.tcp.tls.num_tls_blocks);
-#ifdef TLS_HANDLE_SIGNATURE_ALGORITMS
-            ndpi_serialize_string_uint32(serializer, "sig_algs", flow->protos.tls_quic.num_tls_signature_algorithms);
-#endif
-
-            ndpi_serialize_end_of_block(serializer);
-        }
-    }
-
-       logger(0, "Ashwani : ndpi_tls2json END");
-}
-
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
-    printf("\nAshwani: SERVER 6 ");
-    struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
-
-    printf("\nAshwani: SERVER 6 2");
-
-    struct nDPId_detection_data * detection_data = flow->info.detection_data;
-
-    printf("\nAshwani: SERVER 6 3") ;
-    //if (detection_data != NULL)
-    {
-        printf("\nAshwani: SERVER 6 4");
-        //printf("\n Ashwani SERVER NAME = %s", &flow->info.detection_data->flow.host_server_name);
-        //ndpi_serialize_string_string(&workflow->ndpi_serializer, "hostname", &flow->info.detection_data->flow.host_server_name);
-        printf("\nAshwani: SERVER 6 5");
-    }
-
-    printf("\nAshwani HOST SERVER NAME End");
-    // Ashwani End here
-
-    //ndpi_tls2json(&workflow->ndpi_serializer, &flow->info.detection_data->flow);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
@@ -2757,38 +2625,38 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
-    //printf("Ashwani json_str = %s", json_str);
+    printf("Ashwani json_str = %s", json_str);
     ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
 
-    //logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
+    logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
     if (flow_id != 834264320534 && converted_json_str != NULL)
     {
-        //logger(0, "Ashwani converted_json_str = %s", converted_json_str);
+        logger(0, "Ashwani converted_json_str = %s", converted_json_str);
         int length = strlen(converted_json_str);
-        //logger(0, "Ashwani write_to_file 1");
+        logger(0, "Ashwani write_to_file 1");
         if (duplicate_data(converted_json_str, length))
         {
-            //logger(0, "Ashwani write_to_file duplicate_data");
+            logger(0, "Ashwani write_to_file duplicate_data");
             return;
         }
 
-        //logger(0, "Ashwani write_to_file 2");
+        logger(0, "Ashwani write_to_file 2");
         if (length != 0)
         {
-            //logger(0, "Ashwani write_to_file 3");
+            logger(0, "Ashwani write_to_file 3");
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-                //logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
-                //logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
+                logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
+                logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
             }
             else
              {
-                //logger(0, "Ashwani write_to_file 4");
+                logger(0, "Ashwani write_to_file 4");
                 add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);     
-                //logger(0, "Ashwani write_to_file 5");
+                logger(0, "Ashwani write_to_file 5");
              }
                 
             free(converted_json_str_no_risk);
@@ -2797,7 +2665,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
    
     free(converted_json_str);
 
-    //logger(0, "write_to_file end");
+    logger(0, "write_to_file end");
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -2817,8 +2685,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-     printf("\nAshwaniKumar: json_msg: %s\n", json_msg);
-    
+
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
         logger(1,
@@ -3240,20 +3107,14 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
     {
         ndpi_serialize_string_string(&workflow->ndpi_serializer, ev, flow_event_name_table[FLOW_EVENT_INVALID]);
     }
-
-     printf("\nAshwani: SERVER 1");
-
     jsonize_basic(reader_thread, 1);
     jsonize_flow(workflow, flow_ext);
     jsonize_l3_l4(workflow, &flow_ext->flow_basic);
-
-     printf("\nAshwani: SERVER 2");
 
     switch (event)
     {
         case FLOW_EVENT_INVALID:
         case FLOW_EVENT_COUNT:
-            printf("\nAshwani: SERVER 3 ");
             break;
 
         case FLOW_EVENT_NEW:
@@ -3261,8 +3122,6 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
         case FLOW_EVENT_IDLE:
         case FLOW_EVENT_UPDATE:
         case FLOW_EVENT_ANALYSE:
-
-            printf("\nAshwani: SERVER 4 ");
             ndpi_serialize_string_int32(&workflow->ndpi_serializer,
                                         "flow_datalink",
                                         pcap_datalink(reader_thread->workflow->pcap_handle));
@@ -3272,13 +3131,13 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
 
             if (event == FLOW_EVENT_ANALYSE)
             {
-                printf("\nAshwani: SERVER 5 ");
                 jsonize_data_analysis(reader_thread, flow_ext);
             }
             if (flow_ext->flow_basic.state == FS_FINISHED)
             {
-
                 struct nDPId_flow const * const flow = (struct nDPId_flow *)flow_ext;
+
+                ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
                 ndpi_serialize_proto(workflow->ndpi_struct,
                                      &workflow->ndpi_serializer,
                                      flow->finished.risk,
@@ -3288,7 +3147,6 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
             }
             else if (flow_ext->flow_basic.state == FS_INFO)
             {
-                printf("\nAshwani: SERVER 7 ");
                 struct nDPId_flow * const flow = (struct nDPId_flow *)flow_ext;
 
 #ifdef ENABLE_ZLIB
@@ -3304,23 +3162,10 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                     }
                 }
 #endif
-                //printf("\nAshwani: SERVER 8 ");
-                //ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
-                //// Ashwani Starts here
-                //printf("\nAshwani HOST SERVER NAME START Second");
-
-                //ndpi_serialize_string_string(&workflow->ndpi_serializer,
-                //                             "hostname",
-                //                             flow->info.detection_data->flow.host_server_name);
-
-                //printf("\nAshwani: HOSTNAME %s");
-                //printf("\nAshwani HOST SERVER NAME End");
 
                 if (flow->info.detection_completed != 0)
                 {
-                    printf("\nAshwani: SERVER Inside If ");
-                    // Ashwani End here
-
+                    ndpi_serialize_start_of_block(&workflow->ndpi_serializer, "ndpi");
                     ndpi_serialize_proto(workflow->ndpi_struct,
                                          &workflow->ndpi_serializer,
                                          flow->info.detection_data->flow.risk,
@@ -3335,7 +3180,6 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
         case FLOW_EVENT_GUESSED:
         case FLOW_EVENT_DETECTED:
         case FLOW_EVENT_DETECTION_UPDATE:
-            printf("\nAshwani: SERVER 9 ");
             logger(1,
                    "[%8llu, %4llu] internal error / invalid function call",
                    workflow->packets_captured,
@@ -3680,12 +3524,8 @@ static uint32_t calculate_ndpi_flow_struct_hash(struct ndpi_flow_struct const * 
         hash += ndpi_flow->excluded_protocol_bitmask.fds_bits[i];
     }
 
-    logger (0, "Ashwani calculate_ndpi_flow_struct_hash START\n");
-    logger (0, "Ashwani host_server_name is %s", ndpi_flow->host_server_name);
     size_t host_server_name_len =
         strnlen((const char *)ndpi_flow->host_server_name, sizeof(ndpi_flow->host_server_name));
-
-    logger (0, "Ashwani calculate_ndpi_flow_struct_hash EDN\n");
     hash += host_server_name_len;
     hash += murmur3_32((uint8_t const *)&ndpi_flow->host_server_name,
                        sizeof(ndpi_flow->host_server_name),
@@ -4727,16 +4567,16 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     // Ashwani Starts here
-    //logger(0, "Ashwani stage 11");
+    logger(0, "Ashwani stage 11");
     if (flow_to_process->flow_extended.first_seen_ms == 0)
     {
-        //logger(0, "Ashwani stage 11-2");
+        logger(0, "Ashwani stage 11-2");
         flow_to_process->flow_extended.first_seen_ms = time_ms;
     }
 
-    //logger(0, "Ashwani stage 22");
+    logger(0, "Ashwani stage 22");
     flow_to_process->flow_extended.last_seen_ms = time_ms;
-   // logger(0, "Ashwani stage 33");
+    logger(0, "Ashwani stage 33");
     // Ashwani Ends here
 
     if (is_new_flow != 0)
@@ -4991,12 +4831,12 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, Flow
     {
         if (reader_thread->workflow->is_pcap_file != 0)
         {
-            // logger(0, "Ashwani: before pcap_loop");
+            logger(0, "Ashwani: before pcap_loop");
             switch (pcap_loop(reader_thread->workflow->pcap_handle, -1, &ndpi_process_packet, (uint8_t *)reader_thread))
             {
-                // logger(0, "Ashwani: Inside Switch");
+                logger(0, "Ashwani: Inside Switch");
                 case PCAP_ERROR:
-                    //logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
+                    logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
                     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
                     return;
                 case PCAP_ERROR_BREAK:
@@ -5150,7 +4990,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, Flow
 #endif
                     if (fd == pcap_fd)
                     {
-                        //logger(0, "Ashwani: fd == pcap_fd");
+                        logger(0, "Ashwani: fd == pcap_fd");
                         switch (pcap_dispatch(
                             reader_thread->workflow->pcap_handle, -1, ndpi_process_packet, (uint8_t *)reader_thread))
                         {
