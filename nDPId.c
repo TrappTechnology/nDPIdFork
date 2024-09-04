@@ -676,24 +676,24 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str,
     // Check if the flow_id already exists
     for (size_t i = 0; i < map->size; ++i)
     {
-        if (map->entries[i].flow_id == flow_id)
-        {
-            // Update existing entry
-            if (json_str != NULL)
-            {
-                free(map->entries[i].json_str);
-                map->entries[i].json_str = strdup(json_str);
-            }
+        //if (map->entries[i].flow_id == flow_id)
+        //{
+        //    // Update existing entry
+        //    if (json_str != NULL)
+        //    {
+        //        free(map->entries[i].json_str);
+        //        map->entries[i].json_str = strdup(json_str);
+        //    }
 
-            // Update existing entry
-            if (json_str_alert != NULL)
-            {
-                free(map->entries[i].json_str_alert);
-                map->entries[i].json_str_alert = strdup(json_str_alert);
-            }
+        //    // Update existing entry
+        //    if (json_str_alert != NULL)
+        //    {
+        //        free(map->entries[i].json_str_alert);
+        //        map->entries[i].json_str_alert = strdup(json_str_alert);
+        //    }
 
-            return;
-        }
+        //    return;
+        //}
     }
 
     // Add new entry
