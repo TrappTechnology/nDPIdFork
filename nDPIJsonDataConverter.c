@@ -561,9 +561,11 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
             result.breed = strDuplicate(json_object_get_string(breed));
         }
 
+        logger(0, "Ashwani hostname 1");
         json_object* hostname;
         if (json_object_object_get_ex(ndpi_object, "hostname", &hostname))
         {
+            logger(0, "Ashwani hostname 2");
             result.hostname = strDuplicate(json_object_get_string(hostname));
         }
     }
