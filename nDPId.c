@@ -677,6 +677,10 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
 {
     // Check if the flow_id already exists
     logger(0, "ASHWANI: add_or_update_flow_entry 1");
+    if (map == NULL) 
+    {
+        return;
+    }
     for (size_t i = 0; i < map->size; ++i)
     {
         logger(0, "ASHWANI: add_or_update_flow_entry 2");
