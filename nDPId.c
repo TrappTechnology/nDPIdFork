@@ -2129,7 +2129,7 @@ static void check_for_flow_updates(struct nDPId_reader_thread * const reader_thr
 
 static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_flow_basic const * const flow_basic)
 {
-    logger(0, "Ashwani jsonize_l3_l4 START");
+    //logger(0, "Ashwani jsonize_l3_l4 START");
     ndpi_serializer * const serializer = &workflow->ndpi_serializer;
     char src_name[48] = {};
     char dst_name[48] = {};
@@ -2137,7 +2137,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
     switch (flow_basic->l3_type)
     {
         case L3_IP:
-            logger(0, "Ashwani L3_IP");
+            //logger(0, "Ashwani L3_IP");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip4");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 4);
@@ -2152,7 +2152,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             }
             break;
         case L3_IP6:
-            logger(0, "Ashwani L3_IP6");
+            //logger(0, "Ashwani L3_IP6");
             ndpi_serialize_string_string(serializer, "l3_proto", "ip6");
             // Ashwani start
             ndpi_serialize_string_uint32(serializer, "ip", 6);
@@ -2204,7 +2204,7 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             break;
     }
 
-     logger(0, "Ashwani jsonize_l3_l4 END");
+    // logger(0, "Ashwani jsonize_l3_l4 END");
 }
 
 static void jsonize_basic(struct nDPId_reader_thread * const reader_thread, int serialize_thread_id)
@@ -4567,16 +4567,16 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     // Ashwani Starts here
-    logger(0, "Ashwani stage 11");
+    //logger(0, "Ashwani stage 11");
     if (flow_to_process->flow_extended.first_seen_ms == 0)
     {
         logger(0, "Ashwani stage 11-2");
         flow_to_process->flow_extended.first_seen_ms = time_ms;
     }
 
-    logger(0, "Ashwani stage 22");
+    //logger(0, "Ashwani stage 22");
     flow_to_process->flow_extended.last_seen_ms = time_ms;
-    logger(0, "Ashwani stage 33");
+    //logger(0, "Ashwani stage 33");
     // Ashwani Ends here
 
     if (is_new_flow != 0)
