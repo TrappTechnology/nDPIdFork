@@ -624,6 +624,8 @@ char * generated_tmp_json_files_event = NULL;
 typedef struct
 {
     int flow_id;
+    int flow_event_id;
+    int packet_id;
     char * json_str;
     char * json_str_alert;
 } FlowEntry;
@@ -649,7 +651,7 @@ void init_flow_map(FlowMap * map, size_t initial_capacity)
 // Free the FlowMap
 void free_flow_map(FlowMap * map)
 {
-    logger(0, "Ashwani: free_flow_map start");
+
     for (size_t i = 0; i < map->size; ++i)
     {
         free(map->entries[i].json_str);
@@ -657,7 +659,7 @@ void free_flow_map(FlowMap * map)
     }
     free(map->entries);
 
-    logger(0, "Ashwani: free_flow_map end");
+  
 }
 
 // Ensure capacity of the FlowMap
@@ -671,34 +673,36 @@ void ensure_capacity(FlowMap * map)
 }
 
 // Add or update an entry in the FlowMap
-void add_or_update_flow_entry(FlowMap * map, int flow_id, const char * json_str, const char * json_str_alert)
+void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int packet_id, const char * json_str, const char * json_str_alert)
 {
     // Check if the flow_id already exists
     for (size_t i = 0; i < map->size; ++i)
     {
-        //if (map->entries[i].flow_id == flow_id)
-        //{
-        //    // Update existing entry
-        //    if (json_str != NULL)
-        //    {
-        //        free(map->entries[i].json_str);
-        //        map->entries[i].json_str = strdup(json_str);
-        //    }
+        if (map->entries[i].flow_id == flow_id && (map->entries[i].flow_event_id >= flow_event_id) &&  (map->entries[i].packet_id >= packet_id))
+        {
+            // Update existing entry
+            if (json_str != NULL)
+            {
+                free(map->entries[i].json_str);
+                map->entries[i].json_str = strdup(json_str);
+            }
 
-        //    // Update existing entry
-        //    if (json_str_alert != NULL)
-        //    {
-        //        free(map->entries[i].json_str_alert);
-        //        map->entries[i].json_str_alert = strdup(json_str_alert);
-        //    }
+            // Update existing entry
+            if (json_str_alert != NULL)
+            {
+                free(map->entries[i].json_str_alert);
+                map->entries[i].json_str_alert = strdup(json_str_alert);
+            }
 
-        //    return;
-        //}
+            return;
+        }
     }
 
     // Add new entry
     ensure_capacity(map);
     map->entries[map->size].flow_id = flow_id;
+    map->entries[map->size].flow_event_id = flow_event_id;
+    map->entries[map->size].packet_id = packet_id;
     map->entries[map->size].json_str = strdup(json_str);
     map->entries[map->size].json_str_alert = NULL;
     if (json_str_alert != NULL)
@@ -2625,38 +2629,31 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     char * converted_json_str = NULL;
     int createAlert = 0;
     unsigned long long int flow_id = 834264320534;
+    unsigned int flow_event_id = -1;
+    unsigned int packet_id = -1;
 
-    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id);
-
-    //logger(0, "Ashwani ConvertnDPIDataFormat flow_id  %llu", flow_id);
+    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id, &flow_event_id, &packet_id);
     if (flow_id != 834264320534 && converted_json_str != NULL)
     {
-        //logger(0, "Ashwani converted_json_str = %s", converted_json_str);
+
         int length = strlen(converted_json_str);
-        //logger(0, "Ashwani write_to_file 1");
         if (duplicate_data(converted_json_str, length))
         {
-            //logger(0, "Ashwani write_to_file duplicate_data");
             return;
         }
 
-        //logger(0, "Ashwani write_to_file 2");
         if (length != 0)
         {
-            //logger(0, "Ashwani write_to_file 3");
+
             char * converted_json_str_no_risk = NULL;
             if (createAlert)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-                //logger(0, "Ashwani converted_json_str 2 = %s", converted_json_str);
-               // logger(0, "Ashwani converted_json_str_no_risk = %s", converted_json_str_no_risk);
-                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str_no_risk, converted_json_str);
+                add_or_update_flow_entry(flow_map_ref, flow_id, flow_event_id, packet_id, converted_json_str_no_risk, converted_json_str);
             }
             else
              {
-                //logger(0, "Ashwani write_to_file 4");
-                add_or_update_flow_entry(flow_map_ref, flow_id, converted_json_str, NULL);     
-                //logger(0, "Ashwani write_to_file 5");
+                add_or_update_flow_entry(flow_map_ref, flow_id, flow_event_id, packet_id, converted_json_str, NULL);     
              }
                 
             free(converted_json_str_no_risk);

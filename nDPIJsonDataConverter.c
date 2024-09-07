@@ -67,6 +67,8 @@ struct Root_data
     char* proto;
     char* breed;
     int flow_id;
+    unsigned int flow_event_id;
+    unsigned int packet_id;
     char* event_start;
     char* event_end;
     char* event_duration;
@@ -477,6 +479,8 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     result.proto = NULL;
     result.breed = NULL;
     result.flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.event_start = NULL;
     result.event_end = NULL;
     result.event_duration = NULL;
@@ -576,6 +580,20 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     {
         result.flow_id = json_object_get_int(flow_id);
     }
+
+    json_object * flow_event_id;
+    if (json_object_object_get_ex(root, "flow_event_id", &flow_event_id))
+    {
+        result.flow_event_id = json_object_get_int(flow_event_id);
+    }
+  
+
+    json_object * packet_id;
+    if (json_object_object_get_ex(root, "packet_id", &packet_id))
+    {
+        result.packet_id = json_object_get_int(packet_id);
+    }
+  
   
     // event
     json_object * event_start;
@@ -1168,8 +1186,17 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     }   
 }
 
-void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int* createAlert, unsigned long long int* flow_id)
+void ConvertnDPIDataFormat(char * originalJsonStr,
+                           char ** converted_json_str,
+                           int * createAlert,
+                           unsigned long long int * flow_id,
+                           unsigned int * flow_event_id,
+                           unsigned int * packet_id)
 {
+    *flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    *flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    *packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+
     struct NDPI_Data ndpiData = getnDPIStructure(originalJsonStr);
     *createAlert = ndpiData.flow_risk_count;
 
@@ -1181,6 +1208,16 @@ void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int
         if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
         {
             *flow_id = rootData.flow_id;
+        }
+
+        if (rootData.flow_event_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+        {
+            *flow_event_id = rootData.flow_event_id;
+        }
+
+        if (rootData.packet_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+        {
+            *packet_id = rootData.packet_id;
         }
 
         add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
