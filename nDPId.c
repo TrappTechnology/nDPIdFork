@@ -676,10 +676,13 @@ void ensure_capacity(FlowMap * map)
 void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int packet_id, const char * json_str, const char * json_str_alert)
 {
     // Check if the flow_id already exists
+    logger(0, "ASHWANI: add_or_update_flow_entry 1")
     for (size_t i = 0; i < map->size; ++i)
     {
+        logger(0, "ASHWANI: add_or_update_flow_entry 2")
         if (map->entries[i].flow_id == flow_id && (map->entries[i].flow_event_id >= flow_event_id) &&  (map->entries[i].packet_id >= packet_id))
         {
+            logger(0, "ASHWANI: add_or_update_flow_entry 3")
             // Update existing entry
             if (json_str != NULL)
             {
@@ -694,17 +697,22 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
                 map->entries[i].json_str_alert = strdup(json_str_alert);
             }
 
+            logger(0, "ASHWANI: add_or_update_flow_entry 4")
             return;
         }
     }
 
     // Add new entry
+    logger(0, "ASHWANI: add_or_update_flow_entry 5")
     ensure_capacity(map);
+    logger(0, "ASHWANI: add_or_update_flow_entry 6")
     map->entries[map->size].flow_id = flow_id;
     map->entries[map->size].flow_event_id = flow_event_id;
     map->entries[map->size].packet_id = packet_id;
     map->entries[map->size].json_str = strdup(json_str);
     map->entries[map->size].json_str_alert = NULL;
+
+    logger(0, "ASHWANI: add_or_update_flow_entry 7")
     if (json_str_alert != NULL)
     {
         map->entries[map->size].json_str_alert = strdup(json_str_alert);
