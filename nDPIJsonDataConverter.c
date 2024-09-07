@@ -1197,14 +1197,19 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
     *flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     *packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
 
+    logger(0, "ASHWANI: ConvertnDPIDataFormat 1")
     struct NDPI_Data ndpiData = getnDPIStructure(originalJsonStr);
+    logger(0, "ASHWANI: ConvertnDPIDataFormat 2")
     *createAlert = ndpiData.flow_risk_count;
 
     json_object* root_object = json_object_new_object();
     struct Root_data rootData;
+    logger(0, "ASHWANI: ConvertnDPIDataFormat 3")
     if (add_nDPI_Data(&root_object, ndpiData))
     {
+        logger(0, "ASHWANI: ConvertnDPIDataFormat 4")
         rootData = getRootDataStructure(originalJsonStr);
+        logger(0, "ASHWANI: ConvertnDPIDataFormat 5")
         if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
         {
             *flow_id = rootData.flow_id;
@@ -1219,6 +1224,8 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
         {
             *packet_id = rootData.packet_id;
         }
+
+        logger(0, "ASHWANI: ConvertnDPIDataFormat 6")
 
         add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
 
