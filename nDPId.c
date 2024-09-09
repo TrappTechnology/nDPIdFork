@@ -708,6 +708,7 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
             }
             else
             {
+                logger(0, "ASHWANI: add_or_update_flow_entry else");
                 if (json_str != NULL)
                 {
                     logger(0, "ASHWANI: add_or_update_flow_entry 4");
