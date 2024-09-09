@@ -197,6 +197,8 @@ struct nDPId_flow_basic
     uint64_t last_pkt_time[FD_COUNT];
 };
 
+#define RANDOM_UNINTIALIZED_NUMBER_VALUE -84742891
+
 /*
  * Information required for a full detection cycle.
  */
@@ -678,7 +680,7 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
 {
     // Check if the flow_id already exists
   
-    if (map == NULL) 
+    if (map == NULL || flow_event_id == RANDOM_UNINTIALIZED_NUMBER_VALUE || packet_id == RANDOM_UNINTIALIZED_NUMBER_VALUE) 
     {
         return;
     }
