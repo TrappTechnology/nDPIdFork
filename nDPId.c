@@ -785,11 +785,19 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
             }
             else
             {
-                logger(0, "ASHWANI: add_or_update_flow_entry 4");
-                update_xfer_if_greater(map->entries[i].json_str, json_str);
+                if (json_str != NULL)
+                {
+                    logger(0, "ASHWANI: add_or_update_flow_entry 4");
+                    update_xfer_if_greater(map->entries[i].json_str, json_str);
+                }
+
                 logger(0, "ASHWANI: add_or_update_flow_entry 5");
-                update_xfer_if_greater(map->entries[i].json_str_alert, json_str_alert);
-                logger(0, "ASHWANI: add_or_update_flow_entry 6");
+
+                if (json_str_alert != NULL)
+                {
+                    update_xfer_if_greater(map->entries[i].json_str_alert, json_str_alert);
+                    logger(0, "ASHWANI: add_or_update_flow_entry 6");
+                }
             }
 
              return;
