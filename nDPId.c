@@ -691,6 +691,12 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
         logger(0, "ASHWANI: add_or_update_flow_entry 2");
         if (map->entries[i].flow_id == flow_id )
         {
+            logger(0, "\nASHWANI: map->entries[i].flow_event_id = %d\n", map->entries[i].flow_event_id);
+            logger(0, "ASHWANI: map->entries[i].packet_id = %d\n", map->entries[i].packet_id);
+
+            logger(0, "\nASHWANI: flow_event_id = %d\n", flow_event_id);
+            logger(0, "ASHWANI: packet_id = %d\n", packet_id);
+
             if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
             {
                 logger(0, "ASHWANI: add_or_update_flow_entry 3");
