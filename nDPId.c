@@ -700,8 +700,8 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
             if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
             {
                 logger(0, "ASHWANI: add_or_update_flow_entry 3");
-                map->entries[map->size].flow_event_id = flow_event_id;
-                map->entries[map->size].packet_id = packet_id;
+                map->entries[i].flow_event_id = flow_event_id;
+                map->entries[i].packet_id = packet_id;
 
                 // Update existing entry
                 if (json_str != NULL)
