@@ -674,7 +674,7 @@ void ensure_capacity(FlowMap * map)
 
 
 // Function to update "xfer" field in json1 if values in json2 are greater
-static void update_xfer_if_greater(char * json_str1, char * json_str2)
+static void update_xfer_if_greater(char * json_str1, const char * json_str2)
 {
     // Parse the JSON strings
     struct json_object * json1 = json_tokener_parse(json_str1);
@@ -763,8 +763,8 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
             }
             else
             {
-                add_or_update_flow_entry(map->entries[i].json_str, json_str);
-                add_or_update_flow_entry(map->entries[i].json_str_alert, json_str_alert);
+                update_xfer_if_greater(map->entries[i].json_str, json_str);
+                update_xfer_if_greater(map->entries[i].json_str_alert, json_str_alert);
             }
 
              return;
