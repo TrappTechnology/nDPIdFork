@@ -672,39 +672,103 @@ void ensure_capacity(FlowMap * map)
     }
 }
 
+
+// Function to update "xfer" field in json1 if values in json2 are greater
+static void update_xfer_if_greater(char * json_str1, char * json_str2)
+{
+    // Parse the JSON strings
+    struct json_object * json1 = json_tokener_parse(json_str1);
+    struct json_object * json2 = json_tokener_parse(json_str2);
+
+    // Get the "xfer" fields from both JSON objects
+    struct json_object *xfer1, *xfer2;
+    json_object_object_get_ex(json1, "xfer", &xfer1);
+    json_object_object_get_ex(json2, "xfer", &xfer2);
+
+    // Extract the "source" and "destination" fields from "xfer"
+    struct json_object *source1, *destination1, *source2, *destination2;
+    json_object_object_get_ex(xfer1, "source", &source1);
+    json_object_object_get_ex(xfer1, "destination", &destination1);
+    json_object_object_get_ex(xfer2, "source", &source2);
+    json_object_object_get_ex(xfer2, "destination", &destination2);
+
+    // Extract the "packets" and "bytes" from both "source" and "destination"
+    int src1_packets = json_object_get_int(json_object_object_get(source1, "packets"));
+    int src1_bytes = json_object_get_int(json_object_object_get(source1, "bytes"));
+    int dst1_packets = json_object_get_int(json_object_object_get(destination1, "packets"));
+    int dst1_bytes = json_object_get_int(json_object_object_get(destination1, "bytes"));
+
+    int src2_packets = json_object_get_int(json_object_object_get(source2, "packets"));
+    int src2_bytes = json_object_get_int(json_object_object_get(source2, "bytes"));
+    int dst2_packets = json_object_get_int(json_object_object_get(destination2, "packets"));
+    int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
+
+    // Update values in json1 if values in json2 are greater
+    if (src2_packets > src1_packets)
+    {
+        json_object_object_add(source1, "packets", json_object_new_int(src2_packets));
+    }
+
+    if (src2_bytes > src1_bytes)
+    {
+        json_object_object_add(source1, "bytes", json_object_new_int(src2_bytes));
+    }
+
+    if (dst2_packets > dst1_packets)
+    {
+        json_object_object_add(destination1, "packets", json_object_new_int(dst2_packets));
+    }
+
+    if (dst2_bytes > dst1_bytes)
+    {
+        json_object_object_add(destination1, "bytes", json_object_new_int(dst2_bytes));
+    }
+
+    // Clean up
+    json_object_put(json1);
+    json_object_put(json2);
+}
+
+
 // Add or update an entry in the FlowMap
 void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int packet_id, const char * json_str, const char * json_str_alert)
 {
-    
     // Check if the flow_id already exists
   
     if (map == NULL) 
     {
         return;
     }
+
     for (size_t i = 0; i < map->size; ++i)
     {
-        //logger(0, "ASHWANI: add_or_update_flow_entry 2");
-        //if (map->entries[i].flow_id == flow_id && (map->entries[i].flow_event_id <= flow_event_id) &&  (map->entries[i].packet_id <= packet_id))
-        //{
-        //    logger(0, "ASHWANI: add_or_update_flow_entry 3");
-        //    // Update existing entry
-        //    if (json_str != NULL)
-        //    {
-        //        free(map->entries[i].json_str);
-        //        map->entries[i].json_str = strdup(json_str);
-        //    }
 
-        //    // Update existing entry
-        //    if (json_str_alert != NULL)
-        //    {
-        //        free(map->entries[i].json_str_alert);
-        //        map->entries[i].json_str_alert = strdup(json_str_alert);
-        //    }
+        if (map->entries[i].flow_id == flow_id )
+        {
+            if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
+            {
+                // Update existing entry
+                if (json_str != NULL)
+                {
+                    free(map->entries[i].json_str);
+                    map->entries[i].json_str = strdup(json_str);
+                }
 
-        //    logger(0, "ASHWANI: add_or_update_flow_entry 4");
-        //    return;
-        //}
+                // Update existing entry
+                if (json_str_alert != NULL)
+                {
+                    free(map->entries[i].json_str_alert);
+                    map->entries[i].json_str_alert = strdup(json_str_alert);
+                }          
+            }
+            else
+            {
+                add_or_update_flow_entry(map->entries[i].json_str, json_str);
+                add_or_update_flow_entry(map->entries[i].json_str_alert, json_str_alert);
+            }
+
+             return;
+        }
     }
 
     // Add new entry
