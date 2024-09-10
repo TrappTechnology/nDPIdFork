@@ -1408,7 +1408,7 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
    json_object_put(json1);
    json_object_put(json2);
 
-   logger(0, "ASHWANI: update_xfer_if_greater 14");
+   logger(0, "ASHWANI: update_xfer_if_greater 13");
    return updated_json_str1;
 }
 
