@@ -1398,14 +1398,19 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
 
     // Clean up
 
+   logger(0, "ASHWANI: update_xfer_if_greater 11");
    const char * updated_json_str1 = json_object_to_json_string_ext(json1, JSON_C_TO_STRING_PLAIN);
+   logger(0, "ASHWANI: update_xfer_if_greater 12");
 
     // Allocate memory for the updated string
     char * result = strdup(updated_json_str1);
+   logger(0, "ASHWANI: update_xfer_if_greater 13");
 
     // Clean up
     json_object_put(json1);
     json_object_put(json2);
+
+    logger(0, "ASHWANI: update_xfer_if_greater 14");
 
     return result;
 }
