@@ -1371,24 +1371,28 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2)
     if (src2_packets > src1_packets)
     {
         logger(0, "ASHWANI: update_xfer_if_greater 7");
+        json_object_object_del(source1, "packets");
         json_object_object_add(source1, "packets", json_object_new_int(src2_packets));
     }
 
     if (src2_bytes > src1_bytes)
     {
         logger(0, "ASHWANI: update_xfer_if_greater 8");
+        json_object_object_del(source1, "bytes");
         json_object_object_add(source1, "bytes", json_object_new_int(src2_bytes));
     }
 
     if (dst2_packets > dst1_packets)
     {
         logger(0, "ASHWANI: update_xfer_if_greater 9");
+        json_object_object_del(destination1, "packets");
         json_object_object_add(destination1, "packets", json_object_new_int(dst2_packets));
     }
 
     if (dst2_bytes > dst1_bytes)
     {
         logger(0, "ASHWANI: update_xfer_if_greater 10");
+        json_object_object_del(destination1, "bytes");
         json_object_object_add(destination1, "bytes", json_object_new_int(dst2_bytes));
     }
 
