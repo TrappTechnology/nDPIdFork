@@ -723,7 +723,10 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
                 if (json_str != NULL)
                 {
                     logger(0, "ASHWANI: add_or_update_flow_entry 4");
-                    UpdateXferIfGreater(map->entries[i].json_str, json_str);
+                    char* updatedString = UpdateXferIfGreater(map->entries[i].json_str, json_str);
+                    free(map->entries[i].json_str);
+                    map->entries[i].json_str = strdup(updatedString);
+                    free(updatedString);
                 }
 
                 logger(0, "ASHWANI: add_or_update_flow_entry 5");
