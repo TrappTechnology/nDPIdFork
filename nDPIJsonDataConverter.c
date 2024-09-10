@@ -1412,6 +1412,7 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
 
     logger(0, "ASHWANI: update_xfer_if_greater 14");
 
+    printf("\nUpdated string \n %s", result);
     return result;
 }
 
