@@ -1297,8 +1297,8 @@ int CheckSRCIPField(const char * json_str)
 // Function to update "xfer" field in json1 if values in json2 are greater
 void UpdateXferIfGreater(char * json_str1, const char * json_str2)
 {
-    logger(0, "json_str1: %s\n", json_str1);
-    logger(0, "json_str2: %s\n", json_str2);
+    printf("json_str1: %s\n", json_str1);
+    printf("json_str2: %s\n", json_str2);
     // Parse the JSON strings
     logger(0, "ASHWANI: update_xfer_if_greater 1");
     json_object * json1 = json_tokener_parse(json_str1);
@@ -1342,12 +1342,28 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2)
     int dst1_packets = json_object_get_int(json_object_object_get(destination1, "packets"));
     int dst1_bytes = json_object_get_int(json_object_object_get(destination1, "bytes"));
 
+
     logger(0, "ASHWANI: update_xfer_if_greater 5");
 
     int src2_packets = json_object_get_int(json_object_object_get(source2, "packets"));
     int src2_bytes = json_object_get_int(json_object_object_get(source2, "bytes"));
     int dst2_packets = json_object_get_int(json_object_object_get(destination2, "packets"));
     int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
+
+
+    logger(0, "\tsrc1_packets = %d", src1_packets);
+    logger(0, "\src2_packets = %d", src2_packets);
+
+    logger(0, "\src1_bytes = %d", src1_bytes);
+    logger(0, "\src2_bytes = %d", src2_bytes);
+
+    logger(0, "\dst1_packets = %d", dst1_packets);
+    logger(0, "\dst2_packets = %d", dst2_packets);
+
+    logger(0, "\dst1_bytes = %d", dst1_bytes);
+    logger(0, "\dst2_bytes = %d", dst2_bytes);
+
+
 
     logger(0, "ASHWANI: update_xfer_if_greater 6");
 
