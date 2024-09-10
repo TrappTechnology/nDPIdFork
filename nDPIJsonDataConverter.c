@@ -1297,8 +1297,8 @@ int CheckSRCIPField(const char * json_str)
 // Function to update "xfer" field in json1 if values in json2 are greater
 char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
 {
-    printf("json_str1: %s\n", json_str1);
-    printf("json_str2: %s\n", json_str2);
+    printf("json_str1: \n%s\n", json_str1);
+    printf("json_str2: \n%s\n", json_str2);
     // Parse the JSON strings
     logger(0, "ASHWANI: update_xfer_if_greater 1");
     json_object * json1 = json_tokener_parse(json_str1);
@@ -1399,13 +1399,13 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
     // Clean up
 
    logger(0, "ASHWANI: update_xfer_if_greater 11");
-   logger(0, "\nUpdated string 1 \n %s", json1);
+   //logger(0, "\nUpdated string 1 \n %s", json1);
    const char * updated_json_str1 = json_object_to_json_string_ext(json1, JSON_C_TO_STRING_PLAIN);
-   logger(0, "\nUpdated string 2 \n %s", updated_json_str1);
+   printf("\nUpdated string 2 \n %s", updated_json_str1);
    logger(0, "ASHWANI: update_xfer_if_greater 12");
 
     // Allocate memory for the updated string
-    char * result = strdup(updated_json_str1);
+   char * result = strdup(updated_json_str1);
    logger(0, "ASHWANI: update_xfer_if_greater 13");
 
     // Clean up
@@ -1414,7 +1414,7 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
 
     logger(0, "ASHWANI: update_xfer_if_greater 14");
 
-    logger(0, "\nUpdated string 3\n %s", result);
+     printf("\nUpdated string 2 \n %s", result);
     return result;
 }
 
