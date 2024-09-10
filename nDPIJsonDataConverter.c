@@ -1351,17 +1351,17 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2)
     int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
 
 
-    logger(0, "\tsrc1_packets = %d", src1_packets);
-    logger(0, "\src2_packets = %d", src2_packets);
+    logger(0, "src1_packets = %d", src1_packets);
+    logger(0, "src2_packets = %d", src2_packets);
 
-    logger(0, "\src1_bytes = %d", src1_bytes);
-    logger(0, "\src2_bytes = %d", src2_bytes);
+    logger(0, "src1_bytes = %d", src1_bytes);
+    logger(0, "src2_bytes = %d", src2_bytes);
 
-    logger(0, "\dst1_packets = %d", dst1_packets);
-    logger(0, "\dst2_packets = %d", dst2_packets);
+    logger(0, "dst1_packets = %d", dst1_packets);
+    logger(0, "dst2_packets = %d", dst2_packets);
 
-    logger(0, "\dst1_bytes = %d", dst1_bytes);
-    logger(0, "\dst2_bytes = %d", dst2_bytes);
+    logger(0, "dst1_bytes = %d", dst1_bytes);
+    logger(0, "dst2_bytes = %d", dst2_bytes);
 
 
 
