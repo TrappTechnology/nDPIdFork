@@ -1395,7 +1395,7 @@ void updateXferIfGreater(char * json_str1, const char * json_str2, char** conver
         logger(0, "ASHWANI: update_xfer_if_greater 12");
     }
 
-    *converted_json_str = strdup(json_object_to_json_string(root));
+    *converted_json_str = strdup(json_object_to_json_string(json1));
 
 
 
