@@ -1396,59 +1396,20 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
         json_object_object_add(destination1, "bytes", json_object_new_int(dst2_bytes));
     }
 
-    //json_object * xfer_object = json_object_new_object();
-    //bool addXfer = FALSE;
-    //if (rootDataStructure.xfer.source.packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    //{
-    //    json_object * packets_object = json_object_new_object();
 
-    //    json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.source.packets));
-    //    if (rootDataStructure.xfer.source.bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    //    {
-    //        json_object_object_add(packets_object, "bytes", json_object_new_int(rootDataStructure.xfer.source.bytes));
-    //    }
-    //    json_object_object_add(xfer_object, "source", packets_object);
-    //    addXfer = TRUE;
-    //}
-
-    //if (rootDataStructure.xfer.destination.packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    //{
-    //    json_object * packets_object = json_object_new_object();
-    //    json_object_object_add(packets_object,
-    //                           "packets",
-    //                           json_object_new_int(rootDataStructure.xfer.destination.packets));
-    //    if (rootDataStructure.xfer.destination.bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    //    {
-    //        json_object_object_add(packets_object,
-    //                               "bytes",
-    //                               json_object_new_int(rootDataStructure.xfer.destination.bytes));
-    //    }
-
-    //    json_object_object_add(xfer_object, "destination", packets_object);
-    //    addXfer = TRUE;
-    //}
-
-
-    // Clean up
 
    logger(0, "ASHWANI: update_xfer_if_greater 11");
    //logger(0, "\nUpdated string 1 \n %s", json1);
-   const char * updated_json_str1 = json_object_to_json_string_ext(json1, JSON_C_TO_STRING_PLAIN);
+   char * updated_json_str1 = strdup(json_object_to_json_string(json1));
    printf("\nUpdated string 2 \n %s", updated_json_str1);
    logger(0, "ASHWANI: update_xfer_if_greater 12");
 
-    // Allocate memory for the updated string
-   char * result = strdup(updated_json_str1);
-   logger(0, "ASHWANI: update_xfer_if_greater 13");
+   
+   json_object_put(json1);
+   json_object_put(json2);
 
-    // Clean up
-    json_object_put(json1);
-    json_object_put(json2);
-
-    logger(0, "ASHWANI: update_xfer_if_greater 14");
-
-     printf("\nUpdated string 2 \n %s", result);
-    return result;
+   logger(0, "ASHWANI: update_xfer_if_greater 14");
+   return updated_json_str1;
 }
 
 
