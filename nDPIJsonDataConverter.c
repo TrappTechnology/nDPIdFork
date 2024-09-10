@@ -1430,7 +1430,7 @@ void updateXferIfGreater(char * json_str1, const char * json_str2, char** conver
 
 
 
-    *converted_json_str = strdup(json_object_to_json_string(root));
+
    
    json_object_put(json1);
    json_object_put(json2);
