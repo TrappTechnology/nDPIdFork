@@ -1197,19 +1197,16 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
     *flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     *packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
 
-    // logger(0, "ASHWANI: ConvertnDPIDataFormat 1");
     struct NDPI_Data ndpiData = getnDPIStructure(originalJsonStr);
-    // logger(0, "ASHWANI: ConvertnDPIDataFormat 2");
+
     *createAlert = ndpiData.flow_risk_count;
 
     json_object* root_object = json_object_new_object();
     struct Root_data rootData;
-    // logger(0, "ASHWANI: ConvertnDPIDataFormat 3");
+
     if (add_nDPI_Data(&root_object, ndpiData))
     {
-        // logger(0, "ASHWANI: ConvertnDPIDataFormat 4");
         rootData = getRootDataStructure(originalJsonStr);
-        // logger(0, "ASHWANI: ConvertnDPIDataFormat 5");
         if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
         {
             *flow_id = rootData.flow_id;
@@ -1225,10 +1222,7 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
             *packet_id = rootData.packet_id;
         }
 
-        // logger(0, "ASHWANI: ConvertnDPIDataFormat 6");
-
         add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
-
         *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
     }
 
@@ -1250,13 +1244,11 @@ void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
     if (json_object_object_get_ex(root, "ndpi", &ndpiObject))
     {
         json_object_object_del(ndpiObject, "flow_risk");
-
         if (json_object_object_length(ndpiObject) < 1)
         {
             json_object_object_del(root, "ndpi");
         }       
     }
-
 
     json_object* eventObject;
     if (json_object_object_get_ex(root, "event", &eventObject))
@@ -1399,7 +1391,6 @@ char* UpdateXferIfGreater(char * json_str1, const char * json_str2)
 
 
    logger(0, "ASHWANI: update_xfer_if_greater 11");
-   //logger(0, "\nUpdated string 1 \n %s", json1);
    char * updated_json_str1 = strdup(json_object_to_json_string(json1));
    printf("\nUpdated string 2 \n %s", updated_json_str1);
    logger(0, "ASHWANI: update_xfer_if_greater 12");
