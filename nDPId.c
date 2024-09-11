@@ -4624,7 +4624,7 @@ static void ndpi_process_packet(uint8_t * const args,
     //logger(0, "Ashwani stage 11");
     if (flow_to_process->flow_extended.first_seen_ms == 0)
     {
-        logger(0, "Ashwani stage 11-2");
+        //logger(0, "Ashwani stage 11-2");
         flow_to_process->flow_extended.first_seen_ms = time_ms;
     }
 
