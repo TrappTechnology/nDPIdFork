@@ -2673,7 +2673,6 @@ void free_messages()
 
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
-    logger(0, "write_to_file start");
     //logger(0, "write_to_file %s", json_str);
 
     //if (CheckSRCIPField(json_str) == 0) 
@@ -2718,8 +2717,6 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     }
    
     free(converted_json_str);
-
-    logger(0, "write_to_file end");
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
@@ -2739,7 +2736,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-    printf("Ashwani json_msg is,\n %s\n", json_msg);
+    printf("\n%s\n", json_msg);
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
         logger(1,

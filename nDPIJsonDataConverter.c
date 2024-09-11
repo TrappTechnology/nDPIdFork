@@ -1289,8 +1289,8 @@ int CheckSRCIPField(const char * json_str)
 // Function to update "xfer" field in json1 if values in json2 are greater
 void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** converted_json_str)
 {
-    printf("json_str1: \n%s\n", json_str1);
-    printf("json_str2: \n%s\n", json_str2);
+    //printf("json_str1: \n%s\n", json_str1);
+    //printf("json_str2: \n%s\n", json_str2);
     // Parse the JSON strings
     // logger(0,  "ASHWANI: update_xfer_if_greater 1");
     json_object * json1 = json_tokener_parse(json_str1);
