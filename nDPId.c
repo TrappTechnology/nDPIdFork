@@ -685,10 +685,10 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
         return;
     }
 
-    logger(0, "ASHWANI: add_or_update_flow_entry 1");
+    //logger(0, "ASHWANI: add_or_update_flow_entry 1");
     for (size_t i = 0; i < map->size; ++i)
     {
-        logger(0, "ASHWANI: add_or_update_flow_entry 2");
+        //logger(0, "ASHWANI: add_or_update_flow_entry 2");
         if (map->entries[i].flow_id == flow_id )
         {
             logger(0, "ASHWANI: map->entries[i].flow_event_id = %d\n", map->entries[i].flow_event_id);
@@ -699,7 +699,7 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
 
             if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
             {
-                logger(0, "ASHWANI: add_or_update_flow_entry 3");
+                //logger(0, "ASHWANI: add_or_update_flow_entry 3");
                 map->entries[i].flow_event_id = flow_event_id;
                 map->entries[i].packet_id = packet_id;
 
@@ -719,32 +719,32 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
             }
             else
             {
-                logger(0, "ASHWANI: add_or_update_flow_entry else");
+                // logger(0,  "ASHWANI: add_or_update_flow_entry else");
                 if (json_str != NULL)
                 {
-                    logger(0, "ASHWANI: add_or_update_flow_entry 4");
+                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4");
                     char * converted_json_str_no_risk = NULL;
 
                     UpdateXferIfGreater(map->entries[i].json_str, json_str, &converted_json_str_no_risk);
 
-                    logger(0, "ASHWANI: add_or_update_flow_entry 4 - 1");
+                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 1");
                     free(map->entries[i].json_str);
-                    logger(0, "ASHWANI: add_or_update_flow_entry 4 - 2");
+                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 2");
 
                     map->entries[i].json_str = strdup(converted_json_str_no_risk);
-                    logger(0, "ASHWANI: add_or_update_flow_entry 4 - 3");
+                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 3");
                     free(converted_json_str_no_risk);
                    
   
                     
                 }
 
-                logger(0, "ASHWANI: add_or_update_flow_entry 5");
+                // logger(0,  "ASHWANI: add_or_update_flow_entry 5");
 
                 if (json_str_alert != NULL)
                 {
                     UpdateXferIfGreater(map->entries[i].json_str_alert, json_str_alert);
-                    logger(0, "ASHWANI: add_or_update_flow_entry 6");
+                    // logger(0,  "ASHWANI: add_or_update_flow_entry 6");
                 }
             }
 
@@ -791,16 +791,16 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
     FILE * fp = NULL;
-    logger(0, "Ashwani: write_flow_map_to_alert_json: %d", map->size);
+    // logger(0,  "Ashwani: write_flow_map_to_alert_json: %d", map->size);
     for (size_t i = 0; i < map->size; ++i)
     {
-        logger(0, "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
+        // logger(0,  "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
         if (map->entries[i].json_str_alert != NULL)
         {
-            logger(0, "Ashwani: check 1");
+            // logger(0,  "Ashwani: check 1");
             if (fp == NULL)
             {
-                logger(0, "Ashwani: check 2");
+                // logger(0,  "Ashwani: check 2");
                 fp = fopen(filename, "w");
                 if (!fp)
                 {
@@ -814,13 +814,13 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
         }
     }
 
-    logger(0, "Ashwani: write_flow_map_to_alert_json: end 1");
+    // logger(0,  "Ashwani: write_flow_map_to_alert_json: end 1");
     if (fp != NULL)
     {
-        logger(0, "Ashwani: write_flow_map_to_alert_json: end 2");
+        // logger(0,  "Ashwani: write_flow_map_to_alert_json: end 2");
         fclose(fp);
     }
-    logger(0, "Ashwani: write_flow_map_to_alert_json: end final");
+    // logger(0,  "Ashwani: write_flow_map_to_alert_json: end final");
 }
 
 

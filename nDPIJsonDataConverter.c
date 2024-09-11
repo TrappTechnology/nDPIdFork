@@ -1292,11 +1292,11 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
     printf("json_str1: \n%s\n", json_str1);
     printf("json_str2: \n%s\n", json_str2);
     // Parse the JSON strings
-    logger(0, "ASHWANI: update_xfer_if_greater 1");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 1");
     json_object * json1 = json_tokener_parse(json_str1);
     if (json1 == NULL)
     {
-        logger(0, "ASHWANI: json1 is NULL");
+        // logger(0,  "ASHWANI: json1 is NULL");
         return;
     }
 
@@ -1304,20 +1304,20 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
 
     if (json2 == NULL)
     {
-        logger(0, "ASHWANI: json2 is NULL");
+        // logger(0,  "ASHWANI: json2 is NULL");
         return;
     }
 
-    logger(0, "ASHWANI: update_xfer_if_greater 2");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 2");
     // Get the "xfer" fields from both JSON objects
     json_object *xfer1, *xfer2;
     json_object_object_get_ex(json1, "xfer", &xfer1);
 
-    logger(0, "ASHWANI: update_xfer_if_greater 22");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 22");
 
     json_object_object_get_ex(json2, "xfer", &xfer2);
 
-    logger(0, "ASHWANI: update_xfer_if_greater 3");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 3");
 
     // Extract the "source" and "destination" fields from "xfer"
     struct json_object *source1, *destination1, *source2, *destination2;
@@ -1326,7 +1326,7 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
     json_object_object_get_ex(xfer2, "source", &source2);
     json_object_object_get_ex(xfer2, "destination", &destination2);
 
-    logger(0, "ASHWANI: update_xfer_if_greater 4");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 4");
 
     // Extract the "packets" and "bytes" from both "source" and "destination"
     int src1_packets = json_object_get_int(json_object_object_get(source1, "packets"));
@@ -1335,7 +1335,7 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
     int dst1_bytes = json_object_get_int(json_object_object_get(destination1, "bytes"));
 
 
-    logger(0, "ASHWANI: update_xfer_if_greater 5");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 5");
 
     int src2_packets = json_object_get_int(json_object_object_get(source2, "packets"));
     int src2_bytes = json_object_get_int(json_object_object_get(source2, "bytes"));
@@ -1343,25 +1343,25 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
     int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
 
 
-    logger(0, "src1_packets = %d", src1_packets);
-    logger(0, "src2_packets = %d", src2_packets);
+    // logger(0,  "src1_packets = %d", src1_packets);
+    // logger(0,  "src2_packets = %d", src2_packets);
 
-    logger(0, "src1_bytes = %d", src1_bytes);
-    logger(0, "src2_bytes = %d", src2_bytes);
+    // logger(0,  "src1_bytes = %d", src1_bytes);
+    // logger(0,  "src2_bytes = %d", src2_bytes);
 
-    logger(0, "dst1_packets = %d", dst1_packets);
-    logger(0, "dst2_packets = %d", dst2_packets);
+    // logger(0,  "dst1_packets = %d", dst1_packets);
+    // logger(0,  "dst2_packets = %d", dst2_packets);
 
-    logger(0, "dst1_bytes = %d", dst1_bytes);
-    logger(0, "dst2_bytes = %d", dst2_bytes);
+    // logger(0,  "dst1_bytes = %d", dst1_bytes);
+    // logger(0,  "dst2_bytes = %d", dst2_bytes);
 
 
 
-    logger(0, "ASHWANI: update_xfer_if_greater 6");
+    // logger(0,  "ASHWANI: update_xfer_if_greater 6");
 
     json_object * xfer_object = json_object_new_object();
     {
-        logger(0, "ASHWANI: update_xfer_if_greater 7");
+        // logger(0,  "ASHWANI: update_xfer_if_greater 7");
         json_object * packets_object = json_object_new_object();
         json_object_object_add(packets_object,
                                "packets",
@@ -1370,11 +1370,11 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
                                "bytes",
                                json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
         json_object_object_add(xfer_object, "source", packets_object);
-        logger(0, "ASHWANI: update_xfer_if_greater 8");
+        // logger(0,  "ASHWANI: update_xfer_if_greater 8");
     }
 
     {
-        logger(0, "ASHWANI: update_xfer_if_greater 9");
+        // logger(0,  "ASHWANI: update_xfer_if_greater 9");
         json_object * packets_object = json_object_new_object();
         json_object_object_add(packets_object,
                                "packets",
@@ -1383,16 +1383,16 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
                                "bytes",
                                json_object_new_int(dst2_bytes > dst1_bytes ? dst2_bytes : dst1_bytes));
         json_object_object_add(xfer_object, "destination", packets_object);
-        logger(0, "ASHWANI: update_xfer_if_greater 10");
+        // logger(0,  "ASHWANI: update_xfer_if_greater 10");
     }
         
     json_object * xferObject;
     if (json_object_object_get_ex(json1, "xfer", &xferObject))
     {
-        logger(0, "ASHWANI: update_xfer_if_greater 11");
+        // logger(0,  "ASHWANI: update_xfer_if_greater 11");
         json_object_object_del(json1, "xfer");
         json_object_object_add(json1, "xfer", xfer_object);
-        logger(0, "ASHWANI: update_xfer_if_greater 12");
+        // logger(0,  "ASHWANI: update_xfer_if_greater 12");
     }
 
     *converted_json_str = strdup(json_object_to_json_string(json1));
