@@ -230,12 +230,26 @@ void nDPIsrvd_memprof_log(char const * const format, ...)
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 void create_events_and_alerts_folders()
 {
-    char * current_directory = NULL;
-    // Get the current directory
-    current_directory = getcwd(NULL, 0);
-    if (current_directory == NULL)
+    //char * current_directory = NULL;
+    //// Get the current directory
+    //current_directory = getcwd(NULL, 0);
+    //if (current_directory == NULL)
+    //{
+    //    logger(1, "Error getting current directory: %s\n", strerror(errno));
+    //    exit(EXIT_FAILURE);
+    //}
+
+    char current_directory[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+    if (count != -1)
     {
-        logger(1, "Error getting current directory: %s\n", strerror(errno));
+        // Null-terminate the string
+        path[count] = '\0';
+        logger(0, "Executable path: %s\n", path);
+    }
+    else
+    {
+        logger(stderr, "Error getting current exe path\n"));
         exit(EXIT_FAILURE);
     }
 
@@ -250,7 +264,7 @@ void create_events_and_alerts_folders()
     {
         if (errno != EEXIST)
         {
-            fprintf(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
+            logger(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
     }
