@@ -248,6 +248,11 @@ void create_events_and_alerts_folders()
         exe_path[count] = '\0';
         current_directory = dirname(exe_path);
         logger(0, "Executable path: %s\n", exe_path);
+        if (current_directory == NULL) 
+        {
+            logger(0, "Current directory is NULL");
+        }
+
         logger(0, "Executable directory: %s\n", current_directory);
     }
     else
