@@ -239,13 +239,15 @@ void create_events_and_alerts_folders()
     //    exit(EXIT_FAILURE);
     //}
 
-    char current_directory[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", current_directory, PATH_MAX);
+    char exe_path[PATH_MAX];
+    ssize_t count = readlink("/proc/self/exe", exe_path, PATH_MAX);
+    char * current_directory = NULL;
     if (count != -1)
     {
         // Null-terminate the string
-        current_directory[count] = '\0';
-        logger(0, "Executable path: %s\n", current_directory);
+        exe_path[count] = '\0';
+        current_directory = dirname(exe_path);
+        logger(0, "Executable path: %s\n", exe_path);
     }
     else
     {
