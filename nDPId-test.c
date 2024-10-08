@@ -244,7 +244,7 @@ void create_events_and_alerts_folders()
     if (count != -1)
     {
         // Null-terminate the string
-        path[count] = '\0';
+        current_directory[count] = '\0';
         logger(0, "Executable path: %s\n", current_directory);
     }
     else
