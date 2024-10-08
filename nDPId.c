@@ -689,67 +689,65 @@ void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int
     for (size_t i = 0; i < map->size; ++i)
     {
         //logger(0, "ASHWANI: add_or_update_flow_entry 2");
-        if (map->entries[i].flow_id == flow_id )
-        {
-            //logger(0, "ASHWANI: map->entries[i].flow_event_id = %d\n", map->entries[i].flow_event_id);
-            //logger(0, "ASHWANI: map->entries[i].packet_id = %d\n", map->entries[i].packet_id);
+        //if (map->entries[i].flow_id == flow_id )
+        //{
+        //    //logger(0, "ASHWANI: map->entries[i].flow_event_id = %d\n", map->entries[i].flow_event_id);
+        //    //logger(0, "ASHWANI: map->entries[i].packet_id = %d\n", map->entries[i].packet_id);
 
-            //logger(0, "ASHWANI: flow_event_id = %d\n", flow_event_id);
-            //logger(0, "ASHWANI: packet_id = %d\n", packet_id);
+        //    //logger(0, "ASHWANI: flow_event_id = %d\n", flow_event_id);
+        //    //logger(0, "ASHWANI: packet_id = %d\n", packet_id);
 
-            if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
-            {
-                //logger(0, "ASHWANI: add_or_update_flow_entry 3");
-                map->entries[i].flow_event_id = flow_event_id;
-                map->entries[i].packet_id = packet_id;
+        //    if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
+        //    {
+        //        //logger(0, "ASHWANI: add_or_update_flow_entry 3");
+        //        map->entries[i].flow_event_id = flow_event_id;
+        //        map->entries[i].packet_id = packet_id;
 
-                // Update existing entry
-                if (json_str != NULL)
-                {
-                    free(map->entries[i].json_str);
-                    map->entries[i].json_str = strdup(json_str);
-                }
+        //        // Update existing entry
+        //        if (json_str != NULL)
+        //        {
+        //            free(map->entries[i].json_str);
+        //            map->entries[i].json_str = strdup(json_str);
+        //        }
 
-                // Update existing entry
-                if (json_str_alert != NULL)
-                {
-                    free(map->entries[i].json_str_alert);
-                    map->entries[i].json_str_alert = strdup(json_str_alert);
-                }          
-            }
-            else
-            {
-                // logger(0,  "ASHWANI: add_or_update_flow_entry else");
-                if (json_str != NULL)
-                {
-                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4");
-                    char * converted_json_str_no_risk = NULL;
+        //        // Update existing entry
+        //        if (json_str_alert != NULL)
+        //        {
+        //            free(map->entries[i].json_str_alert);
+        //            map->entries[i].json_str_alert = strdup(json_str_alert);
+        //        }          
+        //    }
+        //    else
+        //    {
+        //        // logger(0,  "ASHWANI: add_or_update_flow_entry else");
+        //        if (json_str != NULL)
+        //        {
+        //            // logger(0,  "ASHWANI: add_or_update_flow_entry 4");
+        //            char * converted_json_str_no_risk = NULL;
 
-                    UpdateXferIfGreater(map->entries[i].json_str, json_str, &converted_json_str_no_risk);
+        //            UpdateXferIfGreater(map->entries[i].json_str, json_str, &converted_json_str_no_risk);
 
-                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 1");
-                    free(map->entries[i].json_str);
-                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 2");
+        //            // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 1");
+        //            free(map->entries[i].json_str);
+        //            // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 2");
 
-                    map->entries[i].json_str = strdup(converted_json_str_no_risk);
-                    // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 3");
-                    free(converted_json_str_no_risk);
-                   
-  
-                    
-                }
+        //            map->entries[i].json_str = strdup(converted_json_str_no_risk);
+        //            // logger(0,  "ASHWANI: add_or_update_flow_entry 4 - 3");
+        //            free(converted_json_str_no_risk);                  
+        //            
+        //        }
 
-                // logger(0,  "ASHWANI: add_or_update_flow_entry 5");
+        //        // logger(0,  "ASHWANI: add_or_update_flow_entry 5");
 
-                if (json_str_alert != NULL)
-                {
-                    UpdateXferIfGreater(map->entries[i].json_str_alert, json_str_alert);
-                    // logger(0,  "ASHWANI: add_or_update_flow_entry 6");
-                }
-            }
+        //        if (json_str_alert != NULL)
+        //        {
+        //            UpdateXferIfGreater(map->entries[i].json_str_alert, json_str_alert);
+        //            // logger(0,  "ASHWANI: add_or_update_flow_entry 6");
+        //        }
+        //    }
 
-             return;
-        }
+        //     return;
+        //}
     }
 
     // Add new entry
