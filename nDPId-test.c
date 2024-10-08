@@ -240,16 +240,16 @@ void create_events_and_alerts_folders()
     //}
 
     char current_directory[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", path, PATH_MAX);
+    ssize_t count = readlink("/proc/self/exe", current_directory, PATH_MAX);
     if (count != -1)
     {
         // Null-terminate the string
         path[count] = '\0';
-        logger(0, "Executable path: %s\n", path);
+        logger(0, "Executable path: %s\n", current_directory);
     }
     else
     {
-        logger(stderr, "Error getting current exe path\n"));
+        logger(stderr, "Error getting current exe path\n");
         exit(EXIT_FAILURE);
     }
 
