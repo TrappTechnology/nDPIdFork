@@ -248,7 +248,7 @@ void create_events_and_alerts_folders()
         exe_path[count] = '\0';
         logger(0, "Executable path: %s\n", exe_path);
 
-        current_directory = strrchr(exe_path, '\');
+        current_directory = strrchr(exe_path, '\\');
         logger(0, "current_directoryr: %s\n", current_directory);
        
         if (current_directory == NULL) 
