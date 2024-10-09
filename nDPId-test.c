@@ -241,7 +241,6 @@ void create_events_and_alerts_folders()
 
     char current_directory[PATH_MAX];
     ssize_t count = readlink("/proc/self/exe", current_directory, PATH_MAX - 1);
-    char * current_directory = NULL;
     if (count != -1)
     {
         // Null-terminate the string
