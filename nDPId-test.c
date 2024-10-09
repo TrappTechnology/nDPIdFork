@@ -248,12 +248,7 @@ void create_events_and_alerts_folders()
         exe_path[count] = '\0';
         logger(0, "Executable path: %s\n", exe_path);
 
-        char exe_dir[PATH_MAX];
-        strncpy(exe_dir, exe_path, PATH_MAX);
-        exe_dir[PATH_MAX - 1] = '\0'; // Ensure null termination
-        logger(0, "Executable dir: %s\n", exe_dir);
-
-        current_directory = dirname(exe_dir); // Use the copied string
+        current_directory = strrchr(exe_path, '\');
         logger(0, "current_directoryr: %s\n", current_directory);
        
         if (current_directory == NULL) 
