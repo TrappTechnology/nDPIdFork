@@ -35,6 +35,7 @@ int number_of_valid_files_found = 0;
 int currentFileIndex = -1;
 char * alerts_folder_name = "Alerts";
 char * events_folder_name = "Events";
+char executable_directory[PATH_MAX];
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -233,26 +234,25 @@ void create_events_and_alerts_folders()
     //char * current_directory = NULL;
     //// Get the current directory
     //current_directory = getcwd(NULL, 0);
-    //if (current_directory == NULL)
+    //if (executable_directory == NULL)
     //{
     //    logger(1, "Error getting current directory: %s\n", strerror(errno));
     //    exit(EXIT_FAILURE);
     //}
 
-    char current_directory[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", current_directory, PATH_MAX - 1);
+    ssize_t count = readlink("/proc/self/exe", executable_directory, PATH_MAX - 1);
     if (count != -1)
     {
         // Null-terminate the string
-        current_directory[count] = '\0';
-        logger(0, "Executable path: %s\n", current_directory);
+        executable_directory[count] = '\0';
+        logger(0, "Executable path: %s", executable_directory);
 
-        char * last_slash = strrchr(current_directory, '/');
+        char * last_slash = strrchr(executable_directory, '/');
         if (last_slash != NULL)
         {
             // Terminate the string at the last '/'
             *last_slash = '\0';
-            logger(0, "Executable directory: %s\n", current_directory);
+            logger(0, "Executable directory: %s", executable_directory);
         }       
     }
     else
@@ -262,12 +262,12 @@ void create_events_and_alerts_folders()
     }
 
     // Concatenate the directory path with folder names
-    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
-    char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
+    char * alerts_full_path = malloc(strlen(executable_directory) + strlen(alerts_folder_name) + 2);
+    char * events_full_path = malloc(strlen(executable_directory) + strlen(events_folder_name) + 2);
    
-    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
+    sprintf(alerts_full_path, "%s/%s", executable_directory, alerts_folder_name);
     logger(0, "Alerts Folder Path: %s", alerts_full_path);
-    sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
+    sprintf(events_full_path, "%s/%s", executable_directory, events_folder_name);
     logger(0, "Events Folder Path: %s", events_full_path);
 
     // Create the "Alerts" folder
@@ -320,16 +320,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         exit(EXIT_FAILURE);
     }
 
-    // Get the current directory
-    char* current_directory = getcwd(NULL, 0);
-    if (current_directory == NULL)
-    {
-        logger(1, "Error getting current directory: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
-    }
-
-    logger(0, "current_directory is %s", current_directory);
-
     // Read directory entries
     while ((entry = readdir(dir)) != NULL)
     {
@@ -344,7 +334,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 if (complete_path_of_pcap == NULL)
                 {
                     logger(1, "Memory allocation failed");
-                    free(current_directory);
                     closedir(dir);
                     exit(EXIT_FAILURE);
                 }
@@ -360,12 +349,11 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 }
 
                 // Allocate and construct alert and event file paths
-                char * alert_file_path =  malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
-                char * event_file_path =  malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 8);
+                char * alert_file_path =  malloc(strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
+                char * event_file_path =  malloc(strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8);
                 if (alert_file_path == NULL || event_file_path == NULL)
                 {
                     logger(1, "Memory allocation failed");
-                    free(current_directory);
                     free(complete_path_of_pcap);
                     free(alert_file_path);
                     free(event_file_path);
@@ -373,8 +361,8 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     exit(EXIT_FAILURE);
                 }
 
-                snprintf(alert_file_path, strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", current_directory,   alerts_folder_name,  filename);
-                snprintf(event_file_path, strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", current_directory,events_folder_name, filename);
+                snprintf(alert_file_path, strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", executable_directory,   alerts_folder_name,  filename);
+                snprintf(event_file_path, strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", executable_directory,events_folder_name, filename);
 
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
@@ -385,7 +373,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 if (tmp_alert_file_path == NULL || tmp_event_file_path == NULL)
                 {
                     logger(1, "Memory allocation failed");
-                    free(current_directory);
                     free(complete_path_of_pcap);
                     free(alert_file_path);
                     free(event_file_path);
