@@ -246,8 +246,16 @@ void create_events_and_alerts_folders()
     {
         // Null-terminate the string
         exe_path[count] = '\0';
-        current_directory = dirname(exe_path);
         logger(0, "Executable path: %s\n", exe_path);
+
+        char exe_dir[PATH_MAX];
+        strncpy(exe_dir, exe_path, PATH_MAX);
+        exe_dir[PATH_MAX - 1] = '\0'; // Ensure null termination
+        logger(0, "Executable dir: %s\n", exe_dir);
+
+        current_directory = dirname(exe_dir); // Use the copied string
+        logger(0, "current_directoryr: %s\n", current_directory);
+       
         if (current_directory == NULL) 
         {
             logger(0, "Current directory is NULL");
