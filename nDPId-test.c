@@ -264,12 +264,12 @@ void create_events_and_alerts_folders()
     // Concatenate the directory path with folder names
     logger(0, "Ashwani 1\n");
     char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
-    logger(0, "Ashwani alerts_full_path: %s\n", alerts_full_path);
     char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
-    logger(0, "Ashwani events_full_path: %s\n", events_full_path);
+   
     sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
-    logger(0, "Ashwani events_full_path 2: %s\n", events_full_path);
+    logger(0, "Ashwani alerts_full_path: %s\n", alerts_full_path);
     sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
+    logger(0, "Ashwani events_full_path: %s\n", events_full_path);
 
     // Create the "Alerts" folder
     if (mkdir(alerts_full_path, 0777) == -1)
@@ -292,7 +292,6 @@ void create_events_and_alerts_folders()
     }
 
     // Free allocated memory
-    free(current_directory);
     free(alerts_full_path);
     free(events_full_path);
 }
