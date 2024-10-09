@@ -252,7 +252,7 @@ void create_events_and_alerts_folders()
         {
             // Terminate the string at the last '/'
             *last_slash = '\0';
-            logger(0, "current_directoryr: %s\n", current_directory);
+            logger(0, "Executable directory: %s\n", current_directory);
         }       
     }
     else
@@ -262,14 +262,13 @@ void create_events_and_alerts_folders()
     }
 
     // Concatenate the directory path with folder names
-    logger(0, "Ashwani 1\n");
     char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
     char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
    
     sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
-    logger(0, "Ashwani alerts_full_path: %s\n", alerts_full_path);
+    logger(0, "Alerts Folder Path: %s", alerts_full_path);
     sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
-    logger(0, "Ashwani events_full_path: %s\n", events_full_path);
+    logger(0, "Events Folder Path: %s", events_full_path);
 
     // Create the "Alerts" folder
     if (mkdir(alerts_full_path, 0777) == -1)
