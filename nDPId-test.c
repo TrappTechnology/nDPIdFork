@@ -279,6 +279,10 @@ void create_events_and_alerts_folders()
             exit(EXIT_FAILURE);
         }
     }
+    else
+    {
+        logger(0, "Alerts folder created successfully");
+    }
 
     // Create the "Events" folder
     if (mkdir(events_full_path, 0777) == -1)
@@ -289,6 +293,10 @@ void create_events_and_alerts_folders()
             exit(EXIT_FAILURE);
         }
     }
+    else
+    {
+        logger(0, "Events folder created successfully");
+    }
 
     // Free allocated memory
     free(alerts_full_path);
@@ -298,6 +306,7 @@ void create_events_and_alerts_folders()
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 static void fetch_files_to_process(const char * pcap_files_folder_path)
 {
+    logger(0, "fetch_files_to_process() START");
     DIR* dir = NULL;
     struct dirent * entry;
 
@@ -319,16 +328,22 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
         logger(1, "Error opening directory: %s", pcap_files_folder_path);
         exit(EXIT_FAILURE);
     }
+    else
+    {
+         logger(0, "pcap folder directory opened successfully");
+    }
 
     // Read directory entries
     while ((entry = readdir(dir)) != NULL)
     {
+        logger(0, "readdir call passed");
         if (entry->d_type == DT_REG)
-        { 
-    
+        {     
             char * filename = entry->d_name;
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
+
+                logger(0, "found a pcap/pcapng file %s", filename);
                 // Allocate and construct the complete path of pcap file
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
                 if (complete_path_of_pcap == NULL)
@@ -388,11 +403,13 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
 
                 number_of_valid_files_found++;
+                 logger(0, "file processes successfully");
             }
         }
     }
 
     closedir(dir);
+    logger(0, "fetch_files_to_process() END");
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
@@ -401,6 +418,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 //
 static void fetch_files_to_process_and_set_default_options(const char * pcap_files_folder_path)
 {
+    logger(0, "fetch_files_to_process_and_set_default_options() START");
     do
     {
         fetch_files_to_process(pcap_files_folder_path);
@@ -444,6 +462,8 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
                distance_plus_10,
                generated_tmp_json_files_alerts[index]);
     }
+
+    logger(0, "fetch_files_to_process_and_set_default_options() START");
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
@@ -1975,6 +1995,8 @@ int main(int argc, char ** argv)
 
     create_events_and_alerts_folders();
 
+    logger(0, "Successfully returned from create_events_and_alerts_folders()");
+
     nDPIsrvd_options.max_write_buffers = 32;
     nDPId_options.enable_data_analysis = 1;
     nDPId_options.max_packets_per_flow_to_send = 5;
@@ -1999,7 +2021,12 @@ int main(int argc, char ** argv)
 
     if (validate_options() != 0)
     {
+        logger(0, "validate_options() failed");
         return 1;
+    }
+    else
+    {
+        logger(0, "validate_options() passed");
     }
 
     fetch_files_to_process_and_set_default_options(argv[1]);
