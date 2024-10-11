@@ -271,8 +271,10 @@ void create_events_and_alerts_folders()
     logger(0, "Events Folder Path: %s", events_full_path);
 
     // Create the "Alerts" folder
+    logger(0, "Before mkdir(alerts_full_path, 0777)");
     if (mkdir(alerts_full_path, 0777) == -1)
     {
+        logger(0, "mkdir(alerts_full_path, 0777) FAILED");
         if (errno != EEXIST)
         {
             logger(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
@@ -284,9 +286,11 @@ void create_events_and_alerts_folders()
         logger(0, "Alerts folder created successfully");
     }
 
+    logger(0, "Before mkdir(events_full_path, 0777)");
     // Create the "Events" folder
     if (mkdir(events_full_path, 0777) == -1)
     {
+         logger(0, "mkdir(events_full_path, 0777) FAILED");
         if (errno != EEXIST)
         {
             fprintf(stderr, "Error creating folder 'Events': %s\n", strerror(errno));
