@@ -338,16 +338,18 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
     }
 
     // Read directory entries
+    int counter = 0;
     while ((entry = readdir(dir)) != NULL)
     {
         logger(0, "readdir call passed");
         if (entry->d_type == DT_REG)
         {     
+            counter++;
             char * filename = entry->d_name;
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
 
-                logger(0, "found a pcap/pcapng file %s", filename);
+                logger(0, "%d. found a pcap/pcapng file %s", counter, filename);
                 // Allocate and construct the complete path of pcap file
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
                 if (complete_path_of_pcap == NULL)
@@ -356,19 +358,26 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     closedir(dir);
                     exit(EXIT_FAILURE);
                 }
+
+                logger(0, "before snprintf");
                 snprintf(complete_path_of_pcap, strlen(pcap_files_folder_path) + strlen(filename) + 2, "%s%s", pcap_files_folder_path, filename);
+                logger(0, "after snprintf");
 
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
+                logger(0, "after pcap_files assignment");
 
                 // Remove the file extension
                 char * dot = strrchr(filename, '.');
+                logger(0, "after strrchr(filename, '.')");
                 if (dot != NULL)
                 {
                     *dot = '\0'; // Replace the dot with the null terminator
                 }
 
                 // Allocate and construct alert and event file paths
+                logger(0, "before alert_file_path =  malloc");
                 char * alert_file_path =  malloc(strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
+                logger(0, "before event_file_path =  malloc");
                 char * event_file_path =  malloc(strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8);
                 if (alert_file_path == NULL || event_file_path == NULL)
                 {
@@ -1983,7 +1992,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    logger(0, "This is version 10.11.024.01");
+    logger(0, "This is version 10.11.2024.01");
     if (argc == 1)
     {
         int retval = 0;
