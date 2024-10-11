@@ -1983,6 +1983,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
+    logger(0, "This is version 10.11.024.01");
     if (argc == 1)
     {
         int retval = 0;
