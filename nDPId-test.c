@@ -23,7 +23,7 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 
 
 /*---------------------------------------------------------------------------------------------------------/*/
-#define MAX_NUMBER_OF_FILES 1000 // Maximum number of files to handle
+#define MAX_NUMBER_OF_FILES 5000 // Maximum number of files to handle
 
 FILE * serialization_fp = NULL;
 char * pcap_files[MAX_NUMBER_OF_FILES];
