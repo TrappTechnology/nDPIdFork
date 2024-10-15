@@ -1474,10 +1474,12 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     logger(0, "file_or_device is %s", file_or_device);
     if (access(file_or_device, R_OK) != 0 && errno == ENOENT)
     {
+        logger(0, "calling pcap_open_live");
         workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 250, pcap_error_buffer);
     }
     else
     {
+         logger(0, "calling pcap_open_offline_with_tstamp_precision");
         workflow->pcap_handle =
             pcap_open_offline_with_tstamp_precision(file_or_device, PCAP_TSTAMP_PRECISION_MICRO, pcap_error_buffer);
         workflow->is_pcap_file = 1;
