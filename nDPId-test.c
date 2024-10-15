@@ -379,6 +379,7 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                 char * alert_file_path =  malloc(strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
                 logger(0, "before event_file_path =  malloc");
                 char * event_file_path =  malloc(strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8);
+                logger(0, "after event_file_path =  malloc");
                 if (alert_file_path == NULL || event_file_path == NULL)
                 {
                     logger(1, "Memory allocation failed");
@@ -389,14 +390,19 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     exit(EXIT_FAILURE);
                 }
 
+                logger(0, "snprintf(alert_file_path...");
                 snprintf(alert_file_path, strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", executable_directory,   alerts_folder_name,  filename);
+                logger(0, "snprintf(event_file_path...");
                 snprintf(event_file_path, strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", executable_directory,events_folder_name, filename);
 
+               
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
 
+                logger(0, "before tmp_alert_file_path malloc");
                 // Allocate and construct temporary alert and event file paths
                 char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
+                logger(0, "before tmp_event_file_path malloc");
                 char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
                 if (tmp_alert_file_path == NULL || tmp_event_file_path == NULL)
                 {
@@ -409,14 +415,17 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     closedir(dir);
                     exit(EXIT_FAILURE);
                 }
+
+                logger(0, "snprintf(tmp_alert_file_path...");
                 snprintf(tmp_alert_file_path, strlen(alert_file_path) + 5, "%s.tmp", alert_file_path);
+                 logger(0, "snprintf(tmp_event_file_path...");
                 snprintf(tmp_event_file_path, strlen(event_file_path) + 5, "%s.tmp", event_file_path);
 
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
 
                 number_of_valid_files_found++;
-                 logger(0, "file processes successfully");
+                logger(0, "file processes successfully");
             }
         }
     }
