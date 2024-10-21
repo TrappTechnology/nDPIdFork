@@ -1686,6 +1686,8 @@ static void * nDPId_mainloop_thread(void * const arg)
         nrv->total_events_serialized += reader_threads[i].workflow->total_events_serialized;
     }
 
+    free_flow_map(&flow_map);
+
 error:
     logger(0, "before free_reader_threads() call");
     free_reader_threads();
@@ -1696,9 +1698,9 @@ error:
     // write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
     logger(0, "after write_flow_map_file call");
     // Free the FlowMap
-    free_flow_map(&flow_map);
+    //free_flow_map(&flow_map);
 
-    logger(0, "%s", "nDPId worker thread exits..");
+    //logger(0, "%s", "nDPId worker thread exits..");
     return NULL;
 }
 
