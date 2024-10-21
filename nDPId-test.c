@@ -1687,10 +1687,13 @@ static void * nDPId_mainloop_thread(void * const arg)
     }
 
 error:
+    logger(0, "before free_reader_threads() call");
     free_reader_threads();
+    logger(0, "after free_reader_threads() call");
     close(mock_pipefds[PIPE_nDPId]);
- 
+    logger(0, "before write_flow_map_file call"); 
     write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
+    logger(0, "after write_flow_map_file call");
     // Free the FlowMap
     free_flow_map(&flow_map);
 
