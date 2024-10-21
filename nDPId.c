@@ -2683,6 +2683,8 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     //    return; 
     //}
 
+    logger (0, "write_to_file START");
+
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
     int createAlert = 0;
@@ -2719,6 +2721,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     }
    
     free(converted_json_str);
+    logger (0, "write_to_file End");
 }
 
 /*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
