@@ -5340,7 +5340,7 @@ static int stop_reader_threads(void)
 
 static void free_reader_threads(void)
 {
-    logger(0, "free_reader_threads called")
+    logger(0, "free_reader_threads called");
     for (unsigned long long int i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
         if (reader_threads[i].workflow == NULL)
