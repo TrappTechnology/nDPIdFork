@@ -530,7 +530,7 @@ static void renameCurrentTempFile()
 
 void nDPIsrvd_memprof_log_alloc(size_t alloc_size)
 {
-    logger (0, "nDPIsrvd_memprof_log_free called");
+    logger (0, "nDPIsrvd_memprof_log_alloc called");
     unsigned long alloc_count;
 
     // nDPIsrvd.h is used by client applications and nDPIsrvd (two threads!)
