@@ -2085,6 +2085,8 @@ int main(int argc, char ** argv)
             logger(0, "nDPId_mainloop_thread routine returned error");
             continue;
         }
+        else
+            {
 
         pthread_t nDPIsrvd_thread;
         struct thread_return_value nDPIsrvd_return = {};
