@@ -1688,7 +1688,7 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
     free_flow_map(&flow_map);
-     logger(0, "Ashwani Kumar: nDPId_mainloop_thread END");
+    logger(0, "Ashwani Kumar: nDPId_mainloop_thread END");
 
 error:
     logger(0, "before free_reader_threads() call");
@@ -2176,7 +2176,8 @@ int main(int argc, char ** argv)
                    which_thread,
                    thread_errno,
                    (thread_errno < 0 ? strerror(thread_errno) : "Application specific error"));
-            continue;
+            // Ashwani
+            //continue;
         }
 
         {
