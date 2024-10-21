@@ -4893,7 +4893,8 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, Flow
                 logger(0, "Ashwani: Inside Switch");
                 case PCAP_ERROR:
                     logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
-                    MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
+                    // Ashwani
+                    //MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
                     return;
                 case PCAP_ERROR_BREAK:
                     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
