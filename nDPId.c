@@ -1811,9 +1811,12 @@ static int setup_reader_threads(void)
     for (unsigned long long int i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
         reader_threads[i].workflow = init_workflow(get_cmdarg(&nDPId_options.pcap_file_or_interface));
+       
         if (reader_threads[i].workflow == NULL)
         {
-            return 1;
+            logger_early(1, "FAILED to open %s file", get_cmdarg(&nDPId_options.pcap_file_or_interface));
+            // Ashwani: Commented out this code for the case when pcap file is corrupt.
+            // return 1;
         }
     }
 
