@@ -2086,7 +2086,9 @@ int main(int argc, char ** argv)
             continue;
         }
         else
-            {
+        {
+            logger(0, "nDPId_mainloop_thread routine call is successful");
+        }
 
         pthread_t nDPIsrvd_thread;
         struct thread_return_value nDPIsrvd_return = {};
@@ -2095,6 +2097,10 @@ int main(int argc, char ** argv)
             logger(0, "nDPIsrvd_mainloop_thread routine returned error");
             continue;
         }
+        else
+        {
+            logger(0, "nDPIsrvd_mainloop_thread routine call is successful");
+        }
 
         pthread_t distributor_thread;
         struct distributor_return_value distributor_return = {};
@@ -2102,6 +2108,10 @@ int main(int argc, char ** argv)
         {
             logger(0, "distributor_client_mainloop_thread routine returned error");
             continue;
+        }
+        else
+        {
+            logger(0, "distributor_client_mainloop_thread routine call is successful");
         }
 
         /* Try to gracefully shutdown all threads. */
