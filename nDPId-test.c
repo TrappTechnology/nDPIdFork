@@ -2082,6 +2082,7 @@ int main(int argc, char ** argv)
         struct nDPId_return_value nDPId_return = {};
         if (pthread_create(&nDPId_thread, NULL, nDPId_mainloop_thread, &nDPId_return) != 0)
         {
+            logger(0, "nDPId_mainloop_thread routine returned error");
             continue;
         }
 
@@ -2089,6 +2090,7 @@ int main(int argc, char ** argv)
         struct thread_return_value nDPIsrvd_return = {};
         if (pthread_create(&nDPIsrvd_thread, NULL, nDPIsrvd_mainloop_thread, &nDPIsrvd_return) != 0)
         {
+            logger(0, "nDPIsrvd_mainloop_thread routine returned error");
             continue;
         }
 
@@ -2096,6 +2098,7 @@ int main(int argc, char ** argv)
         struct distributor_return_value distributor_return = {};
         if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
         {
+            logger(0, "distributor_client_mainloop_thread routine returned error");
             continue;
         }
 
