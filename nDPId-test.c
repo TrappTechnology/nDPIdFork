@@ -2068,7 +2068,7 @@ int main(int argc, char ** argv)
     for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
-        logger(0, "processing of %s file started", pcap_files[currentFileIndex]);
+        logger(0, "%d. processing of %s file started", currentFileIndex,pcap_files[currentFileIndex]);
 
         if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
             setup_pipe(mock_nullfds) != 0 || setup_pipe(mock_arpafds) != 0)
@@ -2487,7 +2487,7 @@ int main(int argc, char ** argv)
             return 1;
         }
 
-        logger(0, "processing of %s file completed", pcap_files[currentFileIndex]);
+        logger(0, "%d. processing of %s file completed", currentFileIndex,pcap_files[currentFileIndex]);
         free_messages();
         renameCurrentTempFile();
         remove(pcap_files[currentFileIndex]);
