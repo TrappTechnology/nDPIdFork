@@ -1686,6 +1686,7 @@ static void * nDPId_mainloop_thread(void * const arg)
         nrv->total_events_serialized += reader_threads[i].workflow->total_events_serialized;
     }
 
+    write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
     free_flow_map(&flow_map);
 
 error:
