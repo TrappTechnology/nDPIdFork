@@ -1814,7 +1814,7 @@ static int setup_reader_threads(void)
        
         if (reader_threads[i].workflow == NULL)
         {
-            logger_early(1, "FAILED to open %s file", get_cmdarg(&nDPId_options.pcap_file_or_interface));
+            logger_early(0, "FAILED to open %s file", get_cmdarg(&nDPId_options.pcap_file_or_interface));
             // Ashwani: Commented out this code for the case when pcap file is corrupt.
             // return 1;
         }
