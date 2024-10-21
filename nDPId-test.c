@@ -1619,9 +1619,11 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     if (setup_reader_threads() != 0)
     {
-         logger(0, "setup_reader_threads routine returned error");
+        logger(0, "setup_reader_threads routine returned error");
         THREAD_ERROR(trr);
-        goto error;
+        // Ashwani : Comment out following code to handle failure/may be due to corrupt file
+        // goto error;
+        return 1;       
     }
 
     /* Replace nDPId JSON socket fd with the one in our pipe and hope that no socket specific code-path triggered. */
