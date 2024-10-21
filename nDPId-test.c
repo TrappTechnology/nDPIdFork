@@ -1619,6 +1619,7 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     if (setup_reader_threads() != 0)
     {
+         logger(0, "setup_reader_threads routine returned error");
         THREAD_ERROR(trr);
         goto error;
     }
@@ -1628,6 +1629,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     reader_threads[0].collector_sock_last_errno = 0;
     if (set_collector_block(&reader_threads[0]) != 0)
     {
+        logger(0, "set_collector_block routine returned error");
         goto error;
     }
 
