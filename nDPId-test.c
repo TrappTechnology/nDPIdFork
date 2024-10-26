@@ -2072,6 +2072,16 @@ int main(int argc, char ** argv)
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
         logger(0, "%d. processing of %s file started", currentFileIndex+1,pcap_files[currentFileIndex]);
 
+         pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, errbuf);
+
+        if (handle == NULL) 
+        {
+            logger(1, "Error opening file: %s\n", errbuf);
+            continue;
+        }
+
+        pcap_close(handle);
+
         if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
             setup_pipe(mock_nullfds) != 0 || setup_pipe(mock_arpafds) != 0)
         {
