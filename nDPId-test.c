@@ -1656,9 +1656,9 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     FlowMap flow_map;
     init_flow_map(&flow_map, 10);
-    logger(0, "Ashwani Kumar: before <run_pcap_loop>");
+    //logger(0, "Ashwani Kumar: before <run_pcap_loop>");
     run_pcap_loop(&reader_threads[0], &flow_map, generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
-    logger(0, "Ashwani Kumar: after <run_pcap_loop>");
+    //logger(0, "Ashwani Kumar: after <run_pcap_loop>");
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
