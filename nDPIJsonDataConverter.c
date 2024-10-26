@@ -991,7 +991,8 @@ static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructu
     char* nDPIJsonString = create_nDPI_Json_String(&nDPIStructure);
     if (nDPIJsonString == NULL)
     {
-        fprintf(stderr, "create_nDPI_Json_String routine returned empty string: Error parsing new ndpi JSON\n");
+        // Ashwani
+        //fprintf(stderr, "create_nDPI_Json_String routine returned empty string: Error parsing new ndpi JSON\n");
         return -1;
     }
 
@@ -1393,6 +1394,20 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
         json_object_object_del(json1, "xfer");
         json_object_object_add(json1, "xfer", xfer_object);
         // logger(0,  "ASHWANI: update_xfer_if_greater 12");
+    }
+
+    {
+        json_object * event_object = json_object_new_object();
+        json_object_object_add(event_object,
+                               "start",
+                               json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
+        json_object_object_add(event_object,
+                               "end",
+                               json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
+        json_object_object_add(duration,
+                               "duration",
+                               json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
+        json_object_object_add(xfer_object, "source", packets_object);
     }
 
     *converted_json_str = strdup(json_object_to_json_string(json1));
