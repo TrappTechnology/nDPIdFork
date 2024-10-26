@@ -1397,17 +1397,17 @@ void UpdateXferIfGreater(char * json_str1, const char * json_str2, char** conver
     }
 
     {
-        json_object * event_object = json_object_new_object();
-        json_object_object_add(event_object,
-                               "start",
-                               json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
-        json_object_object_add(event_object,
-                               "end",
-                               json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
-        json_object_object_add(duration,
-                               "duration",
-                               json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
-        json_object_object_add(xfer_object, "source", packets_object);
+        //json_object * event_object = json_object_new_object();
+        //json_object_object_add(event_object,
+        //                       "start",
+        //                       json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
+        //json_object_object_add(event_object,
+        //                       "end",
+        //                       json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
+        //json_object_object_add(event_object,
+        //                       "duration",
+        //                       json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
+        //json_object_object_add(xfer_object, "source", packets_object);
     }
 
     *converted_json_str = strdup(json_object_to_json_string(json1));
