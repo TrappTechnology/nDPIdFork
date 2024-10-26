@@ -472,7 +472,7 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
     {
         logger(0,
                "%3d.  %-*s| %-*s| %-*s| %-*s| %-*s\n",
-               index,
+               index+1,
                distance,
                pcap_files[index],
                length_of_longest_file,
@@ -2002,8 +2002,10 @@ static void dummy_packet_handler(u_char *user, const struct pcap_pkthdr *header,
     // logger(0, "dummy_packet_handler called");
 }
 
+static int curruptFilesCount = 0; 
 int main(int argc, char ** argv)
 {
+    curruptFilesCount = 0;
     if (argc != 1 && argc != 2)
     {
         usage(argv[0]);
@@ -2082,6 +2084,7 @@ int main(int argc, char ** argv)
 
         if (handle == NULL) 
         {
+            curruptFilesCount++;
             logger(1, "Error opening file: %s\n", pcap_error_buffer);
             continue;
         }
@@ -2091,10 +2094,12 @@ int main(int argc, char ** argv)
             {
                 case PCAP_ERROR:
                     logger(1, "Error while reading pcap file");
+                    curruptFilesCount++;
                     pcap_close(handle);
                     continue;
                     return;
                 case PCAP_ERROR_BREAK:
+                    curruptFilesCount++;
                     pcap_close(handle);
                     continue;
                     return;
@@ -2577,6 +2582,7 @@ int main(int argc, char ** argv)
 #endif
     }
 
-     logger(0, "This is version 10.26.2024.01");
+    logger(0, "This is version 10.26.2024.01");
+    logger(0, "Number of corrupt files %d", curruptFilesCount);
     return 0;
 }
