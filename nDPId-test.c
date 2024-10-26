@@ -2013,7 +2013,7 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    logger(0, "This is version 10.11.2024.01");
+    logger(0, "This is version 10.26.2024.01");
     if (argc == 1)
     {
         int retval = 0;
@@ -2072,7 +2072,8 @@ int main(int argc, char ** argv)
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
         logger(0, "%d. processing of %s file started", currentFileIndex+1,pcap_files[currentFileIndex]);
 
-         pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, errbuf);
+        char pcap_error_buffer[PCAP_ERRBUF_SIZE];
+        pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, errbuf);
 
         if (handle == NULL) 
         {
@@ -2554,5 +2555,6 @@ int main(int argc, char ** argv)
 #endif
     }
 
+     logger(0, "This is version 10.26.2024.01");
     return 0;
 }
