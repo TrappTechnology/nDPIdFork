@@ -2090,7 +2090,7 @@ int main(int argc, char ** argv)
             switch (pcap_loop(handle, -1, &dummy_packet_handler, NULL))
             {
                 case PCAP_ERROR:
-                    logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
+                    logger(1, "Error while reading pcap file"));
                     pcap_close(handle);
                     continue;
                     return;
