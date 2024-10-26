@@ -2073,11 +2073,11 @@ int main(int argc, char ** argv)
         logger(0, "%d. processing of %s file started", currentFileIndex+1,pcap_files[currentFileIndex]);
 
         char pcap_error_buffer[PCAP_ERRBUF_SIZE];
-        pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, errbuf);
+        pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, pcap_error_buffer);
 
         if (handle == NULL) 
         {
-            logger(1, "Error opening file: %s\n", errbuf);
+            logger(1, "Error opening file: %s\n", pcap_error_buffer);
             continue;
         }
 
