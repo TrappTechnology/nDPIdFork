@@ -1999,7 +1999,7 @@ error:
 
 static void dummy_packet_handler(u_char *user, const struct pcap_pkthdr *header, const u_char *packet) 
 {
-    logger(0, "dummy_packet_handler called");
+    // logger(0, "dummy_packet_handler called");
 }
 
 int main(int argc, char ** argv)
