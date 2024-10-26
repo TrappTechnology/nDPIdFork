@@ -4878,7 +4878,7 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 
 static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, FlowMap* flow_map_input, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
 {
-    logger(0, "run_pcap_loop start");
+    //logger(0, "run_pcap_loop start");
     flow_map_ref = flow_map_input;
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
