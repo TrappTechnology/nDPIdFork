@@ -1997,6 +1997,11 @@ error:
     (nDPId_return.thread_return_value.val != 0 || nDPIsrvd_return.val != 0 ||                                          \
      distributor_return.thread_return_value.val != 0)
 
+static void dummy_packet_handler(u_char *user, const struct pcap_pkthdr *header, const u_char *packet) 
+{
+    logger(0, "dummy_packet_handler called");
+}
+
 int main(int argc, char ** argv)
 {
     if (argc != 1 && argc != 2)
@@ -2079,6 +2084,23 @@ int main(int argc, char ** argv)
         {
             logger(1, "Error opening file: %s\n", pcap_error_buffer);
             continue;
+        }
+        else
+        {
+            switch (pcap_loop(handle, -1, &dummy_packet_handler, NULL))
+            {
+                case PCAP_ERROR:
+                    logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
+                    pcap_close(handle);
+                    continue;
+                    return;
+                case PCAP_ERROR_BREAK:
+                    pcap_close(handle);
+                    continue;
+                    return;
+                default:
+                    ;
+            }
         }
 
         pcap_close(handle);
