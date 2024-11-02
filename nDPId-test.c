@@ -2020,7 +2020,8 @@ int main(int argc, char ** argv)
         return 1;
     }
 
-    logger(0, "This is version 10.26.2024.01");
+    // MM.DD.YYYY
+    logger(0, "This is version 11.02.2024.01");
     if (argc == 1)
     {
         int retval = 0;
@@ -2086,6 +2087,7 @@ int main(int argc, char ** argv)
         {
             curruptFilesCount++;
             logger(1, "Error opening file: %s\n", pcap_error_buffer);
+            remove(pcap_files[currentFileIndex]);
             continue;
         }
         else
@@ -2096,13 +2098,13 @@ int main(int argc, char ** argv)
                     logger(1, "Error while reading pcap file");
                     curruptFilesCount++;
                     pcap_close(handle);
+                    remove(pcap_files[currentFileIndex]);
                     continue;
-                    return;
                 case PCAP_ERROR_BREAK:
                     curruptFilesCount++;
                     pcap_close(handle);
+                    remove(pcap_files[currentFileIndex]);
                     continue;
-                    return;
                 default:
                     ;
             }
