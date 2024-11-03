@@ -1300,7 +1300,7 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         return;
     }
 
-    json_object * json2 = json_tokener_parse(new_json_str);
+    json_object * new_json_object = json_tokener_parse(new_json_str);
     if (new_json_object == NULL)
     {
         logger(0,  "ASHWANI: new_json_object is NULL");
