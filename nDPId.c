@@ -800,7 +800,7 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
     fclose(fp);
 }
 
-static static char * create_filename_with_index_and_flow_id(const char * filename, size_t index, uint32_t flow_id)
+static  char * create_filename_with_index_and_flow_id(const char * filename, size_t index, uint32_t flow_id)
 {
     // Find the position of the last '.' in the filename
     const char * last_dot = strrchr(filename, '.');
