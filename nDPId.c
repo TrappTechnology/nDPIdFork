@@ -843,6 +843,7 @@ static char * create_filename_with_index_and_flow_id(const char * filename, size
 static void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
     logger(0, "ASHWANI: write_flow_map_to_alert_json START");
+    logger(0, "filename = %s", filename);
     for (size_t i = 0; i < map->size; ++i)
     {
         if (map->entries[i].json_str_alert != NULL)
