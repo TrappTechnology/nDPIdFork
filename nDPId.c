@@ -800,7 +800,7 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
     fclose(fp);
 }
 
-static  char * create_filename_with_index_and_flow_id(const char * filename, size_t index, uint32_t flow_id)
+static char * create_filename_with_index_and_flow_id(const char * filename, size_t index, uint32_t flow_id)
 {
     // Find the position of the last '.' in the filename
     const char * last_dot = strrchr(filename, '.');
@@ -820,7 +820,7 @@ static  char * create_filename_with_index_and_flow_id(const char * filename, siz
         }
     }
 
-    // If there's no second-to-last dot, we assume the filename does not need modification
+    // If there's no second-to-last dot, we assume the filename format does not match the expected pattern
     if (!second_last_dot)
     {
         fprintf(stderr, "Error: Filename format does not match (no second-to-last extension found)\n");
@@ -828,11 +828,10 @@ static  char * create_filename_with_index_and_flow_id(const char * filename, siz
     }
 
     // Calculate the length of each part for the new filename
-    size_t base_len = second_last_dot - filename;
-    size_t extension_len = strlen(second_last_dot); // Length of the .json part only
+    size_t base_len = second_last_dot - filename; // Length up to the second-last dot
     size_t index_len = snprintf(NULL, 0, "%zu", index);
     size_t flow_id_len = snprintf(NULL, 0, "%" PRIu32, flow_id);
-    size_t new_filename_len = base_len + 1 + index_len + 1 + flow_id_len + extension_len + 1;
+    size_t new_filename_len = base_len + 1 + index_len + 1 + flow_id_len + strlen(".json") + 1;
 
     // Allocate memory for the new filename
     char * new_filename = (char *)malloc(new_filename_len);
@@ -842,23 +841,8 @@ static  char * create_filename_with_index_and_flow_id(const char * filename, siz
         return NULL;
     }
 
-    // Construct the new filename, inserting `_index_flow_id` before the second-last extension
-    int written = snprintf(new_filename,
-                           new_filename_len,
-                           "%.*s_%zu_%" PRIu32 "%s",
-                           (int)base_len,
-                           filename,
-                           index,
-                           flow_id,
-                           second_last_dot);
-
-    // Verify that snprintf did not truncate the output
-    if (written < 0 || (size_t)written >= new_filename_len)
-    {
-        fprintf(stderr, "Error: snprintf failed or output was truncated\n");
-        free(new_filename); // Free allocated memory on error
-        return NULL;
-    }
+    // Construct the new filename, excluding the last extension (.tmp) entirely
+    snprintf(new_filename, new_filename_len, "%.*s_%zu_%" PRIu32 ".json", (int)base_len, filename, index, flow_id);
 
     return new_filename;
 }
