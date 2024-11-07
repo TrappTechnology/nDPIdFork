@@ -1272,13 +1272,18 @@ void GetFlowRiskArraySizeAndFlowId(char * alertStringWithFlowRiskArray, int * fl
 
 void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char ** converted_json_str, int flow_risk_index)
 {
+    logger(0, "GetAlertJsonStringWithFlowRisk START");
+    logger(0, "alertStringWithFlowRiskArray %s", alertStringWithFlowRiskArray);
     // Parse JSON string to JSON object
     struct json_object * parsed_json_object = json_tokener_parse(alertStringWithFlowRiskArray);
+    logger(0, "11");
     if (!parsed_json_object)
     {
         fprintf(stderr, "Error parsing JSON\n");
         return NULL;
     }
+
+     logger(0, "22");
 
     // Navigate to the `ndpi` and `flow_risk` fields
     struct json_object * ndpi_obj = NULL;
@@ -1291,6 +1296,8 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
         return NULL;
     }
 
+     logger(0, "33");
+
     // Check if `flow_risk` is an array and the index is valid
     if (!json_object_is_type(flow_risk_array, json_type_array))
     {
@@ -1299,6 +1306,9 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
         return NULL;
     }
 
+
+    logger(0, "44");
+
     int array_len = json_object_array_length(flow_risk_array);
     if (flow_risk_index < 0 || flow_risk_index >= array_len)
     {
@@ -1306,6 +1316,8 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
         json_object_put(parsed_json_object); // Free parsed JSON object
         return NULL;
     }
+
+     logger(0, "55");
 
     // Get the specified object from the array
     struct json_object * selected_risk_obj = json_object_array_get_idx(flow_risk_array, flow_risk_index);
@@ -1325,6 +1337,7 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
 
     // Clean up
     json_object_put(parsed_json_object);  
+     logger(0, "66");
 }
 
 void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
