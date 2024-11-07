@@ -802,6 +802,7 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
+    logger(0, "ASHWANI: write_flow_map_to_alert_json START");
     for (size_t i = 0; i < map->size; ++i)
     {
         if (map->entries[i].json_str_alert != NULL)
@@ -810,6 +811,7 @@ void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
             int flow_risk_array_size = 0;
             int flow_id = 0;
             GetFlowRiskArraySizeAndFlowId(map->entries[i].json_str_alert, &flow_risk_array_size, &flow_id);
+            logger(0, "ASHWANI: flow_risk_array_size = %d, flow_id = %d", flow_risk_array_size, flow_id);
             for (int index = 0; index < flow_risk_array_size; index++)
             {
                 char * converted_json_str = NULL;
