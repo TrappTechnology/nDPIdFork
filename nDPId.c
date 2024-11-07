@@ -800,7 +800,47 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
     fclose(fp);
 }
 
-void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
+static static char * create_filename_with_index_and_flow_id(const char * filename, size_t index, uint32_t flow_id)
+{
+    // Find the position of the last '.' in the filename
+    const char * dot = strrchr(filename, '.');
+    if (!dot)
+    {
+        fprintf(stderr, "Error: Invalid filename (no extension found)\n");
+        return NULL;
+    }
+
+    // Calculate the length of each part for the new filename
+    size_t base_len = dot - filename;
+    size_t extension_len = strlen(dot);
+    size_t index_len = snprintf(NULL, 0, "%zu", index);
+    size_t flow_id_len = snprintf(NULL, 0, "%" PRIu32, flow_id);
+    size_t new_filename_len = base_len + 1 + index_len + 1 + flow_id_len + extension_len + 1;
+
+    // Allocate memory for the new filename
+    char * new_filename = (char *)malloc(new_filename_len);
+    if (new_filename == NULL)
+    {
+        fprintf(stderr, "Error: Failed to allocate memory (%s)\n", strerror(errno));
+        return NULL;
+    }
+
+    // Construct the new filename
+    int written = snprintf(
+        new_filename, new_filename_len, "%.*s_%zu_%" PRIu32 "%s", (int)base_len, filename, index, flow_id, dot);
+
+    // Verify that snprintf did not truncate the output
+    if (written < 0 || (size_t)written >= new_filename_len)
+    {
+        fprintf(stderr, "Error: snprintf failed or output was truncated\n");
+        free(new_filename); // Free allocated memory on error
+        return NULL;
+    }
+
+    return new_filename;
+}
+
+static void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
     logger(0, "ASHWANI: write_flow_map_to_alert_json START");
     for (size_t i = 0; i < map->size; ++i)
