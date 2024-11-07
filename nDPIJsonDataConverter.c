@@ -1232,6 +1232,101 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
     FreeConvertRootDataFormat(&rootData);
 }
 
+void GetFlowRiskArraySizeAndFlowId(char * alertStringWithFlowRiskArray, int * flow_risk_array_size, int* flow_id)
+{
+    // Parse JSON string to JSON object
+    *flow_risk_array_size = 0;
+    struct json_object * parsed_json_object = json_tokener_parse(alertStringWithFlowRiskArray);
+    if (!parsed_json_object)
+    {
+        fprintf(stderr, "Error parsing JSON\n");
+        return ;
+    }
+
+    // Navigate to the `ndpi` and `flow_risk` fields
+    struct json_object * ndpi_obj = NULL;
+    struct json_object * flow_risk_array = NULL;
+    if (!json_object_object_get_ex(parsed_json_object, "ndpi", &ndpi_obj) || !json_object_object_get_ex(ndpi_obj, "flow_risk", &flow_risk_array))
+    {
+        fprintf(stderr, "Missing 'ndpi' or 'flow_risk' field\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return ;
+    }
+
+    // Check if `flow_risk` is an array and the index is valid
+    if (!json_object_is_type(flow_risk_array, json_type_array))
+    {
+        fprintf(stderr, "'flow_risk' is not an array\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return ;
+    }
+
+    *flow_risk_array_size = json_object_array_length(flow_risk_array);
+
+    json_object * flow_id;
+    if (json_object_object_get_ex(parsed_json_object, "flow_id", &flow_id))
+    {
+        *flow_id = json_object_get_int(flow_id);
+    }
+}
+
+void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char ** converted_json_str, int flow_risk_index)
+{
+    // Parse JSON string to JSON object
+    struct json_object * parsed_json_object = json_tokener_parse(alertStringWithFlowRiskArray);
+    if (!parsed_json_object)
+    {
+        fprintf(stderr, "Error parsing JSON\n");
+        return NULL;
+    }
+
+    // Navigate to the `ndpi` and `flow_risk` fields
+    struct json_object * ndpi_obj = NULL;
+    struct json_object * flow_risk_array = NULL;
+    if (!json_object_object_get_ex(parsed_json_object, "ndpi", &ndpi_obj) ||
+        !json_object_object_get_ex(ndpi_obj, "flow_risk", &flow_risk_array))
+    {
+        fprintf(stderr, "Missing 'ndpi' or 'flow_risk' field\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return NULL;
+    }
+
+    // Check if `flow_risk` is an array and the index is valid
+    if (!json_object_is_type(flow_risk_array, json_type_array))
+    {
+        fprintf(stderr, "'flow_risk' is not an array\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return NULL;
+    }
+
+    int array_len = json_object_array_length(flow_risk_array);
+    if (index < 0 || index >= array_len)
+    {
+        fprintf(stderr, "Index out of bounds\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return NULL;
+    }
+
+    // Get the specified object from the array
+    struct json_object * selected_risk_obj = json_object_array_get_idx(flow_risk_array, index);
+
+    // Clone the selected object to avoid modifying the array itself
+    struct json_object * flow_risk_obj = json_object_get(selected_risk_obj);
+
+    // Replace `flow_risk` array with the single selected object
+    json_object_object_del(ndpi_obj, "flow_risk");
+    json_object_object_add(ndpi_obj, "flow_risk", flow_risk_obj);
+
+    // Convert modified JSON back to string
+    const char * modified_json_str = json_object_to_json_string(parsed_json_object);
+
+    // Duplicate the string so it can be returned (since original will be freed)
+    **converted_json_str = strdup(modified_json_str);
+
+    // Clean up
+    json_object_put(parsed_json_object);  
+}
+
 void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
 {
     json_object* root = json_tokener_parse(originalJsonStr);
@@ -1266,8 +1361,8 @@ void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
 int CheckSRCIPField(const char * json_str)
 {
     // Parse the JSON string
-    json_object * parsed_json = json_tokener_parse(json_str);
-    if (parsed_json == NULL)
+    json_object * parsed_json_object = json_tokener_parse(json_str);
+    if (parsed_json_object == NULL)
     {
         logger(1, "Error parsing JSON string\n");
         return 0; // Parsing failed, assume src_ip is not present
@@ -1275,13 +1370,13 @@ int CheckSRCIPField(const char * json_str)
 
     // Check for the src_ip field
     json_object * srcIpObject;
-    if (json_object_object_get_ex(parsed_json, "src_ip", &srcIpObject))
+    if (json_object_object_get_ex(parsed_json_object, "src_ip", &srcIpObject))
     {
-        json_object_put(parsed_json); // Free the parsed JSON object
+        json_object_put(parsed_json_object); // Free the parsed JSON object
         return 1;                     // src_ip field is present
     }
 
-    json_object_put(parsed_json); // Free the parsed JSON object
+    json_object_put(parsed_json_object); // Free the parsed JSON object
     return 0;                     // src_ip field is not present
     
 }

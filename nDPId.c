@@ -802,37 +802,35 @@ void write_flow_map_to_event_json(FlowMap * map, const char * filename)
 
 void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
 {
-    FILE * fp = NULL;
-    // logger(0,  "Ashwani: write_flow_map_to_alert_json: %d", map->size);
     for (size_t i = 0; i < map->size; ++i)
     {
-        // logger(0,  "\tAshwani: write_flow_map_to_alert_json: index =%d, %s", i, map->entries[i].json_str_alert);
         if (map->entries[i].json_str_alert != NULL)
         {
-            // logger(0,  "Ashwani: check 1");
-            if (fp == NULL)
-            {
-                // logger(0,  "Ashwani: check 2");
-                fp = fopen(filename, "w");
-                if (!fp)
-                {
-                    perror("Unable to open output file");
-                    return;
-                }
-            }
 
-            fputs(map->entries[i].json_str_alert, fp);
-            fputs("\n", fp); // Add newline for each JSON object for readability
+            int flow_risk_array_size = 0;
+            int flow_id = 0;
+            GetFlowRiskArraySizeAndFlowId(map->entries[i].json_str_alert, &flow_risk_array_size, &flow_id);
+            for (int index = 0; index < flow_risk_array_size; index++)
+            {
+                char * converted_json_str = NULL;
+                GetAlertJsonStringWithFlowRisk(map->entries[i].json_str_alert, &converted_json_str, index);
+
+                char * indexedFileName = create_filename_with_index_and_flow_id(filename, index, flow_id);
+                FILE * fp = fopen(indexedFileName, "a");
+                if (fp == NULL)
+                {
+                    logger(1, "Unable to create file %s: %s\n", indexedFileName, strerror(errno));
+                }
+                else
+                {
+                    fputs(converted_json_str, fp);
+                    fputs("\n", fp); // Add newline for each JSON object for readability
+                }
+                fclose(fp);
+                free(indexedFileName);
+            }
         }
     }
-
-    // logger(0,  "Ashwani: write_flow_map_to_alert_json: end 1");
-    if (fp != NULL)
-    {
-        // logger(0,  "Ashwani: write_flow_map_to_alert_json: end 2");
-        fclose(fp);
-    }
-    // logger(0,  "Ashwani: write_flow_map_to_alert_json: end final");
 }
 
 
@@ -2701,12 +2699,12 @@ static write_to_file(const char * json_str, size_t json_msg_len)
 
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
-    int createAlert = 0;
+    int flowRisksCount = 0;
     unsigned long long int flow_id = 834264320534;
     unsigned int flow_event_id = -1;
     unsigned int packet_id = -1;
 
-    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id, &flow_event_id, &packet_id);
+    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert, &flow_id, &flow_event_id, &packet_id, 0);
     if (flow_id != 834264320534 && converted_json_str != NULL)
     {
 
@@ -2720,7 +2718,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
         {
 
             char * converted_json_str_no_risk = NULL;
-            if (createAlert)
+            if (flowRisksCount)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
                 add_or_update_flow_entry(flow_map_ref, flow_id, flow_event_id, packet_id, converted_json_str_no_risk, converted_json_str);
