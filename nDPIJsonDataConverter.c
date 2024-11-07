@@ -1263,10 +1263,10 @@ void GetFlowRiskArraySizeAndFlowId(char * alertStringWithFlowRiskArray, int * fl
 
     *flow_risk_array_size = json_object_array_length(flow_risk_array);
 
-    json_object * flow_id;
-    if (json_object_object_get_ex(parsed_json_object, "flow_id", &flow_id))
+    json_object * flow_id_object;
+    if (json_object_object_get_ex(parsed_json_object, "flow_id", &flow_id_object))
     {
-        *flow_id = json_object_get_int(flow_id);
+        *flow_id = json_object_get_int(flow_id_object);
     }
 }
 
