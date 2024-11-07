@@ -1300,7 +1300,7 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
     }
 
     int array_len = json_object_array_length(flow_risk_array);
-    if (index < 0 || index >= array_len)
+    if (flow_risk_index < 0 || flow_risk_index >= array_len)
     {
         fprintf(stderr, "Index out of bounds\n");
         json_object_put(parsed_json_object); // Free parsed JSON object
@@ -1308,7 +1308,7 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
     }
 
     // Get the specified object from the array
-    struct json_object * selected_risk_obj = json_object_array_get_idx(flow_risk_array, index);
+    struct json_object * selected_risk_obj = json_object_array_get_idx(flow_risk_array, flow_risk_index);
 
     // Clone the selected object to avoid modifying the array itself
     struct json_object * flow_risk_obj = json_object_get(selected_risk_obj);
