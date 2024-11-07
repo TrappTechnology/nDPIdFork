@@ -1321,23 +1321,29 @@ void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char **
 
     // Get the specified object from the array
     struct json_object * selected_risk_obj = json_object_array_get_idx(flow_risk_array, flow_risk_index);
+     logger(0, "66");
 
     // Clone the selected object to avoid modifying the array itself
     struct json_object * flow_risk_obj = json_object_get(selected_risk_obj);
+     logger(0, "77");
 
     // Replace `flow_risk` array with the single selected object
     json_object_object_del(ndpi_obj, "flow_risk");
+     logger(0, "88");
     json_object_object_add(ndpi_obj, "flow_risk", flow_risk_obj);
+     logger(0, "99");
 
     // Convert modified JSON back to string
     const char * modified_json_str = json_object_to_json_string(parsed_json_object);
+     logger(0, "10");
 
     // Duplicate the string so it can be returned (since original will be freed)
-    **converted_json_str = strdup(modified_json_str);
+    *converted_json_str = strdup(modified_json_str);
+     logger(0, "11");
 
     // Clean up
     json_object_put(parsed_json_object);  
-     logger(0, "66");
+    
 }
 
 void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
