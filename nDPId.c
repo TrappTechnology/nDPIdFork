@@ -863,25 +863,21 @@ static void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
             for (int index = 0; index < flow_risk_array_size; index++)
             {
                 char * converted_json_str = NULL;
-                logger(0, "ASHWANI: 1");
                 GetAlertJsonStringWithFlowRisk(map->entries[i].json_str_alert, &converted_json_str, index);
-                logger(0, "ASHWANI: 2");
+ 
                 char * indexedFileName = create_filename_with_index_and_flow_id(filename, index, flow_id);
                 FILE * fp = fopen(indexedFileName, "a");
                 if (fp == NULL)
                 {
-                    logger(0, "ASHWANI: 3");
                     logger(1, "Unable to create file %s: %s\n", indexedFileName, strerror(errno));
                 }
                 else
                 {
-                    logger(0, "ASHWANI: 4");
                     fputs(converted_json_str, fp);
                     fputs("\n", fp); // Add newline for each JSON object for readability
                 }
                 fclose(fp);
                 free(indexedFileName);
-                logger(0, "ASHWANI: 5");
             }
         }
     }
@@ -2502,6 +2498,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
 
     // Ashwani - START
     double f = (double)flow_ext->first_seen_ms, l = (double)flow_ext->last_seen_ms;
+    l = (double)workflow->last_time;
     time_t start_seconds = f / 1000;
     struct tm * timeinfo;
     timeinfo = gmtime(&start_seconds);
