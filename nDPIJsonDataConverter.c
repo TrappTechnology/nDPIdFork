@@ -1522,6 +1522,26 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         //json_object_object_add(xfer_object, "source", packets_object);
     }
 
+    json_object *existing_event_obj, *new_event_obj;
+    json_object_object_get_ex(existing_json_object, "event", &existing_event_obj);
+    json_object_object_get_ex(new_json_object, "event", &new_event_obj);
+
+    struct json_object * existing_event_end, *new_event_end;
+    json_object_object_get_ex(existing_event_obj, "end", &existing_event_end);
+    json_object_object_get_ex(new_event_obj, "end", &new_event_end);
+    char * existing_event_end_string = stdDuplicate(json_object_get_string(existing_event_end));
+    char * new_event_end_string = stdDuplicate(json_object_get_string(new_event_end));
+
+    if (strcmp(new_event_end_string, existing_event_end_string) > 0) 
+    {
+        json_object_object_del(existing_event_obj, "end");
+
+        json_object * event_end = json_object_new_object();
+        json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));
+          
+    }
+
+
     *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
 
 
@@ -1556,14 +1576,9 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     //    json_object_object_add(destination1, "bytes", json_object_new_int(dst2_bytes));
     //}
 
-
-
-
-   
    json_object_put(existing_json_object);
    json_object_put(new_json_object);
 
-;
 }
 
 
