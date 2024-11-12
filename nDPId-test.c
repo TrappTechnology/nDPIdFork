@@ -231,15 +231,6 @@ void nDPIsrvd_memprof_log(char const * const format, ...)
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 void create_events_and_alerts_folders()
 {
-    //char * current_directory = NULL;
-    //// Get the current directory
-    //current_directory = getcwd(NULL, 0);
-    //if (executable_directory == NULL)
-    //{
-    //    logger(1, "Error getting current directory: %s\n", strerror(errno));
-    //    exit(EXIT_FAILURE);
-    //}
-
     ssize_t count = readlink("/proc/self/exe", executable_directory, PATH_MAX - 1);
     if (count != -1)
     {
@@ -271,7 +262,6 @@ void create_events_and_alerts_folders()
     logger(0, "Events Folder Path: %s", events_full_path);
 
     // Create the "Alerts" folder
-    logger(0, "Before mkdir(alerts_full_path, 0777)");
     if (mkdir(alerts_full_path, 0777) == -1)
     {
         logger(0, "mkdir(alerts_full_path, 0777) FAILED");
@@ -286,7 +276,6 @@ void create_events_and_alerts_folders()
         logger(0, "Alerts folder created successfully");
     }
 
-    logger(0, "Before mkdir(events_full_path, 0777)");
     // Create the "Events" folder
     if (mkdir(events_full_path, 0777) == -1)
     {
@@ -310,7 +299,6 @@ void create_events_and_alerts_folders()
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 static void fetch_files_to_process(const char * pcap_files_folder_path)
 {
-    logger(0, "fetch_files_to_process() START");
     DIR* dir = NULL;
     struct dirent * entry;
 
@@ -341,7 +329,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
     int counter = 0;
     while ((entry = readdir(dir)) != NULL)
     {
-        logger(0, "readdir call passed");
         if (entry->d_type == DT_REG)
         {     
             counter++;
@@ -359,27 +346,20 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     exit(EXIT_FAILURE);
                 }
 
-                logger(0, "before snprintf");
                 snprintf(complete_path_of_pcap, strlen(pcap_files_folder_path) + strlen(filename) + 2, "%s%s", pcap_files_folder_path, filename);
-                logger(0, "after snprintf");
 
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
-                logger(0, "after pcap_files assignment");
 
                 // Remove the file extension
                 char * dot = strrchr(filename, '.');
-                logger(0, "after strrchr(filename, '.')");
                 if (dot != NULL)
                 {
                     *dot = '\0'; // Replace the dot with the null terminator
                 }
 
                 // Allocate and construct alert and event file paths
-                logger(0, "before alert_file_path =  malloc");
                 char * alert_file_path =  malloc(strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
-                logger(0, "before event_file_path =  malloc");
                 char * event_file_path =  malloc(strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8);
-                logger(0, "after event_file_path =  malloc");
                 if (alert_file_path == NULL || event_file_path == NULL)
                 {
                     logger(1, "Memory allocation failed");
@@ -390,19 +370,14 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     exit(EXIT_FAILURE);
                 }
 
-                logger(0, "snprintf(alert_file_path...");
                 snprintf(alert_file_path, strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", executable_directory,   alerts_folder_name,  filename);
-                logger(0, "snprintf(event_file_path...");
                 snprintf(event_file_path, strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", executable_directory,events_folder_name, filename);
-
-               
+            
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
 
-                logger(0, "before tmp_alert_file_path malloc");
                 // Allocate and construct temporary alert and event file paths
                 char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
-                logger(0, "before tmp_event_file_path malloc");
                 char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
                 if (tmp_alert_file_path == NULL || tmp_event_file_path == NULL)
                 {
@@ -416,22 +391,18 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
                     exit(EXIT_FAILURE);
                 }
 
-                logger(0, "snprintf(tmp_alert_file_path...");
                 snprintf(tmp_alert_file_path, strlen(alert_file_path) + 5, "%s.tmp", alert_file_path);
-                 logger(0, "snprintf(tmp_event_file_path...");
                 snprintf(tmp_event_file_path, strlen(event_file_path) + 5, "%s.tmp", event_file_path);
 
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
 
                 number_of_valid_files_found++;
-                logger(0, "file processes successfully");
             }
         }
     }
 
     closedir(dir);
-    logger(0, "fetch_files_to_process() END");
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
@@ -871,7 +842,6 @@ static enum nDPIsrvd_callback_return distributor_json_callback(struct nDPIsrvd_s
                                                                struct nDPIsrvd_thread_data * const thread_data,
                                                                struct nDPIsrvd_flow * const flow)
 {
-    //logger(0, "Ashwani: distributor_json_callback ");
     struct distributor_global_user_data * const global_stats =
         (struct distributor_global_user_data *)sock->global_user_data;
     struct distributor_instance_user_data * instance_stats =
@@ -1608,7 +1578,6 @@ error:
 
 static void * nDPId_mainloop_thread(void * const arg)
 {
-    logger(0, "Ashwani Kumar: nDPId_mainloop_thread START");
     struct nDPId_return_value * const nrv = (struct nDPId_return_value *)arg;
     struct thread_return_value * const trr = &nrv->thread_return_value;
 
@@ -1656,9 +1625,7 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     FlowMap flow_map;
     init_flow_map(&flow_map, 10);
-    //logger(0, "Ashwani Kumar: before <run_pcap_loop>");
     run_pcap_loop(&reader_threads[0], &flow_map, generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
-    //logger(0, "Ashwani Kumar: after <run_pcap_loop>");
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
@@ -1690,17 +1657,11 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
     free_flow_map(&flow_map);
-    logger(0, "Ashwani Kumar: nDPId_mainloop_thread END");
-
 error:
-    logger(0, "before free_reader_threads() call");
     free_reader_threads();
-    logger(0, "after free_reader_threads() call");
     close(mock_pipefds[PIPE_nDPId]);
-    logger(0, "before write_flow_map_file call"); 
 
     // write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
-    logger(0, "after write_flow_map_file call");
     // Free the FlowMap
     //free_flow_map(&flow_map);
 
@@ -2021,7 +1982,7 @@ int main(int argc, char ** argv)
     }
 
     // MM.DD.YYYY
-    logger(0, "This is version 11.04.2024.01");
+    logger(0, "This is version 11.12.2024.01");
     if (argc == 1)
     {
         int retval = 0;
@@ -2584,7 +2545,7 @@ int main(int argc, char ** argv)
 #endif
     }
 
-    logger(0, "This is version 11.04.2024.01");
+    logger(0, "This is version 11.12.2024.01");
     logger(0, "Number of corrupt files %d", curruptFilesCount);
     logger(0, "Total number of files %d", number_of_valid_files_found);
     return 0;
