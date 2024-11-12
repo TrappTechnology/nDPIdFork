@@ -1102,10 +1102,12 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
    
     if (rootDataStructure.event_start != NULL)
     {
+        logger(0, " ASHWANI rootDataStructure.event_start %s", rootDataStructure.event_start)
         json_object_object_add(event_object, "start", json_object_new_string(rootDataStructure.event_start));
     }
     if (rootDataStructure.event_end != NULL)
     {
+        logger(0, " ASHWANI rootDataStructure.event_end %s", rootDataStructure.event_end)
         json_object_object_add(event_object, "end", json_object_new_string(rootDataStructure.event_end));
     }
 
