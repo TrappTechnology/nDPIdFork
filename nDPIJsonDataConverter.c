@@ -1529,8 +1529,8 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     struct json_object * existing_event_end, *new_event_end;
     json_object_object_get_ex(existing_event_obj, "end", &existing_event_end);
     json_object_object_get_ex(new_event_obj, "end", &new_event_end);
-    char * existing_event_end_string = stdDuplicate(json_object_get_string(existing_event_end));
-    char * new_event_end_string = stdDuplicate(json_object_get_string(new_event_end));
+    char * existing_event_end_string = strDuplicate(json_object_get_string(existing_event_end));
+    char * new_event_end_string = strDuplicate(json_object_get_string(new_event_end));
 
     if (strcmp(new_event_end_string, existing_event_end_string) > 0) 
     {
@@ -1540,6 +1540,9 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));
           
     }
+
+    free(existing_event_end_string);
+    free(new_event_end_string);
 
 
     *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
