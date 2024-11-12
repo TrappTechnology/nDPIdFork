@@ -565,11 +565,9 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
             result.breed = strDuplicate(json_object_get_string(breed));
         }
 
-        //logger(0, "Ashwani hostname 1");
         json_object* hostname;
         if (json_object_object_get_ex(ndpi_object, "hostname", &hostname))
         {
-            //logger(0, "Ashwani hostname 2");
             result.hostname = strDuplicate(json_object_get_string(hostname));
         }
     }
@@ -608,7 +606,6 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     if (json_object_object_get_ex(root, "event_end", &event_end))
     {       
         result.event_end = strDuplicate(json_object_get_string(event_end));
-        logger(0, "ASHWANI 1 event_end %s", result.event_end);
     }
 
     json_object * event_duration;
@@ -1102,12 +1099,10 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
    
     if (rootDataStructure.event_start != NULL)
     {
-        logger(0, " ASHWANI rootDataStructure.event_start %s", rootDataStructure.event_start);
         json_object_object_add(event_object, "start", json_object_new_string(rootDataStructure.event_start));
     }
     if (rootDataStructure.event_end != NULL)
     {
-        logger(0, " ASHWANI rootDataStructure.event_end %s", rootDataStructure.event_end);
         json_object_object_add(event_object, "end", json_object_new_string(rootDataStructure.event_end));
     }
 
