@@ -2761,7 +2761,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     ConvertnDPIDataFormat(json_str, &converted_json_str, &flowRisksCount, &flow_id, &flow_event_id, &packet_id, 0);
     if (flow_id != 834264320534 && converted_json_str != NULL)
     {
-
+        logger(0, "ASHWANI Stage 1 %s", converted_json_str);
         int length = strlen(converted_json_str);
         if (duplicate_data(converted_json_str, length))
         {
