@@ -4601,6 +4601,8 @@ static void ndpi_process_packet(uint8_t * const args,
 
         workflow->total_active_flows++;
         flow_to_process->flow_extended.flow_id = MT_GET_AND_ADD(global_flow_id, 1);
+        //Ashwani
+        flow_to_process->flow_extended.last_seen_ms = time_ms;
 
         if (alloc_detection_data(flow_to_process) != 0)
         {
@@ -4650,6 +4652,9 @@ static void ndpi_process_packet(uint8_t * const args,
                 break;
         }
         flow_to_process = (struct nDPId_flow *)flow_basic_to_process;
+        //Ashwani
+        flow_to_process->flow_extended.last_seen_ms = time_ms;
+
 
         if (flow_to_process->flow_extended.flow_basic.state == FS_INFO)
         {
