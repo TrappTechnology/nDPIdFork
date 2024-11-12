@@ -600,13 +600,15 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
 
     if (json_object_object_get_ex(root, "event_start", &event_start))
     {
+       
         result.event_start = strDuplicate(json_object_get_string(event_start));
     }
 
     json_object * event_end;
     if (json_object_object_get_ex(root, "event_end", &event_end))
-    {
+    {       
         result.event_end = strDuplicate(json_object_get_string(event_end));
+        logger(0, "ASHWANI 1 event_end %s", result.event_end);
     }
 
     json_object * event_duration;
