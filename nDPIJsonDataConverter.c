@@ -1407,33 +1407,23 @@ int CheckSRCIPField(const char * json_str)
 // Function to update "xfer" field in json1 if values in json2 are greater
 void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, char** converted_json_str)
 {
-    printf("existing_json_str: \n%s\n", existing_json_str);
-    printf("new_json_str: \n%s\n", new_json_str);
-    logger(0,  "ASHWANI: update_xfer_if_greater 1");
     json_object * existing_json_object = json_tokener_parse(existing_json_str);
     if (existing_json_object == NULL)
     {
-        logger(0,  "ASHWANI: existing_json_object is NULL");
         return;
     }
 
     json_object * new_json_object = json_tokener_parse(new_json_str);
     if (new_json_object == NULL)
     {
-        logger(0,  "ASHWANI: new_json_object is NULL");
         return;
     }
 
-    logger(0,  "ASHWANI: update_xfer_if_greater 2");
     // Get the "xfer" fields from both JSON objects
     json_object *existing_xfer_obj, *new_xfer_obj;
     json_object_object_get_ex(existing_json_object, "xfer", &existing_xfer_obj);
 
-    logger(0,  "ASHWANI: update_xfer_if_greater 22");
-
     json_object_object_get_ex(new_json_object, "xfer", &new_xfer_obj);
-
-    logger(0,  "ASHWANI: update_xfer_if_greater 3");
 
     // Extract the "source" and "destination" fields from "xfer"
     struct json_object *source1, *destination1, *source2, *destination2;
@@ -1442,39 +1432,18 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     json_object_object_get_ex(new_xfer_obj, "source", &source2);
     json_object_object_get_ex(new_xfer_obj, "destination", &destination2);
 
-    logger(0,  "ASHWANI: update_xfer_if_greater 4");
-
     // Extract the "packets" and "bytes" from both "source" and "destination"
     int src1_packets = json_object_get_int(json_object_object_get(source1, "packets"));
     int src1_bytes = json_object_get_int(json_object_object_get(source1, "bytes"));
     int dst1_packets = json_object_get_int(json_object_object_get(destination1, "packets"));
     int dst1_bytes = json_object_get_int(json_object_object_get(destination1, "bytes"));
 
-    // logger(0,  "ASHWANI: update_xfer_if_greater 5");
-
     int src2_packets = json_object_get_int(json_object_object_get(source2, "packets"));
     int src2_bytes = json_object_get_int(json_object_object_get(source2, "bytes"));
     int dst2_packets = json_object_get_int(json_object_object_get(destination2, "packets"));
     int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
-
-
-     logger(0,  "src1_packets = %d", src1_packets);
-     logger(0,  "src2_packets = %d", src2_packets);
-
-     logger(0,  "src1_bytes = %d", src1_bytes);
-     logger(0,  "src2_bytes = %d", src2_bytes);
-
-     logger(0,  "dst1_packets = %d", dst1_packets);
-     logger(0,  "dst2_packets = %d", dst2_packets);
-
-     logger(0,  "dst1_bytes = %d", dst1_bytes);
-     logger(0,  "dst2_bytes = %d", dst2_bytes);
-
-     logger(0,  "ASHWANI: update_xfer_if_greater 6");
-
     json_object * xfer_object = json_object_new_object();
     {
-        // logger(0,  "ASHWANI: update_xfer_if_greater 7");
         json_object * packets_object = json_object_new_object();
         json_object_object_add(packets_object,
                                "packets",
@@ -1483,11 +1452,9 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
                                "bytes",
                                json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
         json_object_object_add(xfer_object, "source", packets_object);
-        // logger(0,  "ASHWANI: update_xfer_if_greater 8");
     }
 
     {
-        // logger(0,  "ASHWANI: update_xfer_if_greater 9");
         json_object * packets_object = json_object_new_object();
         json_object_object_add(packets_object,
                                "packets",
@@ -1496,30 +1463,13 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
                                "bytes",
                                json_object_new_int(dst2_bytes > dst1_bytes ? dst2_bytes : dst1_bytes));
         json_object_object_add(xfer_object, "destination", packets_object);
-        // logger(0,  "ASHWANI: update_xfer_if_greater 10");
     }
         
     json_object * xferObject;
     if (json_object_object_get_ex(existing_json_object, "xfer", &xferObject))
     {
-        // logger(0,  "ASHWANI: update_xfer_if_greater 11");
         json_object_object_del(existing_json_object, "xfer");
         json_object_object_add(existing_json_object, "xfer", xfer_object);
-        // logger(0,  "ASHWANI: update_xfer_if_greater 12");
-    }
-
-    {
-        //json_object * event_object = json_object_new_object();
-        //json_object_object_add(event_object,
-        //                       "start",
-        //                       json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
-        //json_object_object_add(event_object,
-        //                       "end",
-        //                       json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
-        //json_object_object_add(event_object,
-        //                       "duration",
-        //                       json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
-        //json_object_object_add(xfer_object, "source", packets_object);
     }
 
     json_object *existing_event_obj, *new_event_obj;
@@ -1544,44 +1494,10 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     free(existing_event_end_string);
     free(new_event_end_string);
 
-
     *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
 
-
-     printf("converted_json_str: \n%s\n", *converted_json_str);
-
-    //// Update values in existing_json_object if values in new_json_object are greater
-    //if (src2_packets > src1_packets)
-    //{
-    //    logger(0, "ASHWANI: update_xfer_if_greater 7");
-    //    //json_object_object_del(source1, "packets");
-    //    json_object_object_add(source1, "packets", json_object_new_int(src2_packets));
-    //}
-
-    //if (src2_bytes > src1_bytes)
-    //{
-    //    logger(0, "ASHWANI: update_xfer_if_greater 8");
-    //    //json_object_object_del(source1, "bytes");
-    //    json_object_object_add(source1, "bytes", json_object_new_int(src2_bytes));
-    //}
-
-    //if (dst2_packets > dst1_packets)
-    //{
-    //    logger(0, "ASHWANI: update_xfer_if_greater 9");
-    //    //json_object_object_del(destination1, "packets");
-    //    json_object_object_add(destination1, "packets", json_object_new_int(dst2_packets));
-    //}
-
-    //if (dst2_bytes > dst1_bytes)
-    //{
-    //    logger(0, "ASHWANI: update_xfer_if_greater 10");
-    //    //json_object_object_del(destination1, "bytes");
-    //    json_object_object_add(destination1, "bytes", json_object_new_int(dst2_bytes));
-    //}
-
-   json_object_put(existing_json_object);
-   json_object_put(new_json_object);
-
+    json_object_put(existing_json_object);
+    json_object_put(new_json_object);
 }
 
 
