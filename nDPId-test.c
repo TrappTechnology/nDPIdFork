@@ -411,7 +411,6 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 //
 static void fetch_files_to_process_and_set_default_options(const char * pcap_files_folder_path)
 {
-    logger(0, "fetch_files_to_process_and_set_default_options() START");
     do
     {
         fetch_files_to_process(pcap_files_folder_path);
@@ -456,7 +455,6 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
                generated_tmp_json_files_alerts[index]);
     }
 
-    logger(0, "fetch_files_to_process_and_set_default_options() START");
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
@@ -1999,8 +1997,6 @@ int main(int argc, char ** argv)
 
     create_events_and_alerts_folders();
 
-    logger(0, "Successfully returned from create_events_and_alerts_folders()");
-
     nDPIsrvd_options.max_write_buffers = 32;
     nDPId_options.enable_data_analysis = 1;
     nDPId_options.max_packets_per_flow_to_send = 5;
@@ -2028,10 +2024,7 @@ int main(int argc, char ** argv)
         logger(0, "validate_options() failed");
         return 1;
     }
-    else
-    {
-        logger(0, "validate_options() passed");
-    }
+    
 
     fetch_files_to_process_and_set_default_options(argv[1]);
 
@@ -2039,7 +2032,7 @@ int main(int argc, char ** argv)
     for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
-        logger(0, "%d. processing of %s file started", currentFileIndex+1,pcap_files[currentFileIndex]);
+        logger(0, "%d. processing of %s file started------------------------------------------------", currentFileIndex+1,pcap_files[currentFileIndex]);
 
         char pcap_error_buffer[PCAP_ERRBUF_SIZE];
         pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, pcap_error_buffer);
@@ -2491,7 +2484,7 @@ int main(int argc, char ** argv)
             return 1;
         }
 
-        logger(0, "%d. processing of %s file completed", currentFileIndex+1,pcap_files[currentFileIndex]);
+        logger(0, "%d. processing of %s file completed------------------------------------------------\n\n", currentFileIndex+1,pcap_files[currentFileIndex]);
         free_messages();
         renameCurrentTempFile();
         remove(pcap_files[currentFileIndex]);
