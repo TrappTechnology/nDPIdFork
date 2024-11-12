@@ -2463,7 +2463,6 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     // Ashwani - START
     double f = (double)flow_ext->first_seen_ms, l = (double)flow_ext->last_seen_ms;
     l = (double)workflow->last_time;
-    logger(0, "TIME is here: %" PRIu64 "\n", workflow->last_time);
     time_t start_seconds = f / 1000;
     struct tm * timeinfo;
     timeinfo = gmtime(&start_seconds);
