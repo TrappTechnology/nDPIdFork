@@ -1493,7 +1493,7 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         unsigned long new_event_duration_value = json_object_get_int(new_event_duration);
       
         logger(0, "Ashwani 4 %lu", new_event_duration_value);
-        logger(0, "Ashwani 5 %lu", existing_event_duration_value)
+        logger(0, "Ashwani 5 %lu", existing_event_duration_value);
         if (new_event_duration_value > existing_event_duration_value)
         {
             json_object_object_del(existing_event_obj, "duration");        
