@@ -1499,7 +1499,7 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         {
             json_object_object_del(existing_event_obj, "duration");
             logger(0, "Ashwani 6");
-            json_object_object_add(existing_event_obj, "duration", json_object_get_int(new_event_duration_value));      
+            json_object_object_add(existing_event_obj, "duration", json_object_new_int64(new_event_duration_value));      
             logger(0, "Ashwani 7");
         }          
     }
