@@ -612,6 +612,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     if (json_object_object_get_ex(root, "event_duration", &event_duration))
     {
         result.event_duration = (json_object_get_int(event_duration));
+        logger(0, "Ashwani 2 %lu", result.event_duration);
     }
 
 
@@ -1109,6 +1110,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     if (rootDataStructure.event_duration != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(event_object, "duration", json_object_new_int(rootDataStructure.event_duration));
+        logger(0, "Ashwani 3 %lu", rootDataStructure.event_duration);
     }
 
     if (flowRiskCount > 0)
@@ -1485,33 +1487,25 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
 
          // update event.duration field
         struct json_object *existing_event_duration, *new_event_duration;
-        logger(0, "Ashwani 1");
         json_object_object_get_ex(existing_event_obj, "duration", &existing_event_duration);
-        logger(0, "Ashwani 2");
         json_object_object_get_ex(new_event_obj, "duration", &new_event_duration);
-        logger(0, "Ashwani 3");
         unsigned long existing_event_duration_value = json_object_get_int(existing_event_duration);
-        logger(0, "Ashwani 4");
         unsigned long new_event_duration_value = json_object_get_int(new_event_duration);
-        logger(0, "Ashwani 5");
-
+      
+        logger(0, "Ashwani 4 %lu", new_event_duration_value);
+        logger(0, "Ashwani 5 %lu", existing_event_duration_value)
         if (new_event_duration_value > existing_event_duration_value)
         {
-            json_object_object_del(existing_event_obj, "duration");
-            logger(0, "Ashwani 6");
-            json_object_object_add(existing_event_obj, "duration", json_object_new_int64(new_event_duration_value));      
-            logger(0, "Ashwani 7");
+            json_object_object_del(existing_event_obj, "duration");        
+            json_object_object_add(existing_event_obj, "duration", json_object_new_int64(new_event_duration_value));              
         }          
     }
 
-    logger(0, "Ashwani 8");
     free(existing_event_end_string);
     free(new_event_end_string);
-
-    logger(0, "Ashwani 9");
+   
     *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
-    logger(0, "Ashwani 10");
-
+  
     json_object_put(existing_json_object);
     json_object_put(new_json_object);
 }

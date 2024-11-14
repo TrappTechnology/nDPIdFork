@@ -2479,8 +2479,9 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_start", datetime_start_str);
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_end", datetime_end_str);
 
-    long long nanoseconds = (end_seconds - start_seconds) * 1000000000;
+    unsigned long nanoseconds = (end_seconds - start_seconds) * 1000000000;
 
+    logger(0, "Ashwani 1 %lu", nanoseconds);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "event_duration", nanoseconds);
 
 
