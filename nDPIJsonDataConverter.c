@@ -71,7 +71,7 @@ struct Root_data
     unsigned int packet_id;
     char* event_start;
     char* event_end;
-    unsigned int event_duration;
+    unsigned long event_duration;
     struct Root_xfer xfer;
     char* hostname;
 };
@@ -597,8 +597,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object * event_start;
 
     if (json_object_object_get_ex(root, "event_start", &event_start))
-    {
-       
+    {       
         result.event_start = strDuplicate(json_object_get_string(event_start));
     }
 
