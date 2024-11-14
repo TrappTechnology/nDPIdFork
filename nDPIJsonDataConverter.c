@@ -1109,7 +1109,6 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     if (rootDataStructure.event_duration != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(event_object, "duration", json_object_new_int(rootDataStructure.event_duration));
-        logger(0, "Ashwani 3 %lu", rootDataStructure.event_duration);
     }
 
     if (flowRiskCount > 0)
@@ -1492,8 +1491,6 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     unsigned long existing_event_duration_value = json_object_get_int(existing_event_duration);
     unsigned long new_event_duration_value = json_object_get_int(new_event_duration);
 
-    logger(0, "Ashwani 4 %lu", new_event_duration_value);
-    logger(0, "Ashwani 5 %lu", existing_event_duration_value);
     if (new_event_duration_value > existing_event_duration_value)
     {
         json_object_object_del(existing_event_obj, "duration");
