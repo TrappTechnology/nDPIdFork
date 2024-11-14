@@ -1481,20 +1481,19 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     if (strcmp(new_event_end_string, existing_event_end_string) > 0) 
     {
         json_object_object_del(existing_event_obj, "end");
-
         json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));
 
          // update event.duration field
         struct json_object *existing_event_duration, *new_event_duration;
         json_object_object_get_ex(existing_event_obj, "duration", &existing_event_duration);
         json_object_object_get_ex(new_event_obj, "duration", &new_event_duration);
-        unsigned long existing_event_end_value = json_object_get_int(existing_event_end);
-        unsigned long new_event_end_value = json_object_get_int(new_event_end);
+        unsigned long existing_event_duration_value = json_object_get_int(existing_event_duration);
+        unsigned long new_event_duration_value = json_object_get_int(new_event_duration);
 
-        if (new_event_end_value > existing_event_end_value)
+        if (new_event_duration_value > existing_event_duration_value)
         {
             json_object_object_del(existing_event_obj, "duration");
-            json_object_object_add(existing_event_obj, "duration", json_object_get_int(new_event_end_value));           
+            json_object_object_add(existing_event_obj, "duration", json_object_get_int(new_event_duration_value));           
         }          
     }
 
