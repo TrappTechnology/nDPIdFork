@@ -71,7 +71,7 @@ struct Root_data
     unsigned int packet_id;
     char* event_start;
     char* event_end;
-    char* event_duration;
+    unsigned int event_duration;
     struct Root_xfer xfer;
     char* hostname;
 };
@@ -483,7 +483,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     result.packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.event_start = NULL;
     result.event_end = NULL;
-    result.event_duration = NULL;
+    result.event_duration = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.xfer.source.bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.xfer.source.packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.xfer.destination.bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
@@ -611,7 +611,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     json_object * event_duration;
     if (json_object_object_get_ex(root, "event_duration", &event_duration))
     {
-        result.event_duration = strDuplicate(json_object_get_string(event_duration));
+        result.event_duration = (json_object_get_int(event_duration));
     }
 
 
@@ -973,10 +973,10 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
         free(rootData->event_end);
     }
 
-    if (rootData->event_duration != NULL)
-    {
-        free(rootData->event_duration);
-    }
+    //if (rootData->event_duration != NULL)
+    //{
+    //    free(rootData->event_duration);
+    //}
 
     if (rootData->hostname != NULL)
     {
@@ -1108,7 +1108,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
 
     if (rootDataStructure.event_duration != NULL)
     {
-        json_object_object_add(event_object, "duration", json_object_new_string(rootDataStructure.event_duration));
+        json_object_object_add(event_object, "duration", json_object_new_int(rootDataStructure.event_duration));
     }
 
     if (flowRiskCount > 0)
@@ -1467,6 +1467,7 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         json_object_object_add(existing_json_object, "xfer", xfer_object);
     }
 
+    // update event.end field
     json_object *existing_event_obj, *new_event_obj;
     json_object_object_get_ex(existing_json_object, "event", &existing_event_obj);
     json_object_object_get_ex(new_json_object, "event", &new_event_obj);
@@ -1481,9 +1482,20 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     {
         json_object_object_del(existing_event_obj, "end");
 
-        json_object * event_end = json_object_new_object();
         json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));
-          
+
+         // update event.duration field
+        struct json_object *existing_event_duration, *new_event_duration;
+        json_object_object_get_ex(existing_event_obj, "duration", &existing_event_duration);
+        json_object_object_get_ex(new_event_obj, "duration", &new_event_duration);
+        unsigned long existing_event_end_value = json_object_get_int(existing_event_end));
+        unsigned long new_event_end_value = json_object_get_int(new_event_end));
+
+        if (new_event_end_value > existing_event_end_value)
+        {
+            json_object_object_del(existing_event_obj, "duration");
+            json_object_object_add(existing_event_obj, "duration", json_object_get_int(new_event_end_value));           
+        }          
     }
 
     free(existing_event_end_string);
