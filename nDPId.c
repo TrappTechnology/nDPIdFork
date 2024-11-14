@@ -4144,7 +4144,7 @@ static void ndpi_process_packet(uint8_t * const args,
 
      /* update last time value */
      workflow->last_time = time_ms;
-
+     logger (0, "time_ms %lu", time_ms);
      //logger (0, "TIME is: %" PRIu64 "\n", time_ms);
     
     // Ashwani End 
