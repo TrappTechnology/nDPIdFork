@@ -611,7 +611,6 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     if (json_object_object_get_ex(root, "event_duration", &event_duration))
     {
         result.event_duration = (json_object_get_int(event_duration));
-        logger(0, "Ashwani 2 %lu", result.event_duration);
     }
 
 
