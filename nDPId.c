@@ -2474,7 +2474,7 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     char datetime_end_str[30];
     strftime(datetime_end_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
-    logger(0, "flow id = %d, start time  = %f, end_time = %f, difference =%f", flow_ext->flow_id, f, l, l-f);
+    logger(0, "flow id = %d, start time  = %f, end_time = %f, difference =%f, end_time2 = %f, flow_ext->flow_id, f, l, l-f, (double)flow_ext->last_seen_ms);
 
     // logger(0, "TIME event_start %s", datetime_start_str);
     // logger(0, "TIME event_end %s", datetime_end_str);
