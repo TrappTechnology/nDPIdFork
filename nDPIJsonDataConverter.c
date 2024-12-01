@@ -507,7 +507,7 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
             json_object * code_object;
             if (json_object_object_get_ex(httpObject, "code", &code_object))
             {
-                result.http.code_object = json_object_get_int(code_object);
+                result.http.code = json_object_get_int(code_object);
             }
         }
     }
@@ -838,31 +838,31 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
     json_object * httpObj = json_object_new_object();
     if (ndpi->http.request_content_type != NULL)
     {
-        json_object_object_add(httpObj, "request_content_type", json_object_new_string(ndpi->httpObj.request_content_type));
+        json_object_object_add(httpObj, "request_content_type", json_object_new_string(ndpi->http.request_content_type));
         addHTTP = TRUE;
     }
 
     if (ndpi->http.content_type != NULL)
     {
-        json_object_object_add(httpObj, "content_type", json_object_new_string(ndpi->httpObj.content_type));
+        json_object_object_add(httpObj, "content_type", json_object_new_string(ndpi->http.content_type));
         addHTTP = TRUE;
     }
 
     if (ndpi->http.user_agent != NULL)
     {
-        json_object_object_add(httpObj, "user_agent", json_object_new_string(ndpi->httpObj.user_agent));
+        json_object_object_add(httpObj, "user_agent", json_object_new_string(ndpi->http.user_agent));
         addHTTP = TRUE;
     }
 
     if (ndpi->http.filename != NULL)
     {
-        son_object_object_add(httpObj, "filename", json_object_new_string(ndpi->httpObj.filename));
+        son_object_object_add(httpObj, "filename", json_object_new_string(ndpi->http.filename));
         addHTTP = TRUE;
     }
 
     if (ndpi->http.code != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
-        json_object_object_add(httpObj, "response.status_code", json_object_new_int(ndpi->httpObj.code));
+        json_object_object_add(httpObj, "response.status_code", json_object_new_int(ndpi->http.code));
         addHTTP = TRUE;
     }
 
