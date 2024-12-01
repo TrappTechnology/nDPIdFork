@@ -30,6 +30,15 @@ struct NDPI_Confidence
     char* value;
 };
 
+struct NDPI_http
+{
+    char * request_content_type;
+    char* content_type;
+    char* user_agent;
+    char* filename;
+    unsigned int code;
+};
+
 struct NDPI_tls
 {
     char* version;
@@ -89,6 +98,7 @@ struct NDPI_Data
     int encrypted;
     int category_id;
     char* category;
+    struct NDPI_http http;
 };
 
 static char * strDuplicate(char * inputSting)
@@ -289,6 +299,11 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
     result.encrypted = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.category_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.category = NULL;
+    result.http.request_content_type = NULL;
+    result.http.content_type = NULL;
+    result.http.user_agent = NULL;
+    result.http.filename = NULL;
+    result.http.code = RANDOM_UNINTIALIZED_NUMBER_VALUE;
 
     // Parse JSON string
     json_object* root = json_tokener_parse(ndpiJson);
@@ -458,6 +473,42 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
         if (json_object_object_get_ex(ndpiObject, "category", &category))
         {
             result.category = strDuplicate(json_object_get_string(category));
+        }
+
+        // Extract http object
+        json_object * httpObject;
+        if (json_object_object_get_ex(ndpiObject, "http", &httpObject) &&
+            json_object_is_type(httpObject, json_type_object))
+        {
+            json_object * request_content_type_object;
+            if (json_object_object_get_ex(httpObject, "request_content_type", &request_content_type_object))
+            {
+                result.http.request_content_type = strDuplicate(json_object_get_string(request_content_type_object));
+            }
+
+            json_object * content_type_object;
+            if (json_object_object_get_ex(httpObject, "content_type", &content_type_object))
+            {
+                result.http.content_type = strDuplicate(json_object_get_string(content_type_object));
+            }
+            
+            json_object * user_agent_object;
+            if (json_object_object_get_ex(httpObject, "user_agent", &user_agent_object))
+            {
+                result.http.user_agent = strDuplicate(json_object_get_string(user_agent_object));
+            }
+            
+            json_object * filename_object;
+            if (json_object_object_get_ex(httpObject, "filename", &filename_object))
+            {
+                result.http.filename = strDuplicate(json_object_get_string(filename_object));
+            }
+
+            json_object * code_object;
+            if (json_object_object_get_ex(httpObject, "code", &code_object))
+            {
+                result.http.code_object = json_object_get_int(code_object);
+            }
         }
     }
 
@@ -708,7 +759,6 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
         addTLS = TRUE;
     }
 
-   
     bool addClient = FALSE;
 
     json_object* client = json_object_new_object();
@@ -782,6 +832,49 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
     {
         json_object_put(tlsObj);
     }
+
+    // Serialize http
+    bool addHTTP = FALSE;
+    json_object * httpObj = json_object_new_object();
+    if (ndpi->http.request_content_type != NULL)
+    {
+        json_object_object_add(httpObj, "request_content_type", json_object_new_string(ndpi->httpObj.request_content_type));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.content_type != NULL)
+    {
+        json_object_object_add(httpObj, "content_type", json_object_new_string(ndpi->httpObj.content_type));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.user_agent != NULL)
+    {
+        json_object_object_add(httpObj, "user_agent", json_object_new_string(ndpi->httpObj.user_agent));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.filename != NULL)
+    {
+        son_object_object_add(httpObj, "filename", json_object_new_string(ndpi->httpObj.filename));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.code != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(httpObj, "response.status_code", json_object_new_int(ndpi->httpObj.code));
+        addHTTP = TRUE;
+    }
+
+    if (addHTTP)
+    {
+        json_object_object_add(ndpiObj, "http", httpObj);
+    }
+    else
+    {
+        json_object_put(httpObj);
+    }
+
 
 
     //Serialize rest of data
@@ -912,6 +1005,27 @@ static void FreeConvertnDPIDataFormat(struct NDPI_Data* ndpiData)
     {
         free(ndpiData->category);
     }
+
+    if (ndpiData->http.request_content_type != NULL)
+    {
+        free(ndpiData->http.request_content_type);
+    }
+
+    if (ndpiData->http.content_type != NULL)
+    {
+        free(ndpiData->http.content_type);
+    }
+
+    if (ndpiData->http.user_agent != NULL)
+    {
+        free(ndpiData->http.user_agent);
+    }
+
+    if (ndpiData->http.filename != NULL)
+    {
+        free(ndpiData->http.filename);
+    }
+
 }
 
 static void FreeConvertRootDataFormat(struct Root_data* rootData)
