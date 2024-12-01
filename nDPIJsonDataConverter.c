@@ -707,7 +707,7 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     return result;
 }
 
-static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
+static char * create_nDPI_Json_String(json_object ** root_object, const struct NDPI_Data * ndpi)
 {
     // Create a new JSON object for ndpi
     //json_object* root = json_object_new_object();
@@ -868,7 +868,7 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
 
     if (addHTTP)
     {
-        json_object_object_add(ndpiObj, "http", httpObj);
+        json_object_object_add(*root_object, "http", httpObj);
     }
     else
     {
@@ -1100,7 +1100,7 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
 
 static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructure)
 {
-    char* nDPIJsonString = create_nDPI_Json_String(&nDPIStructure);
+    char * nDPIJsonString = create_nDPI_Json_String(root_object, & nDPIStructure);
     if (nDPIJsonString == NULL)
     {
         // Ashwani
