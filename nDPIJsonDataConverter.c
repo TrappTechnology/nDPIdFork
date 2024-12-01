@@ -856,7 +856,7 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
 
     if (ndpi->http.filename != NULL)
     {
-        son_object_object_add(httpObj, "filename", json_object_new_string(ndpi->http.filename));
+        json_object_object_add(httpObj, "filename", json_object_new_string(ndpi->http.filename));
         addHTTP = TRUE;
     }
 
