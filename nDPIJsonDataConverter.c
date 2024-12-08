@@ -875,8 +875,6 @@ static char * create_nDPI_Json_String(json_object ** root_object, const struct N
         json_object_put(httpObj);
     }
 
-
-
     //Serialize rest of data
     if (ndpi->proto_id != NULL)
     {
@@ -1580,11 +1578,12 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         json_object_object_add(existing_json_object, "xfer", xfer_object);
     }
 
-    // update event.end field
+    // update event field
     json_object *existing_event_obj, *new_event_obj;
     json_object_object_get_ex(existing_json_object, "event", &existing_event_obj);
     json_object_object_get_ex(new_json_object, "event", &new_event_obj);
 
+    // update event.end field
     struct json_object * existing_event_end, *new_event_end;
     json_object_object_get_ex(existing_event_obj, "end", &existing_event_end);
     json_object_object_get_ex(new_event_obj, "end", &new_event_end);
@@ -1612,6 +1611,8 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
 
     free(existing_event_end_string);
     free(new_event_end_string);
+
+    // update http fields
    
     *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
   
