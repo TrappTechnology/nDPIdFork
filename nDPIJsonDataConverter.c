@@ -1511,7 +1511,7 @@ int CheckSRCIPField(const char * json_str)
 
 
 // Function to update "xfer" field in json1 if values in json2 are greater
-void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, char** converted_json_str)
+void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, char ** converted_json_str)
 {
     json_object * existing_json_object = json_tokener_parse(existing_json_str);
     if (existing_json_object == NULL)
@@ -1570,7 +1570,7 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
                                json_object_new_int(dst2_bytes > dst1_bytes ? dst2_bytes : dst1_bytes));
         json_object_object_add(xfer_object, "destination", packets_object);
     }
-        
+
     json_object * xferObject;
     if (json_object_object_get_ex(existing_json_object, "xfer", &xferObject))
     {
@@ -1584,17 +1584,20 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     json_object_object_get_ex(new_json_object, "event", &new_event_obj);
 
     // update event.end field
-    struct json_object * existing_event_end, *new_event_end;
+    struct json_object *existing_event_end, *new_event_end;
     json_object_object_get_ex(existing_event_obj, "end", &existing_event_end);
     json_object_object_get_ex(new_event_obj, "end", &new_event_end);
     char * existing_event_end_string = strDuplicate(json_object_get_string(existing_event_end));
     char * new_event_end_string = strDuplicate(json_object_get_string(new_event_end));
 
-    if (strcmp(new_event_end_string, existing_event_end_string) > 0) 
+    if (strcmp(new_event_end_string, existing_event_end_string) > 0)
     {
         json_object_object_del(existing_event_obj, "end");
-        json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));        
+        json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));
     }
+
+    free(existing_event_end_string);
+    free(new_event_end_string);
 
     // update event.duration field
     struct json_object *existing_event_duration, *new_event_duration;
@@ -1607,13 +1610,114 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     {
         json_object_object_del(existing_event_obj, "duration");
         json_object_object_add(existing_event_obj, "duration", json_object_new_int64(new_event_duration_value));
-    }  
+    }
 
-    free(existing_event_end_string);
-    free(new_event_end_string);
 
     // update http fields
-   
+    json_object *existing_http_obj, *new_http_obj;
+    if (json_object_object_get_ex(existing_json_object, "http", &existing_http_obj))
+    {
+        if (json_object_object_get_ex(new_json_object, "http", &new_http_obj)
+        {
+             // update event.request_content_type field
+             struct json_object *existing_request_content_type, *new_request_content_type;
+             if (json_object_object_get_ex(existing_http_obj, "request_content_type", &existing_request_content_type))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "request_content_type", &new_request_content_type))
+                 {
+                     char * existing_request_content_type_string =  strDuplicate(json_object_get_string(existing_event_end));
+                     char * new_request_content_type_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_request_content_type_string, existing_request_content_type_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "request_content_type");
+                         json_object_object_add(existing_http_obj, "request_content_type",  json_object_new_string(new_request_content_type_string));
+                     }
+
+                     free(existing_request_content_type_string);
+                     free(new_request_content_type_string);
+                 }
+             }
+
+             // update event.content_type field
+             struct json_object *existing_content_type, *new_content_type;
+             if (json_object_object_get_ex(existing_http_obj, "content_type", &existing_content_type))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "content_type", &new_content_type))
+                 {
+                     char * existing_content_type_string =  strDuplicate(json_object_get_string(existing_event_end));
+                     char * new_content_type_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_content_type_string, existing_content_type_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "content_type");
+                         json_object_object_add(existing_http_obj, "content_type", json_object_new_string(new_content_type_string));
+                     }
+
+                     free(existing_content_type_string);
+                     free(new_content_type_string);
+                 }
+             }
+
+             // update event.user_agent field
+             struct json_object *existing_user_agent, *new_user_agent;
+             if (json_object_object_get_ex(existing_http_obj, "user_agent", &existing_user_agent))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "user_agent", &new_user_agent))
+                 {
+                     unsigned long existing_user_agent_string = strDuplicate(json_object_get_string(existing_event_end));
+                     unsigned long new_user_agent_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_user_agent_string, existing_user_agent_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "user_agent");
+                         json_object_object_add(existing_http_obj, "user_agent",  json_object_new_string(new_user_agent_string));
+                     }
+
+                     free(existing_user_agent_string);
+                     free(new_user_agent_string);
+                 }
+             }
+
+             // update event.filename field
+             struct json_object *existing_filename, *new_filename;
+             if (json_object_object_get_ex(existing_http_obj, "filename", &existing_filename))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "filename", &new_filename))
+                 {
+                     char * existing_filename_string = strDuplicate(json_object_get_string(existing_event_end));
+                     char * new_filename_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_filename_string, existing_filename_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "filename");
+                         json_object_object_add(existing_http_obj, "filename",  json_object_new_string(new_filename_string));
+                     }
+
+                     free(existing_filename_string);
+                     free(new_filename_string);
+                 }
+             }
+
+             // update event.response_status_code field
+             struct json_object *existing_response_status_code, *new_response_status_code;
+             if (json_object_object_get_ex(existing_http_obj, "response.status_code", &existing_response_status_code))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "response.status_code", &new_response_status_code))
+                 {
+                     unsigned long existing_response_status_code_value = json_object_get_int(existing_response_status_code);
+                     unsigned long new_response_status_code_value = json_object_get_int(new_response_status_code);
+
+                     if (new_response_status_code_value > existing_response_status_code_value)
+                     {
+                         json_object_object_del(existing_http_obj, "response.status_code");
+                         json_object_object_add(existing_http_obj, "response.status_code", json_object_new_int64(new_response_status_code_value));
+                     }
+                 }
+             }
+        }
+    }
+
     *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
   
     json_object_put(existing_json_object);
