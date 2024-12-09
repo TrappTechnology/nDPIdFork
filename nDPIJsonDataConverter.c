@@ -1617,7 +1617,7 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     json_object *existing_http_obj, *new_http_obj;
     if (json_object_object_get_ex(existing_json_object, "http", &existing_http_obj))
     {
-        if (json_object_object_get_ex(new_json_object, "http", &new_http_obj)
+        if (json_object_object_get_ex(new_json_object, "http", &new_http_obj))
         {
              // update event.request_content_type field
              struct json_object *existing_request_content_type, *new_request_content_type;
