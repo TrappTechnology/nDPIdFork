@@ -881,11 +881,6 @@ static char * create_nDPI_Json_String(json_object ** root_object, const struct N
         json_object_object_add(ndpiObj, "proto_id", json_object_new_string(ndpi->proto_id));
     }
 
-    if (ndpi->proto_by_ip != NULL)
-    {
-        json_object_object_add(ndpiObj, "proto_by_ip", json_object_new_string(ndpi->proto_by_ip) );
-    }
-
     if (ndpi->proto_by_ip_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "proto_by_ip_id", json_object_new_int(ndpi->proto_by_ip_id));
@@ -1120,7 +1115,7 @@ static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructu
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-static void add_Root_Data(json_object** root_object,  struct Root_data rootDataStructure, int flowRiskCount)
+static void add_Root_Data( json_object ** root_object, struct Root_data rootDataStructure, int flowRiskCount, char * proto_by_ip)
 {
     json_object* src_object = json_object_new_object();
 
@@ -1189,6 +1184,12 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     if (rootDataStructure.proto != NULL)
     {
         json_object_object_add(network_object, "application", json_object_new_string(rootDataStructure.proto));
+        addNetwork = TRUE;
+    }
+
+    if (proto_by_ip != NULL)
+    {
+        json_object_object_add(network_object, "application", json_object_new_string(proto_by_ip));
         addNetwork = TRUE;
     }
 
@@ -1333,7 +1334,7 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
             *packet_id = rootData.packet_id;
         }
 
-        add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
+        add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count, ndpiData.proto_by_ip);
         *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
     }
 
