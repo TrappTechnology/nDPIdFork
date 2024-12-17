@@ -836,25 +836,25 @@ static char * create_nDPI_Json_String(json_object ** root_object, const struct N
     // Serialize http
     bool addHTTP = FALSE;
     json_object * httpObj = json_object_new_object();
-    if (ndpi->http.request_content_type != NULL)
+    if (ndpi->http.request_content_type != NULL && strlen(ndpi->http.request_content_type) > 0)
     {
         json_object_object_add(httpObj, "request_content_type", json_object_new_string(ndpi->http.request_content_type));
         addHTTP = TRUE;
     }
 
-    if (ndpi->http.content_type != NULL)
+    if (ndpi->http.content_type != NULL && strlen(ndpi->http.content_type) > 0)
     {
         json_object_object_add(httpObj, "content_type", json_object_new_string(ndpi->http.content_type));
         addHTTP = TRUE;
     }
 
-    if (ndpi->http.user_agent != NULL)
+    if (ndpi->http.user_agent != NULL && strlen(ndpi->http.user_agent) > 0)
     {
         json_object_object_add(httpObj, "user_agent", json_object_new_string(ndpi->http.user_agent));
         addHTTP = TRUE;
     }
 
-    if (ndpi->http.filename != NULL)
+    if (ndpi->http.filename != NULL && strlen(ndpi->http.filename) > 0)
     {
         json_object_object_add(httpObj, "filename", json_object_new_string(ndpi->http.filename));
         addHTTP = TRUE;
