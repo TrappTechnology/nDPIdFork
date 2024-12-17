@@ -860,7 +860,7 @@ static char * create_nDPI_Json_String(json_object ** root_object, const struct N
         addHTTP = TRUE;
     }
 
-    if (ndpi->http.code != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    if (ndpi->http.code != RANDOM_UNINTIALIZED_NUMBER_VALUE && ndpi->http.code != 0)
     {
         json_object_object_add(httpObj, "response.status_code", json_object_new_int(ndpi->http.code));
         addHTTP = TRUE;
