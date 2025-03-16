@@ -130,8 +130,10 @@ static void get_file_times(const char * file_path,
 {
     struct stat fileInfo;
 
+    printf("\n\n File Path = %s \n\n", file_path);
     if (stat(file_path, &fileInfo) != 0)
     {
+        printf("\n\n ERROR in  get_file_times \n\n");
         perror("stat failed");
         return;
     }
@@ -142,8 +144,13 @@ static void get_file_times(const char * file_path,
     tm_info = localtime(&fileInfo.st_ctime);
     strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
 
+
+
     tm_info = localtime(&fileInfo.st_mtime);
     strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    printf("\n\n Creation Time = %s \n\n", creationTimeStr);
+    printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
 
     // Calculate duration in nanoseconds
     *duration_nanoseconds = (fileInfo.st_mtim.tv_sec - fileInfo.st_ctim.tv_sec) * 1e9 +
