@@ -119,42 +119,93 @@ static char * strDuplicate(char * inputSting)
 #endif
 }
 
+//#include <stdio.h>
+//#include <sys/stat.h>
+//#include <time.h>
+
+//static void get_file_times(const char * file_path,
+//                           char * creationTimeStr,
+//                           char * modificationTimeStr,
+//                           double * duration_nanoseconds)
+//{
+//    struct stat fileInfo;
+//
+//    printf("\n\n File Path = %s \n\n", file_path);
+//    if (stat(file_path, &fileInfo) != 0)
+//    {
+//        printf("\n\n ERROR in  get_file_times \n\n");
+//        perror("stat failed");
+//        return;
+//    }
+//
+//    // Format creation and modification times
+//    struct tm * tm_info;
+//
+//    tm_info = localtime(&fileInfo.st_ctime);
+//    strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+//
+//
+//
+//    tm_info = localtime(&fileInfo.st_mtime);
+//    strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+//
+//    printf("\n\n Creation Time = %s \n\n", creationTimeStr);
+//    printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
+//
+//    // Calculate duration in nanoseconds
+//    *duration_nanoseconds = (fileInfo.st_mtim.tv_sec - fileInfo.st_ctim.tv_sec) * 1e9 +
+//                            (fileInfo.st_mtim.tv_nsec - fileInfo.st_ctim.tv_nsec);
+//}
+
+#define _GNU_SOURCE
 #include <stdio.h>
 #include <sys/stat.h>
+#include <sys/syscall.h>
+#include <linux/stat.h>
 #include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
 
 static void get_file_times(const char * file_path,
                            char * creationTimeStr,
                            char * modificationTimeStr,
                            double * duration_nanoseconds)
 {
-    struct stat fileInfo;
+    struct statx fileInfo;
 
     printf("\n\n File Path = %s \n\n", file_path);
-    if (stat(file_path, &fileInfo) != 0)
+
+    // Use statx to get birth time
+    if (syscall(SYS_statx, AT_FDCWD, file_path, AT_SYMLINK_NOFOLLOW, STATX_BTIME | STATX_MTIME, &fileInfo) != 0)
     {
-        printf("\n\n ERROR in  get_file_times \n\n");
-        perror("stat failed");
+        printf("\n\n ERROR in get_file_times \n\n");
+        perror("statx failed");
         return;
     }
 
-    // Format creation and modification times
+    // Format creation (birth) time
     struct tm * tm_info;
+    if (fileInfo.stx_btime.tv_sec != 0)
+    {
+        tm_info = localtime(&fileInfo.stx_btime.tv_sec);
+        strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+    }
+    else
+    {
+        strcpy(creationTimeStr, "N/A (Not Supported)");
+    }
 
-    tm_info = localtime(&fileInfo.st_ctime);
-    strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
-
-
-
-    tm_info = localtime(&fileInfo.st_mtime);
+    // Format modification time
+    tm_info = localtime(&fileInfo.stx_mtime.tv_sec);
     strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
 
     printf("\n\n Creation Time = %s \n\n", creationTimeStr);
     printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
 
     // Calculate duration in nanoseconds
-    *duration_nanoseconds = (fileInfo.st_mtim.tv_sec - fileInfo.st_ctim.tv_sec) * 1e9 +
-                            (fileInfo.st_mtim.tv_nsec - fileInfo.st_ctim.tv_nsec);
+    *duration_nanoseconds = (fileInfo.stx_mtime.tv_sec - fileInfo.stx_btime.tv_sec) * 1e9 +
+                            (fileInfo.stx_mtime.tv_nsec - fileInfo.stx_btime.tv_nsec);
 }
 
 
