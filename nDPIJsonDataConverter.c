@@ -99,6 +99,7 @@ struct NDPI_Data
     char* confidence_value;
     struct NDPI_tls tls;
     char* proto_id;
+    char * protocol;
     char* proto_by_ip;
     int proto_by_ip_id;
     int encrypted;
@@ -300,6 +301,7 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
 
     result.confidence_value = NULL;
     result.proto_id = NULL;
+    result.protocol = NULL;
     result.proto_by_ip = NULL;
     result.proto_by_ip_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.encrypted = RANDOM_UNINTIALIZED_NUMBER_VALUE;
@@ -455,6 +457,12 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
         if (json_object_object_get_ex(ndpiObject, "proto_by_ip", &proto_by_ip))
         {
             result.proto_by_ip = strDuplicate(json_object_get_string(proto_by_ip));
+        }
+
+        json_object * protocol;
+        if (json_object_object_get_ex(ndpiObject, "proto", &protocol))
+        {
+            result.protocol = _strdup(json_object_get_string(protocol));
         }
 
         json_object* proto_by_ip_id;
@@ -995,6 +1003,11 @@ static void FreeConvertnDPIDataFormat(struct NDPI_Data* ndpiData)
         free(ndpiData->proto_by_ip);
     }
 
+    if (ndpiData->protocol != NULL)
+    {
+         free(ndpiData->protocol);
+    }
+
     if (ndpiData->category != NULL)
     {
         free(ndpiData->category);
@@ -1116,7 +1129,7 @@ static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructu
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-static void add_Root_Data( json_object ** root_object, struct Root_data rootDataStructure, int flowRiskCount, char * proto_by_ip)
+static void add_Root_Data( json_object ** root_object, struct Root_data rootDataStructure, int flowRiskCount, char * proto_by_ip, char* protocol)
 {
     json_object* src_object = json_object_new_object();
 
@@ -1235,6 +1248,12 @@ static void add_Root_Data( json_object ** root_object, struct Root_data rootData
         addNetwork = TRUE;
     }
 
+    if (protocol != NULL)
+    {
+        json_object_object_add(network_object, "protocol", json_object_new_string(protocol));
+        addNetwork = TRUE;
+    }
+
     if (addNetwork)
     {
         json_object_object_add(*root_object, "network", network_object);
@@ -1329,7 +1348,7 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
             *packet_id = rootData.packet_id;
         }
 
-        add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count, ndpiData.proto_by_ip);
+        add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count, ndpiData.proto_by_ip, ndpiData.protocol);
         *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
     }
 
