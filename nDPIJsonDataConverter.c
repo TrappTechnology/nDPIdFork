@@ -1114,15 +1114,15 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
         free(rootData->breed);
     }
 
-    if (rootData->event_start != NULL)
-    {
-        free(rootData->event_start);
-    }
+    //if (rootData->event_start != NULL)
+    //{
+    //    free(rootData->event_start);
+    //}
 
-    if (rootData->event_end != NULL)
-    {
-        free(rootData->event_end);
-    }
+    //if (rootData->event_end != NULL)
+    //{
+    //    free(rootData->event_end);
+    //}
 
     //if (rootData->event_duration != NULL)
     //{
