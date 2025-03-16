@@ -1980,7 +1980,7 @@ int main(int argc, char ** argv)
     }
 
     // MM.DD.YYYY
-    logger(0, "This is version 12.17.2024.02");
+    logger(0, "This is version 03.15.2025.01");
     if (argc == 1)
     {
         int retval = 0;

@@ -68,8 +68,14 @@ struct Root_data
 {
     char* src_ip;
     int src_port;
+    unsigned int src_packets;
+    unsigned int src_bytes;
+    int flow_src_tot_l4_payload_len;
     char* dest_ip;
     int dst_port;
+    unsigned int des_packets;
+    unsigned int des_bytes;
+    int flow_dst_tot_l4_payload_len;
     char* l3_proto;
     char* l4_proto;
     int ip;
@@ -522,8 +528,14 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     struct Root_data result;
     result.src_ip = NULL;
     result.src_port = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.src_packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.src_bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.flow_src_tot_l4_payload_len = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.dest_ip = NULL;
     result.dst_port = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.des_packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.des_bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.flow_dst_tot_l4_payload_len = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.l3_proto = NULL;
     result.ip = NULL;
     result.l4_proto = NULL;
@@ -535,12 +547,6 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     result.event_start = NULL;
     result.event_end = NULL;
     result.event_duration = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.xfer.source.bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.xfer.source.packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.xfer.destination.bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.xfer.destination.packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.xfer.flow_src_tot_l4_payload_len = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.xfer.flow_dst_tot_l4_payload_len = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.hostname = NULL;
 
     // Parse JSON string
@@ -556,16 +562,26 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     if (json_object_object_get_ex(root, "src_ip", &src_ip))
     {
         result.src_ip = strDuplicate(json_object_get_string(src_ip));
-    }
-    
+    }    
 
     json_object* src_port;
     if (json_object_object_get_ex(root, "src_port", &src_port))
     {
         result.src_port = json_object_get_int(src_port);
     }
-    
 
+    json_object * flow_src_packets_processed_object;
+    if (json_object_object_get_ex(root, "flow_src_packets_processed", &flow_src_packets_processed_object))
+    {
+        result.src_packets = json_object_get_int(flow_src_packets_processed_object);
+    }
+
+    json_object * src2dst_bytes_object;
+    if (json_object_object_get_ex(root, "src2dst_bytes", &src2dst_bytes_object))
+    {
+        result.src_bytes = json_object_get_int(src2dst_bytes_object);
+    }
+    
     // dest_ip and dst_port data
     json_object* dest_ip;
     if (json_object_object_get_ex(root, "dst_ip", &dest_ip))
@@ -573,13 +589,36 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
         result.dest_ip = strDuplicate(json_object_get_string(dest_ip));
     }
     
-
     json_object* dst_port;
     if (json_object_object_get_ex(root, "dst_port", &dst_port))
     {
         result.dst_port = json_object_get_int(dst_port);
     }
-    
+
+    json_object * flow_dst_packets_processed_object;
+    if (json_object_object_get_ex(root, "flow_dst_packets_processed", &flow_dst_packets_processed_object))
+    {
+        result.des_packets = json_object_get_int(flow_dst_packets_processed_object);
+    }
+
+    json_object * dst2src_bytes_object;
+    if (json_object_object_get_ex(root, "dst2src_bytes", &dst2src_bytes_object))
+    {
+        result.des_bytes = json_object_get_int(dst2src_bytes_object);
+    }
+
+    json_object * flow_src_tot_l4_payload_len_object;
+    if (json_object_object_get_ex(root, "flow_src_tot_l4_payload_len", &flow_src_tot_l4_payload_len_object))
+    {
+        result.flow_src_tot_l4_payload_len = json_object_get_int(flow_src_tot_l4_payload_len_object);
+    }
+
+    json_object * flow_dst_tot_l4_payload_len_object;
+    if (json_object_object_get_ex(root, "flow_dst_tot_l4_payload_len", &flow_dst_tot_l4_payload_len_object))
+    {
+        result.flow_dst_tot_l4_payload_len = json_object_get_int(flow_dst_tot_l4_payload_len_object);
+    }
+
     // network object
     //json_object* l3_proto;
     //if (json_object_object_get_ex(root, "l3_proto", &l3_proto))
@@ -662,44 +701,6 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     if (json_object_object_get_ex(root, "event_duration", &event_duration))
     {
         result.event_duration = (json_object_get_int(event_duration));
-    }
-
-
-    // xfer
-    json_object * flow_src_packets_processed_object;
-    if (json_object_object_get_ex(root, "flow_src_packets_processed", &flow_src_packets_processed_object))
-    {
-        result.xfer.source.packets = json_object_get_int(flow_src_packets_processed_object);
-    }
-
-    json_object * src2dst_bytes_object;
-    if (json_object_object_get_ex(root, "src2dst_bytes", &src2dst_bytes_object))
-    {
-        result.xfer.source.bytes = json_object_get_int(src2dst_bytes_object);
-    }
-
-    json_object * flow_dst_packets_processed_object;
-    if (json_object_object_get_ex(root, "flow_dst_packets_processed", &flow_dst_packets_processed_object))
-    {
-        result.xfer.destination.packets = json_object_get_int(flow_dst_packets_processed_object);
-    }
-
-    json_object * dst2src_bytes_object;
-    if (json_object_object_get_ex(root, "dst2src_bytes", &dst2src_bytes_object))
-    {
-        result.xfer.destination.bytes = json_object_get_int(dst2src_bytes_object);
-    }
-
-    json_object * flow_src_tot_l4_payload_len_object;
-    if (json_object_object_get_ex(root, "flow_src_tot_l4_payload_len", &flow_src_tot_l4_payload_len_object))
-    {
-        result.xfer.flow_src_tot_l4_payload_len = json_object_get_int(flow_src_tot_l4_payload_len_object);
-    }
-
-    json_object * flow_dst_tot_l4_payload_len_object;
-    if (json_object_object_get_ex(root, "flow_dst_tot_l4_payload_len", &flow_dst_tot_l4_payload_len_object))
-    {
-        result.xfer.flow_dst_tot_l4_payload_len = json_object_get_int(flow_dst_tot_l4_payload_len_object);
     }
 
     json_object_put(root);
@@ -1132,10 +1133,31 @@ static void add_Root_Data( json_object ** root_object, struct Root_data rootData
         addSrc = TRUE;
     }
 
+    if (rootDataStructure.src_packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(src_object, "packets", json_object_new_int(rootDataStructure.src_packets));
+        addSrc = TRUE;
+    }
+
+    if (rootDataStructure.src_bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(src_object, "bytes", json_object_new_int(rootDataStructure.src_bytes));
+        addSrc = TRUE;
+    }
+
+    if (rootDataStructure.flow_src_tot_l4_payload_len != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(src_object,
+                               "src2dst_goodput_bytes",
+                               json_object_new_int(rootDataStructure.flow_src_tot_l4_payload_len));
+        addSrc = TRUE;
+    }
+
     if (addSrc)
     {
         json_object_object_add(*root_object, "source", src_object);
     }
+
 
     bool addDest = FALSE;
     json_object* dest_object = json_object_new_object();
@@ -1149,6 +1171,26 @@ static void add_Root_Data( json_object ** root_object, struct Root_data rootData
     if (rootDataStructure.dst_port != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(dest_object, "port", json_object_new_int(rootDataStructure.dst_port));
+        addDest = TRUE;
+    }
+
+    if (rootDataStructure.des_packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(dest_object, "packets", json_object_new_int(rootDataStructure.des_packets));
+        addDest = TRUE;
+    }
+
+    if (rootDataStructure.des_bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(dest_object, "bytes", json_object_new_int(rootDataStructure.des_bytes));
+        addDest = TRUE;
+    }
+
+    if (rootDataStructure.flow_dst_tot_l4_payload_len != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(dest_object,
+                               "dst2src_goodput_bytes",
+                               json_object_new_int(rootDataStructure.flow_dst_tot_l4_payload_len));
         addDest = TRUE;
     }
 
@@ -1240,53 +1282,6 @@ static void add_Root_Data( json_object ** root_object, struct Root_data rootData
         json_object* flow_id_object = json_object_new_object();
         json_object_object_add(flow_id_object, "id", json_object_new_int(rootDataStructure.flow_id));
         json_object_object_add(*root_object, "flow", flow_id_object);
-    }
-
-    // Xfer starts here
-
-    json_object* xfer_object = json_object_new_object();
-    bool addXfer = FALSE;
-    if (rootDataStructure.xfer.source.packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    {
-        json_object* packets_object = json_object_new_object();
-      
-        json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.source.packets));
-        if (rootDataStructure.xfer.source.bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-        {
-            json_object_object_add(packets_object, "bytes", json_object_new_int(rootDataStructure.xfer.source.bytes));
-        }
-        json_object_object_add(xfer_object, "source", packets_object);
-        addXfer = TRUE;
-    }
-
-    if (rootDataStructure.xfer.destination.packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    {
-        json_object* packets_object = json_object_new_object();
-        json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.destination.packets));
-        if (rootDataStructure.xfer.destination.bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-        {
-            json_object_object_add(packets_object, "bytes", json_object_new_int(rootDataStructure.xfer.destination.bytes));
-        }
-       
-        json_object_object_add(xfer_object, "destination", packets_object);
-        addXfer = TRUE;
-    }
-
-    if (rootDataStructure.xfer.flow_src_tot_l4_payload_len != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    {
-        json_object_object_add(xfer_object, "src2dst_goodput_bytes",  json_object_new_int(rootDataStructure.xfer.flow_src_tot_l4_payload_len));
-        addXfer = TRUE;
-    }
-
-    if (rootDataStructure.xfer.flow_dst_tot_l4_payload_len != RANDOM_UNINTIALIZED_NUMBER_VALUE)
-    {
-        json_object_object_add(xfer_object, "dst2src_goodput_bytes",  json_object_new_int(rootDataStructure.xfer.flow_dst_tot_l4_payload_len));
-        addXfer = TRUE;
-    }
-
-    if (addXfer)
-    {
-        json_object_object_add(*root_object, "xfer", xfer_object);
     }
 
     // hostname
@@ -1526,18 +1521,12 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         return;
     }
 
-    // Get the "xfer" fields from both JSON objects
-    json_object *existing_xfer_obj, *new_xfer_obj;
-    json_object_object_get_ex(existing_json_object, "xfer", &existing_xfer_obj);
-
-    json_object_object_get_ex(new_json_object, "xfer", &new_xfer_obj);
-
-    // Extract the "source" and "destination" fields from "xfer"
+    // Extract the "source" and "destination" fields from both JSON objects
     struct json_object *source1, *destination1, *source2, *destination2;
-    json_object_object_get_ex(existing_xfer_obj, "source", &source1);
-    json_object_object_get_ex(existing_xfer_obj, "destination", &destination1);
-    json_object_object_get_ex(new_xfer_obj, "source", &source2);
-    json_object_object_get_ex(new_xfer_obj, "destination", &destination2);
+    json_object_object_get_ex(existing_json_object, "source", &source1);
+    json_object_object_get_ex(existing_json_object, "destination", &destination1);
+    json_object_object_get_ex(new_json_object, "source", &source2);
+    json_object_object_get_ex(new_json_object, "destination", &destination2);
 
     // Extract the "packets" and "bytes" from both "source" and "destination"
     int src1_packets = json_object_get_int(json_object_object_get(source1, "packets"));
@@ -1549,35 +1538,21 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     int src2_bytes = json_object_get_int(json_object_object_get(source2, "bytes"));
     int dst2_packets = json_object_get_int(json_object_object_get(destination2, "packets"));
     int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
-    json_object * xfer_object = json_object_new_object();
-    {
-        json_object * packets_object = json_object_new_object();
-        json_object_object_add(packets_object,
-                               "packets",
-                               json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
-        json_object_object_add(packets_object,
-                               "bytes",
-                               json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
-        json_object_object_add(xfer_object, "source", packets_object);
-    }
 
-    {
-        json_object * packets_object = json_object_new_object();
-        json_object_object_add(packets_object,
-                               "packets",
-                               json_object_new_int(dst2_packets > dst1_packets ? dst2_packets : dst1_packets));
-        json_object_object_add(packets_object,
-                               "bytes",
-                               json_object_new_int(dst2_bytes > dst1_bytes ? dst2_bytes : dst1_bytes));
-        json_object_object_add(xfer_object, "destination", packets_object);
-    }
+    json_object_object_add(source1,
+                           "packets",
+                           json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
 
-    json_object * xferObject;
-    if (json_object_object_get_ex(existing_json_object, "xfer", &xferObject))
-    {
-        json_object_object_del(existing_json_object, "xfer");
-        json_object_object_add(existing_json_object, "xfer", xfer_object);
-    }
+    json_object_object_add(source1,
+                           "bytes",
+                           json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
+
+    json_object_object_add(destination1,
+                           "packets",
+                           json_object_new_int(dst2_packets > dst1_packets ? dst2_packets : dst1_packets));
+    json_object_object_add(destination1,
+                           "bytes",
+                           json_object_new_int(dst2_bytes > dst1_bytes ? dst2_bytes : dst1_bytes));
 
     // update event field
     json_object *existing_event_obj, *new_event_obj;
@@ -1612,7 +1587,6 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
         json_object_object_del(existing_event_obj, "duration");
         json_object_object_add(existing_event_obj, "duration", json_object_new_int64(new_event_duration_value));
     }
-
 
     // update http fields
     json_object *existing_http_obj, *new_http_obj;
