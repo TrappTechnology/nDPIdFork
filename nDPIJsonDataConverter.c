@@ -462,7 +462,7 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
         json_object * protocol;
         if (json_object_object_get_ex(ndpiObject, "proto", &protocol))
         {
-            result.protocol = _strdup(json_object_get_string(protocol));
+            result.protocol = strDuplicate(json_object_get_string(protocol));
         }
 
         json_object* proto_by_ip_id;
