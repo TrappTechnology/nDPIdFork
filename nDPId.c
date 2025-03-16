@@ -620,6 +620,7 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
 /*--------------------------------------------------Ashwani added code starts here------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
+char * current_pcap_file = NULL;
 
 
 // Define a structure to hold the flow id and JSON string
@@ -4903,12 +4904,17 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 }
 #endif
 
-static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, FlowMap* flow_map_input, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
+static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
+                          FlowMap * flow_map_input,
+                          char * generated_tmp_json_files_alert_input,
+                          char * generated_tmp_json_files_event_input,
+                          char * current_pcap_file_input)
 {
     //logger(0, "run_pcap_loop start");
     flow_map_ref = flow_map_input;
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
+    current_pcap_file = current_pcap_file_input;
 
     if (reader_thread->workflow != NULL && reader_thread->workflow->pcap_handle != NULL)
     {

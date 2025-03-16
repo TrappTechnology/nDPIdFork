@@ -1623,7 +1623,11 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     FlowMap flow_map;
     init_flow_map(&flow_map, 10);
-    run_pcap_loop(&reader_threads[0], &flow_map, generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+    run_pcap_loop(&reader_threads[0],
+                  &flow_map,
+                  generated_tmp_json_files_alerts[currentFileIndex],
+                  generated_tmp_json_files_events[currentFileIndex],
+                  pcap_files[currentFileIndex]);
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)

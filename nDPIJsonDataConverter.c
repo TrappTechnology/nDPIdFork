@@ -84,9 +84,9 @@ struct Root_data
     int flow_id;
     unsigned int flow_event_id;
     unsigned int packet_id;
-    char* event_start;
-    char* event_end;
-    unsigned long event_duration;
+    //char* event_start;
+    //char* event_end;
+    //double event_duration;
     struct Root_xfer xfer;
     char* hostname;
 };
@@ -117,6 +117,37 @@ static char * strDuplicate(char * inputSting)
     // Non-Windows (assume POSIX) code
     return strdup(inputSting);
 #endif
+}
+
+#include <stdio.h>
+#include <sys/stat.h>
+#include <time.h>
+
+static void get_file_times(const char * file_path,
+                           char * creationTimeStr,
+                           char * modificationTimeStr,
+                           double * duration_nanoseconds)
+{
+    struct stat fileInfo;
+
+    if (stat(file_path, &fileInfo) != 0)
+    {
+        perror("stat failed");
+        return;
+    }
+
+    // Format creation and modification times
+    struct tm * tm_info;
+
+    tm_info = localtime(&fileInfo.st_ctime);
+    strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    tm_info = localtime(&fileInfo.st_mtime);
+    strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    // Calculate duration in nanoseconds
+    *duration_nanoseconds = (fileInfo.st_mtim.tv_sec - fileInfo.st_ctim.tv_sec) * 1e9 +
+                            (fileInfo.st_mtim.tv_nsec - fileInfo.st_ctim.tv_nsec);
 }
 
 
@@ -552,9 +583,9 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     result.flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
-    result.event_start = NULL;
-    result.event_end = NULL;
-    result.event_duration = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    //result.event_start = NULL;
+    //result.event_end = NULL;
+    //result.event_duration = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.hostname = NULL;
 
     // Parse JSON string
@@ -692,24 +723,24 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
   
   
     // event
-    json_object * event_start;
+    //json_object * event_start;
 
-    if (json_object_object_get_ex(root, "event_start", &event_start))
-    {       
-        result.event_start = strDuplicate(json_object_get_string(event_start));
-    }
+    //if (json_object_object_get_ex(root, "event_start", &event_start))
+    //{       
+    //    result.event_start = strDuplicate(json_object_get_string(event_start));
+    //}
 
-    json_object * event_end;
-    if (json_object_object_get_ex(root, "event_end", &event_end))
-    {       
-        result.event_end = strDuplicate(json_object_get_string(event_end));
-    }
+    //json_object * event_end;
+    //if (json_object_object_get_ex(root, "event_end", &event_end))
+    //{       
+    //    result.event_end = strDuplicate(json_object_get_string(event_end));
+    //}
 
-    json_object * event_duration;
-    if (json_object_object_get_ex(root, "event_duration", &event_duration))
-    {
-        result.event_duration = (json_object_get_int(event_duration));
-    }
+    //json_object * event_duration;
+    //if (json_object_object_get_ex(root, "event_duration", &event_duration))
+    //{
+    //    result.event_duration = json_object_get_double(event_duration);
+    //}
 
     json_object_put(root);
 
@@ -1129,7 +1160,12 @@ static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructu
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-static void add_Root_Data( json_object ** root_object, struct Root_data rootDataStructure, int flowRiskCount, char * proto_by_ip, char* protocol)
+static void add_Root_Data(json_object ** root_object,
+                          struct Root_data rootDataStructure,
+                          int flowRiskCount,
+                          char * proto_by_ip,
+                          char * protocol,
+                          char * current_pcap_file)
 {
     json_object* src_object = json_object_new_object();
 
@@ -1268,20 +1304,26 @@ static void add_Root_Data( json_object ** root_object, struct Root_data rootData
 
     // Event starts here
 
+    char creationTimeStr[25];
+    char modificationTimeStr[25];
+    double duration_nanoseconds;
+
+    get_file_times(current_pcap_file, creationTimeStr, modificationTimeStr, &duration_nanoseconds);
+
     json_object* event_object = json_object_new_object();
    
     if (rootDataStructure.event_start != NULL)
     {
-        json_object_object_add(event_object, "start", json_object_new_string(rootDataStructure.event_start));
+        json_object_object_add(event_object, "start", json_object_new_string(creationTimeStr));
     }
     if (rootDataStructure.event_end != NULL)
     {
-        json_object_object_add(event_object, "end", json_object_new_string(rootDataStructure.event_end));
+        json_object_object_add(event_object, "end", json_object_new_string(modificationTimeStr));
     }
 
     if (rootDataStructure.event_duration != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
-        json_object_object_add(event_object, "duration", json_object_new_int(rootDataStructure.event_duration));
+        json_object_object_add(event_object, "duration", json_object_get_double(duration_nanoseconds));
     }
 
     if (flowRiskCount > 0)
@@ -1317,7 +1359,8 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
                            int * createAlert,
                            unsigned long long int * flow_id,
                            unsigned int * flow_event_id,
-                           unsigned int * packet_id)
+                           unsigned int * packet_id,
+                           char * current_pcap_file)
 {
     *flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     *flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
@@ -1348,7 +1391,12 @@ void ConvertnDPIDataFormat(char * originalJsonStr,
             *packet_id = rootData.packet_id;
         }
 
-        add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count, ndpiData.proto_by_ip, ndpiData.protocol);
+        add_Root_Data(&root_object,
+                      rootData,
+                      ndpiData.flow_risk_count,
+                      ndpiData.proto_by_ip,
+                      ndpiData.protocol,
+                      current_pcap_file);
         *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
     }
 
@@ -1598,8 +1646,8 @@ void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, ch
     struct json_object *existing_event_duration, *new_event_duration;
     json_object_object_get_ex(existing_event_obj, "duration", &existing_event_duration);
     json_object_object_get_ex(new_event_obj, "duration", &new_event_duration);
-    unsigned long existing_event_duration_value = json_object_get_int(existing_event_duration);
-    unsigned long new_event_duration_value = json_object_get_int(new_event_duration);
+    unsigned long existing_event_duration_value = json_object_get_double(existing_event_duration);
+    unsigned long new_event_duration_value = json_object_get_double(new_event_duration);
 
     if (new_event_duration_value > existing_event_duration_value)
     {
