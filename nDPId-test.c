@@ -1984,7 +1984,7 @@ int main(int argc, char ** argv)
     }
 
     // MM.DD.YYYY
-    logger(0, "This is version 03.15.2025.02");
+    logger(0, "This is version 03.15.2025.03");
     if (argc == 1)
     {
         int retval = 0;
@@ -2542,7 +2542,7 @@ int main(int argc, char ** argv)
 #endif
     }
 
-    logger(0, "This is version 12.17.2024.02");
+    logger(0, "This is version 03.15.2025.03");
     logger(0, "Number of corrupt files %d", curruptFilesCount);
     logger(0, "Total number of files %d", number_of_valid_files_found);
     return 0;

@@ -174,7 +174,7 @@ static void get_file_times(const char * file_path,
 {
     struct statx fileInfo;
 
-    printf("\n\n File Path = %s \n\n", file_path);
+    //printf("\n\n File Path = %s \n\n", file_path);
 
     // Use statx to get birth time
     if (syscall(SYS_statx, AT_FDCWD, file_path, AT_SYMLINK_NOFOLLOW, STATX_BTIME | STATX_MTIME, &fileInfo) != 0)
@@ -200,8 +200,8 @@ static void get_file_times(const char * file_path,
     tm_info = localtime(&fileInfo.stx_mtime.tv_sec);
     strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
 
-    printf("\n\n Creation Time = %s \n\n", creationTimeStr);
-    printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
+    //printf("\n\n Creation Time = %s \n\n", creationTimeStr);
+    //printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
 
     // Calculate duration in nanoseconds
     *duration_nanoseconds = (fileInfo.stx_mtime.tv_sec - fileInfo.stx_btime.tv_sec) * 1e9 +
