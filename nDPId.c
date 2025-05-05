@@ -1529,6 +1529,10 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
         free_workflow(&workflow);
         return NULL;
     }
+    else
+    {
+        logger(0, "Ashwani: pcap_open_live succeeded);
+    }
 
     if (workflow->is_pcap_file == 0 && pcap_setnonblock(workflow->pcap_handle, 1, pcap_error_buffer) == PCAP_ERROR)
     {
@@ -1851,6 +1855,10 @@ static int setup_reader_threads(void)
         {
             logger_early(0, "FAILED to open %s file", get_cmdarg(&nDPId_options.pcap_file_or_interface));
             return 1;
+        }
+        else
+        {
+            logger(0, "Ashwani: init_workflow call passed")
         }
     }
 
@@ -4912,7 +4920,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
                           char * generated_tmp_json_files_event_input,
                           char * current_pcap_file_input)
 {
-    //logger(0, "run_pcap_loop start");
+    logger(0, "Ashwani: run_pcap_loop start");
     flow_map_ref = flow_map_input;
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
@@ -4922,6 +4930,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
     {
         if (reader_thread->workflow->is_pcap_file != 0)
         {
+            logger(0, "Ashwani: before pcap_loop call");
             switch (pcap_loop(reader_thread->workflow->pcap_handle, -1, &ndpi_process_packet, (uint8_t *)reader_thread))
             {
                 case PCAP_ERROR:
@@ -4939,6 +4948,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
         }
         else
         {
+            logger(0, "Ashwani:  pcap_loop call skipped");
 #if !defined(__FreeBSD__) && !defined(__APPLE__)
             sigset_t thread_signal_set, old_signal_set;
             sigfillset(&thread_signal_set);

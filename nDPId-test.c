@@ -1593,6 +1593,10 @@ static void * nDPId_mainloop_thread(void * const arg)
         THREAD_ERROR(trr);
         goto error;   
     }
+    else
+    {
+        logger(0, "Ashwani: setup_reader_threads passed")
+    }
 
     /* Replace nDPId JSON socket fd with the one in our pipe and hope that no socket specific code-path triggered. */
     reader_threads[0].collector_sockfd = mock_pipefds[PIPE_nDPId];
@@ -1601,6 +1605,10 @@ static void * nDPId_mainloop_thread(void * const arg)
     {
         logger(0, "set_collector_block routine returned error");
         goto error;
+    }
+    else
+    {
+        logger(0, "Ashwani: set_collector_block passed")
     }
 
     thread_signal(&start_condition);
