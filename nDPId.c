@@ -675,7 +675,7 @@ void ensure_capacity(FlowMap * map)
     }
 }
 
-void loggerDebug(conat char* msg)
+void loggerDebug(char* msg)
 {
     logger(0, "%s", msg);
 }
