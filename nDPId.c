@@ -1858,7 +1858,7 @@ static int setup_reader_threads(void)
         }
         else
         {
-            logger(0, "Ashwani: init_workflow call passed")
+            logger(0, "Ashwani: init_workflow call passed");
         }
     }
 
