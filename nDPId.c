@@ -675,11 +675,16 @@ void ensure_capacity(FlowMap * map)
     }
 }
 
+stativ void loggerDebug(conat char* msg)
+{
+    logger(0, "%s", msg);
+}
 
 // Add or update an entry in the FlowMap
 void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int packet_id, const char * json_str, const char * json_str_alert)
 {
-    logger(0, "\t\t\tAshwani: add_or_update_flow_entry called");
+    loggerDebug("\t\t\tAshwani: add_or_update_flow_entry called");
+    //logger(0, "\t\t\tAshwani: add_or_update_flow_entry called");
     // Check if the flow_id already exists
   
     if (map == NULL || flow_event_id == RANDOM_UNINTIALIZED_NUMBER_VALUE || packet_id == RANDOM_UNINTIALIZED_NUMBER_VALUE) 
