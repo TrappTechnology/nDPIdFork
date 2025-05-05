@@ -4090,7 +4090,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                 uint8_t const * const packet)
 {
     static count = 0;
-    cout++;
+    count++;
     logger(0, "Ashwani ndpi_process_packet called %d", count);
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
     struct nDPId_workflow * workflow;
