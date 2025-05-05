@@ -1485,6 +1485,7 @@ static int cfg_set_u64(struct nDPId_workflow * const workflow,
 
 static struct nDPId_workflow * init_workflow(char const * const file_or_device)
 {
+    logger(0, "Ashwani init_workflow called\n");
     char pcap_error_buffer[PCAP_ERRBUF_SIZE];
     struct nDPId_workflow * workflow;
 
@@ -1785,6 +1786,7 @@ static char * get_default_pcapdev(char * errbuf)
 
 static int setup_reader_threads(void)
 {
+    logger(0, "Ashwani setup_reader_threads called\n");
     char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 
     if (nDPId_options.reader_thread_count > nDPId_MAX_READER_THREADS)
