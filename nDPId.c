@@ -4103,7 +4103,7 @@ static void ndpi_process_packet(uint8_t * const args,
 {
     static count = 0;
     count++;
-    loggerDebug("Ashwani ndpi_process_packet called %d", count);
+    loggerDebug("ndpi_process_packet called");
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
     struct nDPId_workflow * workflow;
     struct nDPId_flow_basic flow_basic = {};
