@@ -679,6 +679,7 @@ void ensure_capacity(FlowMap * map)
 // Add or update an entry in the FlowMap
 void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int packet_id, const char * json_str, const char * json_str_alert)
 {
+    logger(0, "\t\t\tAshwani: add_or_update_flow_entry called");
     // Check if the flow_id already exists
   
     if (map == NULL || flow_event_id == RANDOM_UNINTIALIZED_NUMBER_VALUE || packet_id == RANDOM_UNINTIALIZED_NUMBER_VALUE) 
@@ -2453,6 +2454,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
+    logger(0, "\t\tAshwani: jsonize_flow called");
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
@@ -2717,6 +2719,7 @@ void free_messages()
 
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
+    logger(0, "\t\t\tAshwani: write_to_file called");
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
     int flowRisksCount = 0;
@@ -2762,6 +2765,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
+    logger(0, "\t\t\tAshwani: send_to_collector called");
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     int saved_errno;
     int s_ret;
@@ -2894,6 +2898,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
 {
+    logger(0, "\t\tAshwani: serialize_and_send called");
     char * json_msg;
     uint32_t json_msg_len;
 
@@ -3183,6 +3188,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                                struct nDPId_flow_extended * const flow_ext,
                                enum flow_event event)
 {
+    logger(0, "\tAshwani: jsonize_flow_event called");
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     char const ev[] = "flow_event_name";
 
