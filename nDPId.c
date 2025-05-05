@@ -4928,7 +4928,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
 
     if (reader_thread->workflow != NULL && reader_thread->workflow->pcap_handle != NULL)
     {
-        if (reader_thread->workflow->is_pcap_file != 0)
+        if (reader_thread->workflow->is_pcap_file != 0 || 1)
         {
             logger(0, "Ashwani: before pcap_loop call");
             switch (pcap_loop(reader_thread->workflow->pcap_handle, -1, &ndpi_process_packet, (uint8_t *)reader_thread))
