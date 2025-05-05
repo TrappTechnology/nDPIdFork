@@ -1531,7 +1531,7 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     }
     else
     {
-        logger(0, "Ashwani: pcap_open_live succeeded);
+        logger(0, "Ashwani: pcap_open_live succeeded");
     }
 
     if (workflow->is_pcap_file == 0 && pcap_setnonblock(workflow->pcap_handle, 1, pcap_error_buffer) == PCAP_ERROR)
