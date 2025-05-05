@@ -2076,7 +2076,7 @@ int main(int argc, char ** argv)
 
         logger(0, "Ashwani main 4\n");
 
-        pcap_close(handle);
+        //pcap_close(handle);
         logger(0, "Ashwani main 5\n");
 
         if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
