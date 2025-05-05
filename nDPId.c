@@ -2727,7 +2727,7 @@ static write_to_file(const char * json_str, size_t json_msg_len)
     unsigned int flow_event_id = -1;
     unsigned int packet_id = -1;
     // Ashwani: uncomment this to put data to console
-    // printf("\n%s\n", json_str);
+    printf("\n%s\n", json_str);
 
     ConvertnDPIDataFormat(json_str, &converted_json_str, &flowRisksCount, &flow_id, &flow_event_id, &packet_id, current_pcap_file);
     if (flow_id != 834264320534 && converted_json_str != NULL)
