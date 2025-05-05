@@ -1595,7 +1595,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     }
     else
     {
-        logger(0, "Ashwani: setup_reader_threads passed")
+        logger(0, "Ashwani: setup_reader_threads passed");
     }
 
     /* Replace nDPId JSON socket fd with the one in our pipe and hope that no socket specific code-path triggered. */
@@ -1608,7 +1608,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     }
     else
     {
-        logger(0, "Ashwani: set_collector_block passed")
+        logger(0, "Ashwani: set_collector_block passed");
     }
 
     thread_signal(&start_condition);
