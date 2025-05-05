@@ -677,6 +677,7 @@ void ensure_capacity(FlowMap * map)
 
 void loggerDebug(char* msg)
 {
+    return;
     logger(0, "%s", msg);
 }
 
@@ -1491,7 +1492,7 @@ static int cfg_set_u64(struct nDPId_workflow * const workflow,
 
 static struct nDPId_workflow * init_workflow(char const * const file_or_device)
 {
-    logger(0, "Ashwani init_workflow called\n");
+    loggerDebug(" init_workflow called\n");
     char pcap_error_buffer[PCAP_ERRBUF_SIZE];
     struct nDPId_workflow * workflow;
 
@@ -1537,7 +1538,7 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     }
     else
     {
-        logger(0, "Ashwani: pcap_open_live succeeded");
+        loggerDebug(": pcap_open_live succeeded");
     }
 
     if (workflow->is_pcap_file == 0 && pcap_setnonblock(workflow->pcap_handle, 1, pcap_error_buffer) == PCAP_ERROR)
@@ -1796,7 +1797,7 @@ static char * get_default_pcapdev(char * errbuf)
 
 static int setup_reader_threads(void)
 {
-    logger(0, "Ashwani setup_reader_threads called\n");
+    loggerDebug(" setup_reader_threads called\n");
     char pcap_error_buffer[PCAP_ERRBUF_SIZE];
 
     if (nDPId_options.reader_thread_count > nDPId_MAX_READER_THREADS)
@@ -1864,7 +1865,7 @@ static int setup_reader_threads(void)
         }
         else
         {
-            logger(0, "Ashwani: init_workflow call passed");
+            loggerDebug(": init_workflow call passed");
         }
     }
 
@@ -2459,7 +2460,7 @@ static void jsonize_daemon(struct nDPId_reader_thread * const reader_thread, enu
 
 static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_flow_extended const * const flow_ext)
 {
-    logger(0, "\t\tAshwani: jsonize_flow called");
+    loggerDebug("\t\tAshwani: jsonize_flow called");
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_id", flow_ext->flow_id);
     ndpi_serialize_string_string(&workflow->ndpi_serializer,
                                  "flow_state",
@@ -2492,10 +2493,10 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     char datetime_end_str[30];
     strftime(datetime_end_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
 
-    //logger(0, "flow id = %d, start time  = %f, end_time = %f, difference =%f, end_time2 = %f", flow_ext->flow_id, f, l, l-f, (double)flow_ext->last_seen_ms);
+    //loggerDebug("flow id = %d, start time  = %f, end_time = %f, difference =%f, end_time2 = %f", flow_ext->flow_id, f, l, l-f, (double)flow_ext->last_seen_ms);
 
-    // logger(0, "TIME event_start %s", datetime_start_str);
-    // logger(0, "TIME event_end %s", datetime_end_str);
+    // loggerDebug("TIME event_start %s", datetime_start_str);
+    // loggerDebug("TIME event_end %s", datetime_end_str);
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_start", datetime_start_str);
     ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_end", datetime_end_str);
 
@@ -2724,7 +2725,7 @@ void free_messages()
 
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
-    logger(0, "\t\t\tAshwani: write_to_file called");
+    loggerDebug("\t\t\tAshwani: write_to_file called");
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
     int flowRisksCount = 0;
@@ -2770,7 +2771,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
-    logger(0, "\t\t\tAshwani: send_to_collector called");
+    loggerDebug("\t\t\tAshwani: send_to_collector called");
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     int saved_errno;
     int s_ret;
@@ -2903,7 +2904,7 @@ static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
 
 static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
 {
-    logger(0, "\t\tAshwani: serialize_and_send called");
+    loggerDebug("\t\tAshwani: serialize_and_send called");
     char * json_msg;
     uint32_t json_msg_len;
 
@@ -3193,7 +3194,7 @@ static void jsonize_flow_event(struct nDPId_reader_thread * const reader_thread,
                                struct nDPId_flow_extended * const flow_ext,
                                enum flow_event event)
 {
-    logger(0, "\tAshwani: jsonize_flow_event called");
+    loggerDebug("\tAshwani: jsonize_flow_event called");
     struct nDPId_workflow * const workflow = reader_thread->workflow;
     char const ev[] = "flow_event_name";
 
@@ -4102,7 +4103,7 @@ static void ndpi_process_packet(uint8_t * const args,
 {
     static count = 0;
     count++;
-    logger(0, "Ashwani ndpi_process_packet called %d", count);
+    loggerDebug("Ashwani ndpi_process_packet called %d", count);
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
     struct nDPId_workflow * workflow;
     struct nDPId_flow_basic flow_basic = {};
@@ -4934,7 +4935,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
                           char * generated_tmp_json_files_event_input,
                           char * current_pcap_file_input)
 {
-    logger(0, "Ashwani: run_pcap_loop start");
+    loggerDebug("Ashwani: run_pcap_loop start");
     flow_map_ref = flow_map_input;
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
@@ -4944,7 +4945,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
     {
         if (reader_thread->workflow->is_pcap_file != 0 || 1)
         {
-            logger(0, "Ashwani: before pcap_loop call");
+            loggerDebug("Ashwani: before pcap_loop call");
             switch (pcap_loop(reader_thread->workflow->pcap_handle, -1, &ndpi_process_packet, (uint8_t *)reader_thread))
             {
                 case PCAP_ERROR:
@@ -4962,7 +4963,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
         }
         else
         {
-            logger(0, "Ashwani:  pcap_loop call skipped");
+            loggerDebug("Ashwani:  pcap_loop call skipped");
 #if !defined(__FreeBSD__) && !defined(__APPLE__)
             sigset_t thread_signal_set, old_signal_set;
             sigfillset(&thread_signal_set);
@@ -5129,12 +5130,12 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
                 }
             }
 
-            logger(0, "before nio_free call");
+            loggerDebug("before nio_free call");
             nio_free(&io);
         }
     }
 
-     logger(0, "run_pcap_loop end");
+     loggerDebug("run_pcap_loop end");
 }
 
 static void break_pcap_loop(struct nDPId_reader_thread * const reader_thread)
@@ -5397,7 +5398,7 @@ static int stop_reader_threads(void)
 
 static void free_reader_threads(void)
 {
-    logger(0, "free_reader_threads called");
+    loggerDebug("free_reader_threads called");
     for (unsigned long long int i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
         if (reader_threads[i].workflow == NULL)

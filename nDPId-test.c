@@ -1576,7 +1576,7 @@ error:
 
 static void * nDPId_mainloop_thread(void * const arg)
 {
-    logger(0, "Ashwani nDPId_mainloop_thread 1\n");
+    loggerDebug(" nDPId_mainloop_thread 1\n");
     struct nDPId_return_value * const nrv = (struct nDPId_return_value *)arg;
     struct thread_return_value * const trr = &nrv->thread_return_value;
 
@@ -1595,7 +1595,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     }
     else
     {
-        logger(0, "Ashwani: setup_reader_threads passed");
+        loggerDebug(": setup_reader_threads passed");
     }
 
     /* Replace nDPId JSON socket fd with the one in our pipe and hope that no socket specific code-path triggered. */
@@ -1608,7 +1608,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     }
     else
     {
-        logger(0, "Ashwani: set_collector_block passed");
+        loggerDebug(": set_collector_block passed");
     }
 
     thread_signal(&start_condition);
@@ -1630,7 +1630,7 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
-    logger(0, "Ashwani nDPId_mainloop_thread 2\n");
+    loggerDebug(" nDPId_mainloop_thread 2\n");
     FlowMap flow_map;
     init_flow_map(&flow_map, 10);
     run_pcap_loop(&reader_threads[0],
@@ -1639,7 +1639,7 @@ static void * nDPId_mainloop_thread(void * const arg)
                   generated_tmp_json_files_events[currentFileIndex],
                   pcap_files[currentFileIndex]);
 
-    logger(0, "Ashwani nDPId_mainloop_thread 3\n");
+    loggerDebug(" nDPId_mainloop_thread 3\n");
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
@@ -2051,9 +2051,9 @@ int main(int argc, char ** argv)
         logger(0, "%d. processing of %s file started------------------------------------------------", currentFileIndex+1,pcap_files[currentFileIndex]);
 
         //char pcap_error_buffer[PCAP_ERRBUF_SIZE];
-        //logger(0, "Ashwani main 1\n");
+        //loggerDebug(" main 1\n");
         //pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, pcap_error_buffer);
-        //logger(0, "Ashwani main 2\n");
+        //loggerDebug(" main 2\n");
         //if (handle == NULL) 
         //{
         //    curruptFilesCount++;
@@ -2063,7 +2063,7 @@ int main(int argc, char ** argv)
         //}
         //else
         //{
-        //    logger(0, "Ashwani main 3\n");
+        //    loggerDebug(" main 3\n");
         //    switch (pcap_loop(handle, -1, &dummy_packet_handler, NULL))
         //    {
         //        case PCAP_ERROR:
@@ -2082,10 +2082,10 @@ int main(int argc, char ** argv)
         //    }
         //}
 
-        logger(0, "Ashwani main 4\n");
+        loggerDebug(" main 4\n");
 
         //pcap_close(handle);
-        logger(0, "Ashwani main 5\n");
+        loggerDebug(" main 5\n");
 
         if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
             setup_pipe(mock_nullfds) != 0 || setup_pipe(mock_arpafds) != 0)
@@ -2105,7 +2105,7 @@ int main(int argc, char ** argv)
 
         pthread_t nDPId_thread;
         struct nDPId_return_value nDPId_return = {};
-        logger(0, "Ashwani main 6\n");
+        loggerDebug(" main 6\n");
         if (pthread_create(&nDPId_thread, NULL, nDPId_mainloop_thread, &nDPId_return) != 0)
         {
             logger(0, "nDPId_mainloop_thread routine returned error");
@@ -2116,7 +2116,7 @@ int main(int argc, char ** argv)
             logger(0, "nDPId_mainloop_thread routine call is successful");
         }
 
-        logger(0, "Ashwani main 7\n");
+        loggerDebug(" main 7\n");
 
         pthread_t nDPIsrvd_thread;
         struct thread_return_value nDPIsrvd_return = {};
@@ -2130,7 +2130,7 @@ int main(int argc, char ** argv)
             logger(0, "nDPIsrvd_mainloop_thread routine call is successful");
         }
 
-        logger(0, "Ashwani main 8\n");
+        loggerDebug(" main 8\n");
 
         pthread_t distributor_thread;
         struct distributor_return_value distributor_return = {};
