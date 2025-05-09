@@ -21,8 +21,9 @@ extern void nDPIsrvd_memprof_log_free(size_t free_size);
 #include "nDPIsrvd.c"
 #include "nDPId.c"
 
+
 /*---------------------------------------------------------------------------------------------------------/*/
-#define MAX_NUMBER_OF_FILES 1000 // Maximum number of files to handle
+#define MAX_NUMBER_OF_FILES 5000 // Maximum number of files to handle
 
 FILE * serialization_fp = NULL;
 char * pcap_files[MAX_NUMBER_OF_FILES];
@@ -34,6 +35,7 @@ int number_of_valid_files_found = 0;
 int currentFileIndex = -1;
 char * alerts_folder_name = "Alerts";
 char * events_folder_name = "Events";
+char executable_directory[PATH_MAX];
 
 
 /*---------------------------------------------------------------------------------------------------------*/
@@ -229,43 +231,67 @@ void nDPIsrvd_memprof_log(char const * const format, ...)
 /*-------------------------------------------------------------------------------------------------------------------------------------------------*/
 void create_events_and_alerts_folders()
 {
-    char * current_directory = NULL;
-    // Get the current directory
-    current_directory = getcwd(NULL, 0);
-    if (current_directory == NULL)
+    ssize_t count = readlink("/proc/self/exe", executable_directory, PATH_MAX - 1);
+    if (count != -1)
     {
-        logger(1, "Error getting current directory: %s\n", strerror(errno));
+        // Null-terminate the string
+        executable_directory[count] = '\0';
+        logger(0, "Executable path: %s", executable_directory);
+
+        char * last_slash = strrchr(executable_directory, '/');
+        if (last_slash != NULL)
+        {
+            // Terminate the string at the last '/'
+            *last_slash = '\0';
+            logger(0, "Executable directory: %s", executable_directory);
+        }       
+    }
+    else
+    {
+        logger(stderr, "Error getting current exe path\n");
         exit(EXIT_FAILURE);
     }
 
     // Concatenate the directory path with folder names
-    char * alerts_full_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + 2);
-    char * events_full_path = malloc(strlen(current_directory) + strlen(events_folder_name) + 2);
-    sprintf(alerts_full_path, "%s/%s", current_directory, alerts_folder_name);
-    sprintf(events_full_path, "%s/%s", current_directory, events_folder_name);
+    char * alerts_full_path = malloc(strlen(executable_directory) + strlen(alerts_folder_name) + 2);
+    char * events_full_path = malloc(strlen(executable_directory) + strlen(events_folder_name) + 2);
+   
+    sprintf(alerts_full_path, "%s/%s", executable_directory, alerts_folder_name);
+    logger(0, "Alerts Folder Path: %s", alerts_full_path);
+    sprintf(events_full_path, "%s/%s", executable_directory, events_folder_name);
+    logger(0, "Events Folder Path: %s", events_full_path);
 
     // Create the "Alerts" folder
     if (mkdir(alerts_full_path, 0777) == -1)
     {
+        logger(0, "mkdir(alerts_full_path, 0777) FAILED");
         if (errno != EEXIST)
         {
-            fprintf(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
+            logger(stderr, "Error creating folder 'Alerts': %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
+    }
+    else
+    {
+        logger(0, "Alerts folder created successfully");
     }
 
     // Create the "Events" folder
     if (mkdir(events_full_path, 0777) == -1)
     {
+         logger(0, "mkdir(events_full_path, 0777) FAILED");
         if (errno != EEXIST)
         {
             fprintf(stderr, "Error creating folder 'Events': %s\n", strerror(errno));
             exit(EXIT_FAILURE);
         }
     }
+    else
+    {
+        logger(0, "Events folder created successfully");
+    }
 
     // Free allocated memory
-    free(current_directory);
     free(alerts_full_path);
     free(events_full_path);
 }
@@ -288,66 +314,89 @@ static void fetch_files_to_process(const char * pcap_files_folder_path)
 
     number_of_valid_files_found = 0;
 
-    logger(0, "fetch_files_to_process 1");
     // Open the directory
     if ((dir = opendir(pcap_files_folder_path)) == NULL)
     {
         logger(1, "Error opening directory: %s", pcap_files_folder_path);
         exit(EXIT_FAILURE);
     }
-
-    logger(0, "fetch_files_to_process 2");
-    // Get the current directory
-    char* current_directory = getcwd(NULL, 0);
-    if (current_directory == NULL)
+    else
     {
-        logger(1, "Error getting current directory: %s\n", strerror(errno));
-        exit(EXIT_FAILURE);
+         logger(0, "pcap folder directory opened successfully");
     }
 
-    logger(0, "current_directory is %s", current_directory);
-
-    logger(0, "fetch_files_to_process 3");
     // Read directory entries
+    int counter = 0;
     while ((entry = readdir(dir)) != NULL)
     {
-        logger(0, "fetch_files_to_process 4");
         if (entry->d_type == DT_REG)
-        { 
-            logger(0, "fetch_files_to_process 5");
-            char * filename = entry->d_name;        
+        {     
+            counter++;
+            char * filename = entry->d_name;
             if (strstr(filename, ".pcap") != NULL || strstr(filename, ".pcapng") != NULL)
             {
-                logger(0, "fetch_files_to_process 6");
+
+                logger(0, "%d. found a pcap/pcapng file %s", counter, filename);
+                // Allocate and construct the complete path of pcap file
                 char * complete_path_of_pcap = malloc(strlen(pcap_files_folder_path) + strlen(filename) + 2);
-                sprintf(complete_path_of_pcap, "%s%s", pcap_files_folder_path, filename);
-                
+                if (complete_path_of_pcap == NULL)
+                {
+                    logger(1, "Memory allocation failed");
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
+
+                snprintf(complete_path_of_pcap, strlen(pcap_files_folder_path) + strlen(filename) + 2, "%s%s", pcap_files_folder_path, filename);
+
                 pcap_files[number_of_valid_files_found] = complete_path_of_pcap;
 
+                // Remove the file extension
                 char * dot = strrchr(filename, '.');
                 if (dot != NULL)
                 {
                     *dot = '\0'; // Replace the dot with the null terminator
                 }
 
-                char * alert_file_path = malloc(strlen(current_directory) + strlen(alerts_folder_name) + strlen(filename) + 6);
-                char * event_file_path = malloc(strlen(current_directory) + strlen(events_folder_name) + strlen(filename) + 6);
-                sprintf(alert_file_path, "%s/%s/%s.%s", current_directory, alerts_folder_name, filename, "json");
-                sprintf(event_file_path, "%s/%s/%s.%s", current_directory, events_folder_name, filename, "json");
+                // Allocate and construct alert and event file paths
+                char * alert_file_path =  malloc(strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8);
+                char * event_file_path =  malloc(strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8);
+                if (alert_file_path == NULL || event_file_path == NULL)
+                {
+                    logger(1, "Memory allocation failed");
+                    free(complete_path_of_pcap);
+                    free(alert_file_path);
+                    free(event_file_path);
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
 
-                logger(0, "fetch_files_to_process 7 alert file = %s", alert_file_path);
-                logger(0, "fetch_files_to_process 8 event file = %s", event_file_path);
-
+                snprintf(alert_file_path, strlen(executable_directory) + strlen(alerts_folder_name) + strlen(filename) + 8, "%s/%s/%s.json", executable_directory,   alerts_folder_name,  filename);
+                snprintf(event_file_path, strlen(executable_directory) + strlen(events_folder_name) + strlen(filename) + 8,"%s/%s/%s.json", executable_directory,events_folder_name, filename);
+            
                 generated_json_files_alerts[number_of_valid_files_found] = alert_file_path;
                 generated_json_files_events[number_of_valid_files_found] = event_file_path;
-               
-                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 4);
-                char * tmp_event_file_path = malloc(strlen(event_file_path) + 4);
-                sprintf(tmp_alert_file_path, "%s.%s", alert_file_path, "tmp");
-                sprintf(tmp_event_file_path, "%s.%s", event_file_path, "tmp");
-               
+
+                // Allocate and construct temporary alert and event file paths
+                char * tmp_alert_file_path = malloc(strlen(alert_file_path) + 5);
+                char * tmp_event_file_path = malloc(strlen(event_file_path) + 5);
+                if (tmp_alert_file_path == NULL || tmp_event_file_path == NULL)
+                {
+                    logger(1, "Memory allocation failed");
+                    free(complete_path_of_pcap);
+                    free(alert_file_path);
+                    free(event_file_path);
+                    free(tmp_alert_file_path);
+                    free(tmp_event_file_path);
+                    closedir(dir);
+                    exit(EXIT_FAILURE);
+                }
+
+                snprintf(tmp_alert_file_path, strlen(alert_file_path) + 5, "%s.tmp", alert_file_path);
+                snprintf(tmp_event_file_path, strlen(event_file_path) + 5, "%s.tmp", event_file_path);
+
                 generated_tmp_json_files_alerts[number_of_valid_files_found] = tmp_alert_file_path;
                 generated_tmp_json_files_events[number_of_valid_files_found] = tmp_event_file_path;
+
                 number_of_valid_files_found++;
             }
         }
@@ -393,7 +442,7 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
     {
         logger(0,
                "%3d.  %-*s| %-*s| %-*s| %-*s| %-*s\n",
-               index,
+               index+1,
                distance,
                pcap_files[index],
                length_of_longest_file,
@@ -405,6 +454,7 @@ static void fetch_files_to_process_and_set_default_options(const char * pcap_fil
                distance_plus_10,
                generated_tmp_json_files_alerts[index]);
     }
+
 }
 
 /*-----------------------------------------------------------------------------------------------------*/
@@ -449,6 +499,7 @@ static void renameCurrentTempFile()
 
 void nDPIsrvd_memprof_log_alloc(size_t alloc_size)
 {
+   
     unsigned long alloc_count;
 
     // nDPIsrvd.h is used by client applications and nDPIsrvd (two threads!)
@@ -462,6 +513,7 @@ void nDPIsrvd_memprof_log_alloc(size_t alloc_size)
 
 void nDPIsrvd_memprof_log_free(size_t free_size)
 {
+     
     unsigned long free_count;
 
     // nDPIsrvd.h is used by client applications and nDPIsrvd (two threads!)
@@ -1021,7 +1073,6 @@ static enum nDPIsrvd_callback_return distributor_json_callback(struct nDPIsrvd_s
             }
         }
     }
-
     return CALLBACK_OK;
 callback_error:
     logger(1, "%s", "Distributor error..");
@@ -1140,7 +1191,6 @@ static enum nDPIsrvd_callback_return distributor_json_printer(struct nDPIsrvd_so
     (void)instance;
     (void)thread_data;
     (void)flow;
-
     {
         struct nDPIsrvd_json_token const * const daemon_event_name = TOKEN_GET_SZ(sock, "daemon_event_name");
 
@@ -1155,10 +1205,12 @@ static enum nDPIsrvd_callback_return distributor_json_printer(struct nDPIsrvd_so
         }
     }
 
-    printf("%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "llu%.*s",
-           sock->buffer.json_message_length - NETWORK_BUFFER_LENGTH_DIGITS,
-           nDPIsrvd_json_buffer_length(sock),
-           nDPIsrvd_json_buffer_string(sock));
+    // Ashwani: This prevents the output to stdout
+    //printf("%0" NETWORK_BUFFER_LENGTH_DIGITS_STR "llu%.*s",
+    //       sock->buffer.json_message_length - NETWORK_BUFFER_LENGTH_DIGITS,
+    //       nDPIsrvd_json_buffer_length(sock),
+    //       nDPIsrvd_json_buffer_string(sock));
+
     return CALLBACK_OK;
 }
 
@@ -1536,8 +1588,9 @@ static void * nDPId_mainloop_thread(void * const arg)
 
     if (setup_reader_threads() != 0)
     {
+        logger(0, "setup_reader_threads routine returned error");
         THREAD_ERROR(trr);
-        goto error;
+        goto error;   
     }
 
     /* Replace nDPId JSON socket fd with the one in our pipe and hope that no socket specific code-path triggered. */
@@ -1545,6 +1598,7 @@ static void * nDPId_mainloop_thread(void * const arg)
     reader_threads[0].collector_sock_last_errno = 0;
     if (set_collector_block(&reader_threads[0]) != 0)
     {
+        logger(0, "set_collector_block routine returned error");
         goto error;
     }
 
@@ -1567,8 +1621,13 @@ static void * nDPId_mainloop_thread(void * const arg)
         goto error;
     }
 
-   
-    run_pcap_loop(&reader_threads[0], generated_tmp_json_files_alerts[currentFileIndex],  generated_tmp_json_files_events[currentFileIndex]);
+    FlowMap flow_map;
+    init_flow_map(&flow_map, 10);
+    run_pcap_loop(&reader_threads[0],
+                  &flow_map,
+                  generated_tmp_json_files_alerts[currentFileIndex],
+                  generated_tmp_json_files_events[currentFileIndex],
+                  pcap_files[currentFileIndex]);
 
     process_remaining_flows();
     for (size_t i = 0; i < nDPId_options.reader_thread_count; ++i)
@@ -1598,11 +1657,17 @@ static void * nDPId_mainloop_thread(void * const arg)
         nrv->total_events_serialized += reader_threads[i].workflow->total_events_serialized;
     }
 
+    write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
+    free_flow_map(&flow_map);
 error:
     free_reader_threads();
     close(mock_pipefds[PIPE_nDPId]);
 
-    logger(0, "%s", "nDPId worker thread exits..");
+    // write_flow_map_file(generated_tmp_json_files_events[currentFileIndex], generated_tmp_json_files_alerts[currentFileIndex]);
+    // Free the FlowMap
+    //free_flow_map(&flow_map);
+
+    //logger(0, "%s", "nDPId worker thread exits..");
     return NULL;
 }
 
@@ -1895,8 +1960,15 @@ error:
     (nDPId_return.thread_return_value.val != 0 || nDPIsrvd_return.val != 0 ||                                          \
      distributor_return.thread_return_value.val != 0)
 
+static void dummy_packet_handler(u_char *user, const struct pcap_pkthdr *header, const u_char *packet) 
+{
+    // logger(0, "dummy_packet_handler called");
+}
+
+static int curruptFilesCount = 0; 
 int main(int argc, char ** argv)
 {
+    curruptFilesCount = 0;
     if (argc != 1 && argc != 2)
     {
         usage(argv[0]);
@@ -1911,6 +1983,8 @@ int main(int argc, char ** argv)
         return 1;
     }
 
+    // MM.DD.YYYY
+    logger(0, "This is version 03.15.2025.03");
     if (argc == 1)
     {
         int retval = 0;
@@ -1951,15 +2025,50 @@ int main(int argc, char ** argv)
 
     if (validate_options() != 0)
     {
+        logger(0, "validate_options() failed");
         return 1;
     }
+    
 
     fetch_files_to_process_and_set_default_options(argv[1]);
 
     currentFileIndex = 0;
-    for (currentFileIndex = 0; currentFileIndex < 1; currentFileIndex++)
+    for (currentFileIndex = 0; currentFileIndex < number_of_valid_files_found; currentFileIndex++)
     {
         set_cmdarg(&nDPId_options.pcap_file_or_interface, pcap_files[currentFileIndex]);
+        logger(0, "%d. processing of %s file started------------------------------------------------", currentFileIndex+1,pcap_files[currentFileIndex]);
+
+        char pcap_error_buffer[PCAP_ERRBUF_SIZE];
+        pcap_t *handle = pcap_open_offline_with_tstamp_precision(pcap_files[currentFileIndex], PCAP_TSTAMP_PRECISION_NANO, pcap_error_buffer);
+
+        if (handle == NULL) 
+        {
+            curruptFilesCount++;
+            logger(1, "Error opening file: %s\n", pcap_error_buffer);
+            remove(pcap_files[currentFileIndex]);
+            continue;
+        }
+        else
+        {
+            switch (pcap_loop(handle, -1, &dummy_packet_handler, NULL))
+            {
+                case PCAP_ERROR:
+                    logger(1, "Error while reading pcap file");
+                    curruptFilesCount++;
+                    pcap_close(handle);
+                    remove(pcap_files[currentFileIndex]);
+                    continue;
+                case PCAP_ERROR_BREAK:
+                    curruptFilesCount++;
+                    pcap_close(handle);
+                    remove(pcap_files[currentFileIndex]);
+                    continue;
+                default:
+                    ;
+            }
+        }
+
+        pcap_close(handle);
 
         if (setup_pipe(mock_pipefds) != 0 || setup_pipe(mock_testfds) != 0 || setup_pipe(mock_bufffds) != 0 ||
             setup_pipe(mock_nullfds) != 0 || setup_pipe(mock_arpafds) != 0)
@@ -1981,21 +2090,36 @@ int main(int argc, char ** argv)
         struct nDPId_return_value nDPId_return = {};
         if (pthread_create(&nDPId_thread, NULL, nDPId_mainloop_thread, &nDPId_return) != 0)
         {
+            logger(0, "nDPId_mainloop_thread routine returned error");
             continue;
+        }
+        else
+        {
+            logger(0, "nDPId_mainloop_thread routine call is successful");
         }
 
         pthread_t nDPIsrvd_thread;
         struct thread_return_value nDPIsrvd_return = {};
         if (pthread_create(&nDPIsrvd_thread, NULL, nDPIsrvd_mainloop_thread, &nDPIsrvd_return) != 0)
         {
+            logger(0, "nDPIsrvd_mainloop_thread routine returned error");
             continue;
+        }
+        else
+        {
+            logger(0, "nDPIsrvd_mainloop_thread routine call is successful");
         }
 
         pthread_t distributor_thread;
         struct distributor_return_value distributor_return = {};
         if (pthread_create(&distributor_thread, NULL, distributor_client_mainloop_thread, &distributor_return) != 0)
         {
+            logger(0, "distributor_client_mainloop_thread routine returned error");
             continue;
+        }
+        else
+        {
+            logger(0, "distributor_client_mainloop_thread routine call is successful");
         }
 
         /* Try to gracefully shutdown all threads. */
@@ -2052,7 +2176,8 @@ int main(int argc, char ** argv)
                    which_thread,
                    thread_errno,
                    (thread_errno < 0 ? strerror(thread_errno) : "Application specific error"));
-            continue;
+            // Ashwani
+            //continue;
         }
 
         {
@@ -2363,9 +2488,16 @@ int main(int argc, char ** argv)
             return 1;
         }
 
+        logger(0, "%d. processing of %s file completed------------------------------------------------\n\n", currentFileIndex+1,pcap_files[currentFileIndex]);
+        free_messages();
         renameCurrentTempFile();
+        remove(pcap_files[currentFileIndex]);
         free(pcap_files[currentFileIndex]);
         pcap_files[currentFileIndex] = NULL;
+        free(generated_tmp_json_files_events[currentFileIndex]);
+        free(generated_tmp_json_files_alerts[currentFileIndex]);
+        free(generated_json_files_events[currentFileIndex]);
+        free(generated_json_files_alerts[currentFileIndex]);
 
 #ifdef ENABLE_ZLIB
         if (MT_GET_AND_ADD(zlib_compressions, 0) != MT_GET_AND_ADD(zlib_decompressions, 0))
@@ -2410,5 +2542,8 @@ int main(int argc, char ** argv)
 #endif
     }
 
+    logger(0, "This is version 03.15.2025.03");
+    logger(0, "Number of corrupt files %d", curruptFilesCount);
+    logger(0, "Total number of files %d", number_of_valid_files_found);
     return 0;
 }

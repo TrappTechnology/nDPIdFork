@@ -9,6 +9,7 @@
 #define TRUE 1
 #define FALSE 0
 #define bool int
+#define RANDOM_UNINTIALIZED_NUMBER_VALUE -84742891
 
 // Define the structure for ndpiData
 struct NDPI_Risk
@@ -27,6 +28,15 @@ struct NDPI_Confidence
 {
     int key;
     char* value;
+};
+
+struct NDPI_http
+{
+    char * request_content_type;
+    char* content_type;
+    char* user_agent;
+    char* filename;
+    unsigned int code;
 };
 
 struct NDPI_tls
@@ -50,23 +60,33 @@ struct Root_xfer
 {
     struct Xfer_Packets source;
     struct Xfer_Packets destination;
+    int flow_src_tot_l4_payload_len;
+    int flow_dst_tot_l4_payload_len;
 };
 
 struct Root_data
 {
     char* src_ip;
-    char* src_port;
+    int src_port;
+    unsigned int src_packets;
+    unsigned int src_bytes;
+    int flow_src_tot_l4_payload_len;
     char* dest_ip;
-    char* dst_port;
+    int dst_port;
+    unsigned int des_packets;
+    unsigned int des_bytes;
+    int flow_dst_tot_l4_payload_len;
     char* l3_proto;
     char* l4_proto;
     int ip;
     char* proto;
     char* breed;
     int flow_id;
-    char* event_start;
-    char* event_end;
-    char* event_duration;
+    unsigned int flow_event_id;
+    unsigned int packet_id;
+    //char* event_start;
+    //char* event_end;
+    //double event_duration;
     struct Root_xfer xfer;
     char* hostname;
 };
@@ -79,11 +99,13 @@ struct NDPI_Data
     char* confidence_value;
     struct NDPI_tls tls;
     char* proto_id;
+    char * protocol;
     char* proto_by_ip;
     int proto_by_ip_id;
     int encrypted;
     int category_id;
     char* category;
+    struct NDPI_http http;
 };
 
 static char * strDuplicate(char * inputSting)
@@ -95,6 +117,95 @@ static char * strDuplicate(char * inputSting)
     // Non-Windows (assume POSIX) code
     return strdup(inputSting);
 #endif
+}
+
+//#include <stdio.h>
+//#include <sys/stat.h>
+//#include <time.h>
+
+//static void get_file_times(const char * file_path,
+//                           char * creationTimeStr,
+//                           char * modificationTimeStr,
+//                           double * duration_nanoseconds)
+//{
+//    struct stat fileInfo;
+//
+//    printf("\n\n File Path = %s \n\n", file_path);
+//    if (stat(file_path, &fileInfo) != 0)
+//    {
+//        printf("\n\n ERROR in  get_file_times \n\n");
+//        perror("stat failed");
+//        return;
+//    }
+//
+//    // Format creation and modification times
+//    struct tm * tm_info;
+//
+//    tm_info = localtime(&fileInfo.st_ctime);
+//    strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+//
+//
+//
+//    tm_info = localtime(&fileInfo.st_mtime);
+//    strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+//
+//    printf("\n\n Creation Time = %s \n\n", creationTimeStr);
+//    printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
+//
+//    // Calculate duration in nanoseconds
+//    *duration_nanoseconds = (fileInfo.st_mtim.tv_sec - fileInfo.st_ctim.tv_sec) * 1e9 +
+//                            (fileInfo.st_mtim.tv_nsec - fileInfo.st_ctim.tv_nsec);
+//}
+
+#define _GNU_SOURCE
+#include <stdio.h>
+#include <sys/stat.h>
+#include <sys/syscall.h>
+#include <linux/stat.h>
+#include <time.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include <string.h>
+
+static void get_file_times(const char * file_path,
+                           char * creationTimeStr,
+                           char * modificationTimeStr,
+                           double * duration_nanoseconds)
+{
+    struct statx fileInfo;
+
+    //printf("\n\n File Path = %s \n\n", file_path);
+
+    // Use statx to get birth time
+    if (syscall(SYS_statx, AT_FDCWD, file_path, AT_SYMLINK_NOFOLLOW, STATX_BTIME | STATX_MTIME, &fileInfo) != 0)
+    {
+        printf("\n\n ERROR in get_file_times \n\n");
+        perror("statx failed");
+        return;
+    }
+
+    // Format creation (birth) time
+    struct tm * tm_info;
+    if (fileInfo.stx_btime.tv_sec != 0)
+    {
+        tm_info = localtime(&fileInfo.stx_btime.tv_sec);
+        strftime(creationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+    }
+    else
+    {
+        strcpy(creationTimeStr, "N/A (Not Supported)");
+    }
+
+    // Format modification time
+    tm_info = localtime(&fileInfo.stx_mtime.tv_sec);
+    strftime(modificationTimeStr, 25, "%Y-%m-%d %H:%M:%S", tm_info);
+
+    //printf("\n\n Creation Time = %s \n\n", creationTimeStr);
+    //printf("\n\n Modification Time = %s \n\n", modificationTimeStr);
+
+    // Calculate duration in nanoseconds
+    *duration_nanoseconds = (fileInfo.stx_mtime.tv_sec - fileInfo.stx_btime.tv_sec) * 1e9 +
+                            (fileInfo.stx_mtime.tv_nsec - fileInfo.stx_btime.tv_nsec);
 }
 
 
@@ -279,11 +390,17 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
 
     result.confidence_value = NULL;
     result.proto_id = NULL;
+    result.protocol = NULL;
     result.proto_by_ip = NULL;
-    result.proto_by_ip_id = -84742891;
-    result.encrypted = -84742891;
-    result.category_id = 84742891;
+    result.proto_by_ip_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.encrypted = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.category_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.category = NULL;
+    result.http.request_content_type = NULL;
+    result.http.content_type = NULL;
+    result.http.user_agent = NULL;
+    result.http.filename = NULL;
+    result.http.code = RANDOM_UNINTIALIZED_NUMBER_VALUE;
 
     // Parse JSON string
     json_object* root = json_tokener_parse(ndpiJson);
@@ -431,6 +548,12 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
             result.proto_by_ip = strDuplicate(json_object_get_string(proto_by_ip));
         }
 
+        json_object * protocol;
+        if (json_object_object_get_ex(ndpiObject, "proto", &protocol))
+        {
+            result.protocol = strDuplicate(json_object_get_string(protocol));
+        }
+
         json_object* proto_by_ip_id;
         if (json_object_object_get_ex(ndpiObject, "proto_by_ip_id", &proto_by_ip_id))
         {
@@ -454,6 +577,42 @@ struct NDPI_Data getnDPIStructure(const char* ndpiJson)
         {
             result.category = strDuplicate(json_object_get_string(category));
         }
+
+        // Extract http object
+        json_object * httpObject;
+        if (json_object_object_get_ex(ndpiObject, "http", &httpObject) &&
+            json_object_is_type(httpObject, json_type_object))
+        {
+            json_object * request_content_type_object;
+            if (json_object_object_get_ex(httpObject, "request_content_type", &request_content_type_object))
+            {
+                result.http.request_content_type = strDuplicate(json_object_get_string(request_content_type_object));
+            }
+
+            json_object * content_type_object;
+            if (json_object_object_get_ex(httpObject, "content_type", &content_type_object))
+            {
+                result.http.content_type = strDuplicate(json_object_get_string(content_type_object));
+            }
+            
+            json_object * user_agent_object;
+            if (json_object_object_get_ex(httpObject, "user_agent", &user_agent_object))
+            {
+                result.http.user_agent = strDuplicate(json_object_get_string(user_agent_object));
+            }
+            
+            json_object * filename_object;
+            if (json_object_object_get_ex(httpObject, "filename", &filename_object))
+            {
+                result.http.filename = strDuplicate(json_object_get_string(filename_object));
+            }
+
+            json_object * code_object;
+            if (json_object_object_get_ex(httpObject, "code", &code_object))
+            {
+                result.http.code = json_object_get_int(code_object);
+            }
+        }
     }
 
     json_object_put(root);
@@ -465,22 +624,26 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
 {
     struct Root_data result;
     result.src_ip = NULL;
-    result.src_port = NULL;
+    result.src_port = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.src_packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.src_bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.flow_src_tot_l4_payload_len = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.dest_ip = NULL;
-    result.dst_port = NULL;
+    result.dst_port = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.des_packets = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.des_bytes = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.flow_dst_tot_l4_payload_len = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.l3_proto = NULL;
     result.ip = NULL;
     result.l4_proto = NULL;
     result.proto = NULL;
     result.breed = NULL;
-    result.flow_id = -84742891;
-    result.event_start = NULL;
-    result.event_end = NULL;
-    result.event_duration = NULL;
-    result.xfer.source.bytes = -84742891;
-    result.xfer.source.packets = -84742891;
-    result.xfer.destination.bytes = -84742891;
-    result.xfer.destination.packets = -84742891;
+    result.flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    result.packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    //result.event_start = NULL;
+    //result.event_end = NULL;
+    //result.event_duration = RANDOM_UNINTIALIZED_NUMBER_VALUE;
     result.hostname = NULL;
 
     // Parse JSON string
@@ -496,36 +659,69 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     if (json_object_object_get_ex(root, "src_ip", &src_ip))
     {
         result.src_ip = strDuplicate(json_object_get_string(src_ip));
-    }
-    
+    }    
 
     json_object* src_port;
     if (json_object_object_get_ex(root, "src_port", &src_port))
     {
-        result.src_port = strDuplicate(json_object_get_string(src_port));
+        result.src_port = json_object_get_int(src_port);
+    }
+
+    json_object * flow_src_packets_processed_object;
+    if (json_object_object_get_ex(root, "flow_src_packets_processed", &flow_src_packets_processed_object))
+    {
+        result.src_packets = json_object_get_int(flow_src_packets_processed_object);
+    }
+
+    json_object * src2dst_bytes_object;
+    if (json_object_object_get_ex(root, "src2dst_bytes", &src2dst_bytes_object))
+    {
+        result.src_bytes = json_object_get_int(src2dst_bytes_object);
     }
     
-
     // dest_ip and dst_port data
     json_object* dest_ip;
-    if (json_object_object_get_ex(root, "dest_ip", &dest_ip))
+    if (json_object_object_get_ex(root, "dst_ip", &dest_ip))
     {
         result.dest_ip = strDuplicate(json_object_get_string(dest_ip));
     }
     
-
     json_object* dst_port;
     if (json_object_object_get_ex(root, "dst_port", &dst_port))
     {
-        result.dst_port = strDuplicate(json_object_get_string(dst_port));
+        result.dst_port = json_object_get_int(dst_port);
     }
-    
-    // network object
-    json_object* l3_proto;
-    if (json_object_object_get_ex(root, "l3_proto", &l3_proto))
+
+    json_object * flow_dst_packets_processed_object;
+    if (json_object_object_get_ex(root, "flow_dst_packets_processed", &flow_dst_packets_processed_object))
     {
-        result.l3_proto = strDuplicate(json_object_get_string(l3_proto));
+        result.des_packets = json_object_get_int(flow_dst_packets_processed_object);
     }
+
+    json_object * dst2src_bytes_object;
+    if (json_object_object_get_ex(root, "dst2src_bytes", &dst2src_bytes_object))
+    {
+        result.des_bytes = json_object_get_int(dst2src_bytes_object);
+    }
+
+    json_object * flow_src_tot_l4_payload_len_object;
+    if (json_object_object_get_ex(root, "flow_src_tot_l4_payload_len", &flow_src_tot_l4_payload_len_object))
+    {
+        result.flow_src_tot_l4_payload_len = json_object_get_int(flow_src_tot_l4_payload_len_object);
+    }
+
+    json_object * flow_dst_tot_l4_payload_len_object;
+    if (json_object_object_get_ex(root, "flow_dst_tot_l4_payload_len", &flow_dst_tot_l4_payload_len_object))
+    {
+        result.flow_dst_tot_l4_payload_len = json_object_get_int(flow_dst_tot_l4_payload_len_object);
+    }
+
+    // network object
+    //json_object* l3_proto;
+    //if (json_object_object_get_ex(root, "l3_proto", &l3_proto))
+    //{
+    //    result.l3_proto = strDuplicate(json_object_get_string(l3_proto));
+    //}
 
     json_object* ip;
     if (json_object_object_get_ex(root, "ip", &ip))
@@ -569,75 +765,47 @@ static struct Root_data getRootDataStructure(const char* originalJsonStr)
     {
         result.flow_id = json_object_get_int(flow_id);
     }
+
+    json_object * flow_event_id;
+    if (json_object_object_get_ex(root, "flow_event_id", &flow_event_id))
+    {
+        result.flow_event_id = json_object_get_int(flow_event_id);
+    }
+  
+
+    json_object * packet_id;
+    if (json_object_object_get_ex(root, "packet_id", &packet_id))
+    {
+        result.packet_id = json_object_get_int(packet_id);
+    }
+  
   
     // event
-    json_object* event_object;
-    if (json_object_object_get_ex(root, "event", &event_object))
-    {
-        json_object* event_start;
-        if (json_object_object_get_ex(event_object, "start", &event_start))
-        {
-            result.event_start = strDuplicate(json_object_get_string(event_start));
-        }
+    //json_object * event_start;
 
-        json_object* event_end;
-        if (json_object_object_get_ex(event_object, "end", &event_end))
-        {
-            result.event_end = strDuplicate(json_object_get_string(event_end));
-        }
+    //if (json_object_object_get_ex(root, "event_start", &event_start))
+    //{       
+    //    result.event_start = strDuplicate(json_object_get_string(event_start));
+    //}
 
-        json_object* event_duration;
-        if (json_object_object_get_ex(event_object, "duration", &event_duration))
-        {
-            result.event_duration = strDuplicate(json_object_get_string(event_duration));
-        }
-    }
+    //json_object * event_end;
+    //if (json_object_object_get_ex(root, "event_end", &event_end))
+    //{       
+    //    result.event_end = strDuplicate(json_object_get_string(event_end));
+    //}
 
-
-    // xfer
-    json_object* xfer_object;
-    if (json_object_object_get_ex(root, "xfer", &xfer_object))
-    {
-        json_object* source_object;
-        if (json_object_object_get_ex(xfer_object, "source", &source_object))
-        {
-            json_object* packets_object;
-            if (json_object_object_get_ex(source_object, "packets", &packets_object))
-            {
-                result.xfer.source.packets = json_object_get_int(packets_object);
-            }
-
-            json_object* bytes_object;
-            if (json_object_object_get_ex(source_object, "bytes", &bytes_object))
-            {
-                result.xfer.source.bytes = json_object_get_int(bytes_object);
-            }
-
-        }
-
-        json_object* destination_object;
-        if (json_object_object_get_ex(xfer_object, "destination", &destination_object))
-        {
-            json_object* packets_object;
-            if (json_object_object_get_ex(destination_object, "packets", &packets_object))
-            {
-                result.xfer.destination.packets = json_object_get_int(packets_object);
-            }
-
-            json_object* bytes_object;
-            if (json_object_object_get_ex(destination_object, "bytes", &bytes_object))
-            {
-                result.xfer.destination.bytes = json_object_get_int(bytes_object);
-            }
-        }
-    }
+    //json_object * event_duration;
+    //if (json_object_object_get_ex(root, "event_duration", &event_duration))
+    //{
+    //    result.event_duration = json_object_get_double(event_duration);
+    //}
 
     json_object_put(root);
 
     return result;
 }
 
-static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
+static char * create_nDPI_Json_String(json_object ** root_object, const struct NDPI_Data * ndpi)
 {
     // Create a new JSON object for ndpi
     //json_object* root = json_object_new_object();
@@ -689,7 +857,6 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
         addTLS = TRUE;
     }
 
-   
     bool addClient = FALSE;
 
     json_object* client = json_object_new_object();
@@ -764,6 +931,47 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
         json_object_put(tlsObj);
     }
 
+    // Serialize http
+    bool addHTTP = FALSE;
+    json_object * httpObj = json_object_new_object();
+    if (ndpi->http.request_content_type != NULL && strlen(ndpi->http.request_content_type) > 0)
+    {
+        json_object_object_add(httpObj, "request_content_type", json_object_new_string(ndpi->http.request_content_type));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.content_type != NULL && strlen(ndpi->http.content_type) > 0)
+    {
+        json_object_object_add(httpObj, "content_type", json_object_new_string(ndpi->http.content_type));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.user_agent != NULL && strlen(ndpi->http.user_agent) > 0)
+    {
+        json_object_object_add(httpObj, "user_agent", json_object_new_string(ndpi->http.user_agent));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.filename != NULL && strlen(ndpi->http.filename) > 0)
+    {
+        json_object_object_add(httpObj, "filename", json_object_new_string(ndpi->http.filename));
+        addHTTP = TRUE;
+    }
+
+    if (ndpi->http.code != RANDOM_UNINTIALIZED_NUMBER_VALUE && ndpi->http.code != 0)
+    {
+        json_object_object_add(httpObj, "response.status_code", json_object_new_int(ndpi->http.code));
+        addHTTP = TRUE;
+    }
+
+    if (addHTTP)
+    {
+        json_object_object_add(*root_object, "http", httpObj);
+    }
+    else
+    {
+        json_object_put(httpObj);
+    }
 
     //Serialize rest of data
     if (ndpi->proto_id != NULL)
@@ -771,22 +979,17 @@ static char* create_nDPI_Json_String(const struct NDPI_Data* ndpi)
         json_object_object_add(ndpiObj, "proto_id", json_object_new_string(ndpi->proto_id));
     }
 
-    if (ndpi->proto_by_ip != NULL)
-    {
-        json_object_object_add(ndpiObj, "proto_by_ip", json_object_new_string(ndpi->proto_by_ip) );
-    }
-
-    if (ndpi->proto_by_ip_id != -84742891)
+    if (ndpi->proto_by_ip_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "proto_by_ip_id", json_object_new_int(ndpi->proto_by_ip_id));
     }
 
-    if (ndpi->encrypted != -84742891)
+    if (ndpi->encrypted != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "encrypted", json_object_new_int(ndpi->encrypted));
     }
 
-    if (ndpi->category_id != -84742891)
+    if (ndpi->category_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object_object_add(ndpiObj, "category_id", json_object_new_int(ndpi->category_id));
     }
@@ -889,10 +1092,36 @@ static void FreeConvertnDPIDataFormat(struct NDPI_Data* ndpiData)
         free(ndpiData->proto_by_ip);
     }
 
+    if (ndpiData->protocol != NULL)
+    {
+         free(ndpiData->protocol);
+    }
+
     if (ndpiData->category != NULL)
     {
         free(ndpiData->category);
     }
+
+    if (ndpiData->http.request_content_type != NULL)
+    {
+        free(ndpiData->http.request_content_type);
+    }
+
+    if (ndpiData->http.content_type != NULL)
+    {
+        free(ndpiData->http.content_type);
+    }
+
+    if (ndpiData->http.user_agent != NULL)
+    {
+        free(ndpiData->http.user_agent);
+    }
+
+    if (ndpiData->http.filename != NULL)
+    {
+        free(ndpiData->http.filename);
+    }
+
 }
 
 static void FreeConvertRootDataFormat(struct Root_data* rootData)
@@ -907,25 +1136,25 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
         free(rootData->src_ip);
     }
 
-    if (rootData->src_port != NULL)
-    {
-        free(rootData->src_port);
-    }
+    //if (rootData->src_port != NULL)
+    //{
+    //    free(rootData->src_port);
+    //}
 
     if (rootData->dest_ip != NULL)
     {
         free(rootData->dest_ip);
     }
 
-    if (rootData->dst_port != NULL)
-    {
-        free(rootData->dst_port);
-    }
+    //if (rootData->dst_port != NULL)
+    //{
+    //    free(rootData->dst_port);
+    //}
 
-    if (rootData->l3_proto != NULL)
-    {
-        free(rootData->l3_proto);
-    }
+    //if (rootData->l3_proto != NULL)
+    //{
+    //    free(rootData->l3_proto);
+    //}
 
     if (rootData->l4_proto != NULL)
     {
@@ -943,20 +1172,20 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
         free(rootData->breed);
     }
 
-    if (rootData->event_start != NULL)
-    {
-        free(rootData->event_start);
-    }
+    //if (rootData->event_start != NULL)
+    //{
+    //    free(rootData->event_start);
+    //}
 
-    if (rootData->event_end != NULL)
-    {
-        free(rootData->event_end);
-    }
+    //if (rootData->event_end != NULL)
+    //{
+    //    free(rootData->event_end);
+    //}
 
-    if (rootData->event_duration != NULL)
-    {
-        free(rootData->event_duration);
-    }
+    //if (rootData->event_duration != NULL)
+    //{
+    //    free(rootData->event_duration);
+    //}
 
     if (rootData->hostname != NULL)
     {
@@ -965,13 +1194,14 @@ static void FreeConvertRootDataFormat(struct Root_data* rootData)
 
 }
 
-static void add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructure)
+static int add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStructure)
 {
-    char* nDPIJsonString = create_nDPI_Json_String(&nDPIStructure);
+    char * nDPIJsonString = create_nDPI_Json_String(root_object, & nDPIStructure);
     if (nDPIJsonString == NULL)
     {
-        fprintf(stderr, "Error parsing new ndpi JSON\n");
-        return;
+        // Ashwani
+        //fprintf(stderr, "create_nDPI_Json_String routine returned empty string: Error parsing new ndpi JSON\n");
+        return -1;
     }
 
     json_object* newNDPIObject = json_tokener_parse(nDPIJsonString);
@@ -979,15 +1209,21 @@ static void add_nDPI_Data(json_object** root_object, struct NDPI_Data nDPIStruct
     {
         fprintf(stderr, "Error parsing JSON string\n");
         free(nDPIJsonString); // Free allocated memory for JSON string
-        return;
+        return -1;
     }
 
     json_object_object_add(*root_object, "ndpi", newNDPIObject);
     free(nDPIJsonString); // Free allocated memory for JSON string if not needed anymore
+    return 1;
 }
 
 /*--------------------------------------------------------------------------------------------------------------------------------------*/
-static void add_Root_Data(json_object** root_object,  struct Root_data rootDataStructure, int flowRiskCount)
+static void add_Root_Data(json_object ** root_object,
+                          struct Root_data rootDataStructure,
+                          int flowRiskCount,
+                          char * proto_by_ip,
+                          char * protocol,
+                          char * current_pcap_file)
 {
     json_object* src_object = json_object_new_object();
 
@@ -998,9 +1234,29 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
         addSrc = TRUE;
     }
 
-    if (rootDataStructure.src_port != NULL)
+    if (rootDataStructure.src_port != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
-        json_object_object_add(src_object, "port", json_object_new_string(rootDataStructure.src_port));
+        json_object_object_add(src_object, "port", json_object_new_int(rootDataStructure.src_port));
+        addSrc = TRUE;
+    }
+
+    if (rootDataStructure.src_packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(src_object, "packets", json_object_new_int(rootDataStructure.src_packets));
+        addSrc = TRUE;
+    }
+
+    if (rootDataStructure.src_bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(src_object, "bytes", json_object_new_int(rootDataStructure.src_bytes));
+        addSrc = TRUE;
+    }
+
+    if (rootDataStructure.flow_src_tot_l4_payload_len != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(src_object,
+                               "src2dst_goodput_bytes",
+                               json_object_new_int(rootDataStructure.flow_src_tot_l4_payload_len));
         addSrc = TRUE;
     }
 
@@ -1008,6 +1264,7 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
     {
         json_object_object_add(*root_object, "source", src_object);
     }
+
 
     bool addDest = FALSE;
     json_object* dest_object = json_object_new_object();
@@ -1018,9 +1275,29 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
         addDest = TRUE;
     }
 
-    if (rootDataStructure.dst_port != NULL)
+    if (rootDataStructure.dst_port != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
-        json_object_object_add(dest_object, "port", json_object_new_string(rootDataStructure.dst_port));
+        json_object_object_add(dest_object, "port", json_object_new_int(rootDataStructure.dst_port));
+        addDest = TRUE;
+    }
+
+    if (rootDataStructure.des_packets != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(dest_object, "packets", json_object_new_int(rootDataStructure.des_packets));
+        addDest = TRUE;
+    }
+
+    if (rootDataStructure.des_bytes != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(dest_object, "bytes", json_object_new_int(rootDataStructure.des_bytes));
+        addDest = TRUE;
+    }
+
+    if (rootDataStructure.flow_dst_tot_l4_payload_len != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+    {
+        json_object_object_add(dest_object,
+                               "dst2src_goodput_bytes",
+                               json_object_new_int(rootDataStructure.flow_dst_tot_l4_payload_len));
         addDest = TRUE;
     }
 
@@ -1059,6 +1336,18 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
         addNetwork = TRUE;
     }
 
+    if (proto_by_ip != NULL)
+    {
+        json_object_object_add(network_object, "application", json_object_new_string(proto_by_ip));
+        addNetwork = TRUE;
+    }
+
+    if (protocol != NULL)
+    {
+        json_object_object_add(network_object, "protocol", json_object_new_string(protocol));
+        addNetwork = TRUE;
+    }
+
     if (addNetwork)
     {
         json_object_object_add(*root_object, "network", network_object);
@@ -1073,64 +1362,34 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
 
     // Event starts here
 
-    json_object* event_object = json_object_new_object();
-    bool addEvent = FALSE;
+    char creationTimeStr[25];
+    char modificationTimeStr[25];
+    double duration_nanoseconds;
 
-    if (rootDataStructure.event_start != NULL)
-    {
-        json_object_object_add(event_object, "start", json_object_new_string(rootDataStructure.event_start));
-        addEvent = TRUE;
-    }
-    if (rootDataStructure.event_end != NULL)
-    {
-        json_object_object_add(event_object, "end", json_object_new_string(rootDataStructure.event_end));
-        addEvent = TRUE;
-    }
+    get_file_times(current_pcap_file, creationTimeStr, modificationTimeStr, &duration_nanoseconds);
 
-    if (rootDataStructure.event_duration != NULL)
-    {
-        json_object_object_add(event_object, "duration", json_object_new_string(rootDataStructure.event_duration));
-        addEvent = TRUE;
-    }
+    json_object * event_object = json_object_new_object();
+    json_object_object_add(event_object, "start", json_object_new_string(creationTimeStr));
+    json_object_object_add(event_object, "end", json_object_new_string(modificationTimeStr));
+    json_object_object_add(event_object, "duration", json_object_new_double(duration_nanoseconds));
 
-    if (addEvent)
+    if (flowRiskCount > 0)
     {
-        json_object_object_add(*root_object, "event", event_object);
+        json_object_object_add(event_object, "kind", json_object_new_string("alert"));
+    }
+    else
+    {
+        json_object_object_add(event_object, "kind", json_object_new_string("event"));
     }
 
+    json_object_object_add(*root_object, "event", event_object);
+    
     // Flow starts here
-    if (rootDataStructure.flow_id != NULL)
+    if (rootDataStructure.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
     {
         json_object* flow_id_object = json_object_new_object();
         json_object_object_add(flow_id_object, "id", json_object_new_int(rootDataStructure.flow_id));
         json_object_object_add(*root_object, "flow", flow_id_object);
-    }
-
-    // Xfer starts here
-
-    json_object* xfer_object = json_object_new_object();
-    bool addXfer = FALSE;
-    if (rootDataStructure.xfer.source.packets != -84742891)
-    {
-        json_object* packets_object = json_object_new_object();
-        json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.source.packets));
-        json_object_object_add(packets_object, "bytes", json_object_new_int(rootDataStructure.xfer.source.bytes));
-        json_object_object_add(xfer_object, "source", packets_object);
-        addXfer = TRUE;
-    }
-
-    if (rootDataStructure.xfer.destination.packets != -84742891)
-    {
-        json_object* packets_object = json_object_new_object();
-        json_object_object_add(packets_object, "packets", json_object_new_int(rootDataStructure.xfer.destination.packets));
-        json_object_object_add(packets_object, "bytes", json_object_new_int(rootDataStructure.xfer.destination.bytes));
-        json_object_object_add(xfer_object, "destination", packets_object);
-        addXfer = TRUE;
-    }
-
-    if (addXfer)
-    {
-        json_object_object_add(*root_object, "xfer", xfer_object);
     }
 
     // hostname
@@ -1140,37 +1399,170 @@ static void add_Root_Data(json_object** root_object,  struct Root_data rootDataS
         json_object_object_add(full_object, "full", json_object_new_string(rootDataStructure.hostname));
         json_object_object_add(*root_object, "url", full_object);    
     }   
-
-    if (flowRiskCount > 0)
-    {
-        json_object* event_object = json_object_new_object();
-        json_object_object_add(event_object, "kind", json_object_new_string("alert"));
-        json_object_object_add(*root_object, "event", event_object);
-    }
-    else
-    {
-		json_object* event_object = json_object_new_object();
-		json_object_object_add(event_object, "kind", json_object_new_string("event"));
-		json_object_object_add(*root_object, "event", event_object);        
-    }
 }
 
-void ConvertnDPIDataFormat(char* originalJsonStr, char** converted_json_str, int* createAlert)
+void ConvertnDPIDataFormat(char * originalJsonStr,
+                           char ** converted_json_str,
+                           int * createAlert,
+                           unsigned long long int * flow_id,
+                           unsigned int * flow_event_id,
+                           unsigned int * packet_id,
+                           char * current_pcap_file)
 {
+    *flow_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    *flow_event_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+    *packet_id = RANDOM_UNINTIALIZED_NUMBER_VALUE;
+
     struct NDPI_Data ndpiData = getnDPIStructure(originalJsonStr);
+
     *createAlert = ndpiData.flow_risk_count;
 
     json_object* root_object = json_object_new_object();
-    add_nDPI_Data(&root_object, ndpiData);
+    struct Root_data rootData;
 
-    struct Root_data rootData = getRootDataStructure(originalJsonStr);
-    add_Root_Data(&root_object, rootData, ndpiData.flow_risk_count);
+    if (add_nDPI_Data(&root_object, ndpiData))
+    {
+        rootData = getRootDataStructure(originalJsonStr);
+        if (rootData.flow_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+        {
+            *flow_id = rootData.flow_id;
+        }
 
-    *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
+        if (rootData.flow_event_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+        {
+            *flow_event_id = rootData.flow_event_id;
+        }
+
+        if (rootData.packet_id != RANDOM_UNINTIALIZED_NUMBER_VALUE)
+        {
+            *packet_id = rootData.packet_id;
+        }
+
+        add_Root_Data(&root_object,
+                      rootData,
+                      ndpiData.flow_risk_count,
+                      ndpiData.proto_by_ip,
+                      ndpiData.protocol,
+                      current_pcap_file);
+        *converted_json_str = strDuplicate(json_object_to_json_string(root_object));
+    }
 
     FreeConvertnDPIDataFormat(&ndpiData);
     json_object_put(root_object);
     FreeConvertRootDataFormat(&rootData);
+}
+
+void GetFlowRiskArraySizeAndFlowId(char * alertStringWithFlowRiskArray, int * flow_risk_array_size, int* flow_id)
+{
+    // Parse JSON string to JSON object
+    *flow_risk_array_size = 0;
+    struct json_object * parsed_json_object = json_tokener_parse(alertStringWithFlowRiskArray);
+    if (!parsed_json_object)
+    {
+        fprintf(stderr, "Error parsing JSON\n");
+        return ;
+    }
+
+    // Navigate to the `ndpi` and `flow_risk` fields
+    struct json_object * ndpi_obj = NULL;
+    struct json_object * flow_risk_array = NULL;
+    if (!json_object_object_get_ex(parsed_json_object, "ndpi", &ndpi_obj) || !json_object_object_get_ex(ndpi_obj, "flow_risk", &flow_risk_array))
+    {
+        fprintf(stderr, "Missing 'ndpi' or 'flow_risk' field\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return ;
+    }
+
+    // Check if `flow_risk` is an array and the index is valid
+    if (!json_object_is_type(flow_risk_array, json_type_array))
+    {
+        fprintf(stderr, "'flow_risk' is not an array\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return ;
+    }
+
+    *flow_risk_array_size = json_object_array_length(flow_risk_array);
+
+    json_object * flow_id_object;
+    if (json_object_object_get_ex(parsed_json_object, "flow_id", &flow_id_object))
+    {
+        *flow_id = json_object_get_int(flow_id_object);
+    }
+}
+
+void GetAlertJsonStringWithFlowRisk(char * alertStringWithFlowRiskArray, char ** converted_json_str, int flow_risk_index)
+{
+    // logger(0, "GetAlertJsonStringWithFlowRisk START");
+    // logger(0, "alertStringWithFlowRiskArray %s", alertStringWithFlowRiskArray);
+    // Parse JSON string to JSON object
+    struct json_object * parsed_json_object = json_tokener_parse(alertStringWithFlowRiskArray);
+
+    if (!parsed_json_object)
+    {
+        fprintf(stderr, "Error parsing JSON\n");
+        return NULL;
+    }
+
+
+
+    // Navigate to the `ndpi` and `flow_risk` fields
+    struct json_object * ndpi_obj = NULL;
+    struct json_object * flow_risk_array = NULL;
+    if (!json_object_object_get_ex(parsed_json_object, "ndpi", &ndpi_obj) ||
+        !json_object_object_get_ex(ndpi_obj, "flow_risk", &flow_risk_array))
+    {
+        fprintf(stderr, "Missing 'ndpi' or 'flow_risk' field\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return NULL;
+    }
+
+  
+
+    // Check if `flow_risk` is an array and the index is valid
+    if (!json_object_is_type(flow_risk_array, json_type_array))
+    {
+        fprintf(stderr, "'flow_risk' is not an array\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return NULL;
+    }
+
+
+
+
+    int array_len = json_object_array_length(flow_risk_array);
+    if (flow_risk_index < 0 || flow_risk_index >= array_len)
+    {
+        fprintf(stderr, "Index out of bounds\n");
+        json_object_put(parsed_json_object); // Free parsed JSON object
+        return NULL;
+    }
+
+
+    // Get the specified object from the array
+    struct json_object * selected_risk_obj = json_object_array_get_idx(flow_risk_array, flow_risk_index);
+   
+
+    // Clone the selected object to avoid modifying the array itself
+    struct json_object * flow_risk_obj = json_object_get(selected_risk_obj);
+
+
+    // Replace `flow_risk` array with the single selected object
+    json_object_object_del(ndpi_obj, "flow_risk");
+ 
+    json_object_object_add(ndpi_obj, "flow_risk", flow_risk_obj);
+
+
+    // Convert modified JSON back to string
+    const char * modified_json_str = json_object_to_json_string(parsed_json_object);
+   
+
+    // Duplicate the string so it can be returned (since original will be freed)
+    *converted_json_str = strdup(modified_json_str);
+ 
+
+    // Clean up
+    json_object_put(parsed_json_object);  
+    
 }
 
 void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
@@ -1186,13 +1578,11 @@ void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
     if (json_object_object_get_ex(root, "ndpi", &ndpiObject))
     {
         json_object_object_del(ndpiObject, "flow_risk");
-
         if (json_object_object_length(ndpiObject) < 1)
         {
             json_object_object_del(root, "ndpi");
         }       
     }
-
 
     json_object* eventObject;
     if (json_object_object_get_ex(root, "event", &eventObject))
@@ -1204,6 +1594,223 @@ void DeletenDPIRisk(char* originalJsonStr, char** converted_json_str)
     *converted_json_str = strdup(json_object_to_json_string(root));
     json_object_put(root);
 
+}
+
+int CheckSRCIPField(const char * json_str)
+{
+    // Parse the JSON string
+    json_object * parsed_json_object = json_tokener_parse(json_str);
+    if (parsed_json_object == NULL)
+    {
+        logger(1, "Error parsing JSON string\n");
+        return 0; // Parsing failed, assume src_ip is not present
+    }
+
+    // Check for the src_ip field
+    json_object * srcIpObject;
+    if (json_object_object_get_ex(parsed_json_object, "src_ip", &srcIpObject))
+    {
+        json_object_put(parsed_json_object); // Free the parsed JSON object
+        return 1;                     // src_ip field is present
+    }
+
+    json_object_put(parsed_json_object); // Free the parsed JSON object
+    return 0;                     // src_ip field is not present
+    
+}
+
+
+// Function to update "xfer" field in json1 if values in json2 are greater
+void UpdateXferIfGreater(char * existing_json_str, const char * new_json_str, char ** converted_json_str)
+{
+    json_object * existing_json_object = json_tokener_parse(existing_json_str);
+    if (existing_json_object == NULL)
+    {
+        return;
+    }
+
+    json_object * new_json_object = json_tokener_parse(new_json_str);
+    if (new_json_object == NULL)
+    {
+        return;
+    }
+
+    // Extract the "source" and "destination" fields from both JSON objects
+    struct json_object *source1, *destination1, *source2, *destination2;
+    json_object_object_get_ex(existing_json_object, "source", &source1);
+    json_object_object_get_ex(existing_json_object, "destination", &destination1);
+    json_object_object_get_ex(new_json_object, "source", &source2);
+    json_object_object_get_ex(new_json_object, "destination", &destination2);
+
+    // Extract the "packets" and "bytes" from both "source" and "destination"
+    int src1_packets = json_object_get_int(json_object_object_get(source1, "packets"));
+    int src1_bytes = json_object_get_int(json_object_object_get(source1, "bytes"));
+    int dst1_packets = json_object_get_int(json_object_object_get(destination1, "packets"));
+    int dst1_bytes = json_object_get_int(json_object_object_get(destination1, "bytes"));
+
+    int src2_packets = json_object_get_int(json_object_object_get(source2, "packets"));
+    int src2_bytes = json_object_get_int(json_object_object_get(source2, "bytes"));
+    int dst2_packets = json_object_get_int(json_object_object_get(destination2, "packets"));
+    int dst2_bytes = json_object_get_int(json_object_object_get(destination2, "bytes"));
+
+    json_object_object_add(source1,
+                           "packets",
+                           json_object_new_int(src2_packets > src1_packets ? src2_packets : src1_packets));
+
+    json_object_object_add(source1,
+                           "bytes",
+                           json_object_new_int(src2_bytes > src1_bytes ? src2_bytes : src1_bytes));
+
+    json_object_object_add(destination1,
+                           "packets",
+                           json_object_new_int(dst2_packets > dst1_packets ? dst2_packets : dst1_packets));
+    json_object_object_add(destination1,
+                           "bytes",
+                           json_object_new_int(dst2_bytes > dst1_bytes ? dst2_bytes : dst1_bytes));
+
+    // update event field
+    json_object *existing_event_obj, *new_event_obj;
+    json_object_object_get_ex(existing_json_object, "event", &existing_event_obj);
+    json_object_object_get_ex(new_json_object, "event", &new_event_obj);
+
+    // update event.end field
+    struct json_object *existing_event_end, *new_event_end;
+    json_object_object_get_ex(existing_event_obj, "end", &existing_event_end);
+    json_object_object_get_ex(new_event_obj, "end", &new_event_end);
+    char * existing_event_end_string = strDuplicate(json_object_get_string(existing_event_end));
+    char * new_event_end_string = strDuplicate(json_object_get_string(new_event_end));
+
+    if (strcmp(new_event_end_string, existing_event_end_string) > 0)
+    {
+        json_object_object_del(existing_event_obj, "end");
+        json_object_object_add(existing_event_obj, "end", json_object_new_string(new_event_end_string));
+    }
+
+    free(existing_event_end_string);
+    free(new_event_end_string);
+
+    // update event.duration field
+    struct json_object *existing_event_duration, *new_event_duration;
+    json_object_object_get_ex(existing_event_obj, "duration", &existing_event_duration);
+    json_object_object_get_ex(new_event_obj, "duration", &new_event_duration);
+    unsigned long existing_event_duration_value = json_object_get_double(existing_event_duration);
+    unsigned long new_event_duration_value = json_object_get_double(new_event_duration);
+
+    if (new_event_duration_value > existing_event_duration_value)
+    {
+        json_object_object_del(existing_event_obj, "duration");
+        json_object_object_add(existing_event_obj, "duration", json_object_new_int64(new_event_duration_value));
+    }
+
+    // update http fields
+    json_object *existing_http_obj, *new_http_obj;
+    if (json_object_object_get_ex(existing_json_object, "http", &existing_http_obj))
+    {
+        if (json_object_object_get_ex(new_json_object, "http", &new_http_obj))
+        {
+             // update event.request_content_type field
+             struct json_object *existing_request_content_type, *new_request_content_type;
+             if (json_object_object_get_ex(existing_http_obj, "request_content_type", &existing_request_content_type))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "request_content_type", &new_request_content_type))
+                 {
+                     char * existing_request_content_type_string =  strDuplicate(json_object_get_string(existing_event_end));
+                     char * new_request_content_type_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_request_content_type_string, existing_request_content_type_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "request_content_type");
+                         json_object_object_add(existing_http_obj, "request_content_type",  json_object_new_string(new_request_content_type_string));
+                     }
+
+                     free(existing_request_content_type_string);
+                     free(new_request_content_type_string);
+                 }
+             }
+
+             // update event.content_type field
+             struct json_object *existing_content_type, *new_content_type;
+             if (json_object_object_get_ex(existing_http_obj, "content_type", &existing_content_type))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "content_type", &new_content_type))
+                 {
+                     char * existing_content_type_string =  strDuplicate(json_object_get_string(existing_event_end));
+                     char * new_content_type_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_content_type_string, existing_content_type_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "content_type");
+                         json_object_object_add(existing_http_obj, "content_type", json_object_new_string(new_content_type_string));
+                     }
+
+                     free(existing_content_type_string);
+                     free(new_content_type_string);
+                 }
+             }
+
+             // update event.user_agent field
+             struct json_object *existing_user_agent, *new_user_agent;
+             if (json_object_object_get_ex(existing_http_obj, "user_agent", &existing_user_agent))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "user_agent", &new_user_agent))
+                 {
+                     unsigned long existing_user_agent_string = strDuplicate(json_object_get_string(existing_event_end));
+                     unsigned long new_user_agent_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_user_agent_string, existing_user_agent_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "user_agent");
+                         json_object_object_add(existing_http_obj, "user_agent",  json_object_new_string(new_user_agent_string));
+                     }
+
+                     free(existing_user_agent_string);
+                     free(new_user_agent_string);
+                 }
+             }
+
+             // update event.filename field
+             struct json_object *existing_filename, *new_filename;
+             if (json_object_object_get_ex(existing_http_obj, "filename", &existing_filename))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "filename", &new_filename))
+                 {
+                     char * existing_filename_string = strDuplicate(json_object_get_string(existing_event_end));
+                     char * new_filename_string = strDuplicate(json_object_get_string(new_event_end));
+
+                     if (strcmp(new_filename_string, existing_filename_string) > 0)
+                     {
+                         json_object_object_del(existing_http_obj, "filename");
+                         json_object_object_add(existing_http_obj, "filename",  json_object_new_string(new_filename_string));
+                     }
+
+                     free(existing_filename_string);
+                     free(new_filename_string);
+                 }
+             }
+
+             // update event.response_status_code field
+             struct json_object *existing_response_status_code, *new_response_status_code;
+             if (json_object_object_get_ex(existing_http_obj, "response.status_code", &existing_response_status_code))
+             {
+                 if (json_object_object_get_ex(new_http_obj, "response.status_code", &new_response_status_code))
+                 {
+                     unsigned long existing_response_status_code_value = json_object_get_int(existing_response_status_code);
+                     unsigned long new_response_status_code_value = json_object_get_int(new_response_status_code);
+
+                     if (new_response_status_code_value > existing_response_status_code_value)
+                     {
+                         json_object_object_del(existing_http_obj, "response.status_code");
+                         json_object_object_add(existing_http_obj, "response.status_code", json_object_new_int64(new_response_status_code_value));
+                     }
+                 }
+             }
+        }
+    }
+
+    *converted_json_str = strdup(json_object_to_json_string(existing_json_object));
+  
+    json_object_put(existing_json_object);
+    json_object_put(new_json_object);
 }
 
 

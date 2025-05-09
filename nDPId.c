@@ -20,6 +20,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/ioctl.h>
+#include <time.h>
 #if !defined(__FreeBSD__) && !defined(__APPLE__)
 #include <sys/signalfd.h>
 #endif
@@ -34,6 +35,8 @@
 #include "nio.h"
 #include "utils.h"
 #include "ReadJsonConfiguration.h"
+
+#define TICK_RESOLUTION 1000
 
 #ifndef UNIX_PATH_MAX
 #define UNIX_PATH_MAX 108
@@ -194,6 +197,8 @@ struct nDPId_flow_basic
     uint64_t last_pkt_time[FD_COUNT];
 };
 
+#define RANDOM_UNINTIALIZED_NUMBER_VALUE -84742891
+
 /*
  * Information required for a full detection cycle.
  */
@@ -208,8 +213,12 @@ struct nDPId_flow_extended
     ;
 
     unsigned long long int packets_processed[FD_COUNT];
+    unsigned long long int bytes[FD_COUNT];
     uint64_t first_seen;
     uint64_t last_flow_update;
+
+    uint64_t first_seen_ms;
+    uint64_t last_seen_ms;
 
     struct nDPId_flow_analysis * flow_analysis;
     unsigned long long int total_l4_payload_len[FD_COUNT];
@@ -261,6 +270,7 @@ struct nDPId_flow
 
 struct nDPId_workflow
 {
+    uint64_t last_time;
     pcap_t * pcap_handle;
 
     MT_VALUE(error_or_eof, uint8_t);
@@ -607,15 +617,251 @@ static void jsonize_flow_detection_event(struct nDPId_reader_thread * const read
                                          struct nDPId_flow * const flow,
                                          enum flow_event event);
 
-/*--------------------------------------------------------------------------------------------------------------------*/
+/*--------------------------------------------------Ashwani added code starts here------------------------------------------------------------------*/
 char * generated_tmp_json_files_alert = NULL;
 char * generated_tmp_json_files_event = NULL;
-struct PreviousJsonMessage
+char * current_pcap_file = NULL;
+
+
+// Define a structure to hold the flow id and JSON string
+typedef struct
 {
-    const char * json_msg;
-    size_t json_msg_len;
-};
-/*--------------------------------------------------------------------------------------------------------------------*/
+    int flow_id;
+    int flow_event_id;
+    int packet_id;
+    char * json_str;
+    char * json_str_alert;
+} FlowEntry;
+
+// Define a structure to manage the dynamic array of FlowEntry
+typedef struct
+{
+    FlowEntry * entries;
+    size_t size;
+    size_t capacity;
+} FlowMap;
+
+static FlowMap * flow_map_ref = NULL;
+
+// Initialize the FlowMap
+void init_flow_map(FlowMap * map, size_t initial_capacity)
+{
+    map->entries = malloc(initial_capacity * sizeof(FlowEntry));
+    map->size = 0;
+    map->capacity = initial_capacity;
+}
+
+// Free the FlowMap
+void free_flow_map(FlowMap * map)
+{
+
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        free(map->entries[i].json_str);
+        free(map->entries[i].json_str_alert);
+    }
+    free(map->entries);
+
+  
+}
+
+// Ensure capacity of the FlowMap
+void ensure_capacity(FlowMap * map)
+{
+    if (map->size >= map->capacity)
+    {
+        map->capacity *= 2;
+        map->entries = realloc(map->entries, map->capacity * sizeof(FlowEntry));
+    }
+}
+
+
+// Add or update an entry in the FlowMap
+void add_or_update_flow_entry(FlowMap * map, int flow_id, int flow_event_id, int packet_id, const char * json_str, const char * json_str_alert)
+{
+    // Check if the flow_id already exists
+  
+    if (map == NULL || flow_event_id == RANDOM_UNINTIALIZED_NUMBER_VALUE || packet_id == RANDOM_UNINTIALIZED_NUMBER_VALUE) 
+    {
+        return;
+    }
+
+    ensure_capacity(map);
+
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        if (map->entries[i].flow_id == flow_id )
+        {
+            if ((map->entries[i].flow_event_id <= flow_event_id) && (map->entries[i].packet_id <= packet_id))
+            {
+                map->entries[i].flow_event_id = flow_event_id;
+                map->entries[i].packet_id = packet_id;
+
+                // Update existing entry
+                if (json_str != NULL)
+                {
+                    free(map->entries[i].json_str);
+                    map->entries[i].json_str = strdup(json_str);
+                }
+
+                // Update existing entry
+                if (json_str_alert != NULL)
+                {
+                    free(map->entries[i].json_str_alert);
+                    map->entries[i].json_str_alert = strdup(json_str_alert);
+                }          
+            }
+            else
+            {
+                if (json_str != NULL && map->entries[i].json_str != NULL)
+                {
+                    char * converted_json_str_no_risk = NULL;
+                    UpdateXferIfGreater(map->entries[i].json_str, json_str, &converted_json_str_no_risk);
+                    free(map->entries[i].json_str);
+                    map->entries[i].json_str = strdup(converted_json_str_no_risk);
+                    free(converted_json_str_no_risk);                                  
+                }
+
+                if (json_str_alert != NULL && map->entries[i].json_str_alert != NULL)
+                {
+                    char * converted_json_str_risk = NULL;
+                    UpdateXferIfGreater(map->entries[i].json_str_alert, json_str_alert, &converted_json_str_risk);
+                    free(map->entries[i].json_str_alert);
+                    map->entries[i].json_str_alert = strdup(converted_json_str_risk);
+                    free(converted_json_str_risk);                           
+                }
+            }
+
+            return;
+        }
+    }
+
+    // Add new entry
+   
+    map->entries[map->size].flow_id = flow_id;
+    map->entries[map->size].flow_event_id = flow_event_id;
+    map->entries[map->size].packet_id = packet_id;
+    map->entries[map->size].json_str = strdup(json_str);
+    map->entries[map->size].json_str_alert = NULL;
+
+    if (json_str_alert != NULL)
+    {
+        map->entries[map->size].json_str_alert = strdup(json_str_alert);
+    }
+    else
+    {
+        map->entries[map->size].json_str_alert = NULL;
+    }
+
+    map->size++;
+}
+
+void write_flow_map_to_event_json(FlowMap * map, const char * filename)
+{
+    FILE * fp = fopen(filename, "w");
+    if (!fp)
+    {
+        perror("Unable to open output file");
+        return;
+    }
+
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        fputs(map->entries[i].json_str, fp);
+        fputs("\n", fp); // Add newline for each JSON object for readability
+    }
+
+    fclose(fp);
+}
+
+static char * create_filename_with_index_and_flow_id(const char * filename, size_t index, uint32_t flow_id)
+{
+    // Find the position of the last '.' in the filename
+    const char * last_dot = strrchr(filename, '.');
+    if (!last_dot)
+    {
+        fprintf(stderr, "Error: Invalid filename (no extension found)\n");
+        return NULL;
+    }
+
+    // Find the second-to-last '.' by searching up to `last_dot`
+    const char * second_last_dot = NULL;
+    for (const char * p = filename; p < last_dot; ++p)
+    {
+        if (*p == '.')
+        {
+            second_last_dot = p;
+        }
+    }
+
+    // If there's no second-to-last dot, we assume the filename format does not match the expected pattern
+    if (!second_last_dot)
+    {
+        fprintf(stderr, "Error: Filename format does not match (no second-to-last extension found)\n");
+        return NULL;
+    }
+
+    // Calculate the length of each part for the new filename
+    size_t base_len = second_last_dot - filename; // Length up to the second-last dot
+    size_t index_len = snprintf(NULL, 0, "%zu", index);
+    size_t flow_id_len = snprintf(NULL, 0, "%" PRIu32, flow_id);
+    size_t new_filename_len = base_len + 1 + index_len + 1 + flow_id_len + strlen(".json") + 1;
+
+    // Allocate memory for the new filename
+    char * new_filename = (char *)malloc(new_filename_len);
+    if (new_filename == NULL)
+    {
+        fprintf(stderr, "Error: Failed to allocate memory (%s)\n", strerror(errno));
+        return NULL;
+    }
+
+    // Construct the new filename, excluding the last extension (.tmp) entirely
+    snprintf(new_filename, new_filename_len, "%.*s_%zu_%" PRIu32 ".json", (int)base_len, filename, index, flow_id);
+
+    return new_filename;
+}
+
+static void write_flow_map_to_alert_json(FlowMap * map, const char * filename)
+{
+    for (size_t i = 0; i < map->size; ++i)
+    {
+        if (map->entries[i].json_str_alert != NULL)
+        {
+
+            int flow_risk_array_size = 0;
+            int flow_id = 0;
+            GetFlowRiskArraySizeAndFlowId(map->entries[i].json_str_alert, &flow_risk_array_size, &flow_id);
+            for (int index = 0; index < flow_risk_array_size; index++)
+            {
+                char * converted_json_str = NULL;
+                GetAlertJsonStringWithFlowRisk(map->entries[i].json_str_alert, &converted_json_str, index);
+ 
+                char * indexedFileName = create_filename_with_index_and_flow_id(filename, index, flow_id);
+                FILE * fp = fopen(indexedFileName, "a");
+                if (fp == NULL)
+                {
+                    logger(1, "Unable to create file %s: %s\n", indexedFileName, strerror(errno));
+                }
+                else
+                {
+                    fputs(converted_json_str, fp);
+                    fputs("\n", fp); // Add newline for each JSON object for readability
+                }
+                fclose(fp);
+                free(indexedFileName);
+            }
+        }
+    }
+}
+
+
+void write_flow_map_file(const char * events_tmp_json_file, const char * alerts_tmp_json_file)
+{
+    write_flow_map_to_event_json(flow_map_ref, events_tmp_json_file);
+    write_flow_map_to_alert_json(flow_map_ref, alerts_tmp_json_file);
+}
+
+/*--------------------------------------------------Ashwani added code ends here------------------------------------------------------------------*/
 
 static int set_collector_nonblock(struct nDPId_reader_thread * const reader_thread)
 {
@@ -1285,10 +1531,12 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     logger(0, "file_or_device is %s", file_or_device);
     if (access(file_or_device, R_OK) != 0 && errno == ENOENT)
     {
+        logger(0, "calling pcap_open_live");
         workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 250, pcap_error_buffer);
     }
     else
     {
+         logger(0, "calling pcap_open_offline_with_tstamp_precision");
         workflow->pcap_handle =
             pcap_open_offline_with_tstamp_precision(file_or_device, PCAP_TSTAMP_PRECISION_MICRO, pcap_error_buffer);
         workflow->is_pcap_file = 1;
@@ -1620,8 +1868,10 @@ static int setup_reader_threads(void)
     for (unsigned long long int i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
         reader_threads[i].workflow = init_workflow(get_cmdarg(&nDPId_options.pcap_file_or_interface));
+       
         if (reader_threads[i].workflow == NULL)
         {
+            logger_early(0, "FAILED to open %s file", get_cmdarg(&nDPId_options.pcap_file_or_interface));
             return 1;
         }
     }
@@ -2011,6 +2261,9 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
     {
         case L3_IP:
             ndpi_serialize_string_string(serializer, "l3_proto", "ip4");
+            // Ashwani START
+            ndpi_serialize_string_uint32(serializer, "ip", 4);
+            //Ashwani END
             if (inet_ntop(AF_INET, &flow_basic->src.v4.ip, src_name, sizeof(src_name)) == NULL)
             {
                 logger(1, "Could not convert IPv4 source ip to string: %s", strerror(errno));
@@ -2022,6 +2275,9 @@ static void jsonize_l3_l4(struct nDPId_workflow * const workflow, struct nDPId_f
             break;
         case L3_IP6:
             ndpi_serialize_string_string(serializer, "l3_proto", "ip6");
+            // Ashwani START
+            ndpi_serialize_string_uint32(serializer, "ip", 6);
+            // Ashwani END
             if (inet_ntop(AF_INET6, &flow_basic->src.v6.ip[0], src_name, sizeof(src_name)) == NULL)
             {
                 logger(1, "Could not convert IPv6 source ip to string: %s", strerror(errno));
@@ -2225,7 +2481,41 @@ static void jsonize_flow(struct nDPId_workflow * const workflow, struct nDPId_fl
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                  "flow_dst_packets_processed",
                                  flow_ext->packets_processed[FD_DST2SRC]);
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
+                                 "src2dst_bytes",
+                                 flow_ext->bytes[FD_SRC2DST]);
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
+                                 "dst2src_bytes",
+                                 flow_ext->bytes[FD_DST2SRC]);
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "flow_first_seen", flow_ext->first_seen);
+
+    // Ashwani - START
+    double f = (double)flow_ext->first_seen_ms, l = (double)flow_ext->last_seen_ms;
+    //l = (double)workflow->last_time;
+    time_t start_seconds = f / 1000;
+    struct tm * timeinfo;
+    timeinfo = gmtime(&start_seconds);
+    char datetime_start_str[30];
+    strftime(datetime_start_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+
+    time_t end_seconds = l / 1000;
+    timeinfo = gmtime(&end_seconds);
+    char datetime_end_str[30];
+    strftime(datetime_end_str, 30, "%Y-%m-%dT%H:%M:%SZ", timeinfo);
+
+    //logger(0, "flow id = %d, start time  = %f, end_time = %f, difference =%f, end_time2 = %f", flow_ext->flow_id, f, l, l-f, (double)flow_ext->last_seen_ms);
+
+    // logger(0, "TIME event_start %s", datetime_start_str);
+    // logger(0, "TIME event_end %s", datetime_end_str);
+    ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_start", datetime_start_str);
+    ndpi_serialize_string_string(&workflow->ndpi_serializer, "event_end", datetime_end_str);
+
+    unsigned long micorseconds = (end_seconds - start_seconds) * 1000000;
+
+    ndpi_serialize_string_uint64(&workflow->ndpi_serializer, "event_duration", micorseconds);
+
+
+    // Ashwani - END
     ndpi_serialize_string_uint64(&workflow->ndpi_serializer,
                                  "flow_src_last_pkt_time",
                                  flow_ext->flow_basic.last_pkt_time[FD_SRC2DST]);
@@ -2300,92 +2590,193 @@ static int connect_to_collector(struct nDPId_reader_thread * const reader_thread
     return 0;
 }
 
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
+// Define a linked list node to store each unique message
+typedef struct MessageNode
+{
+    char * message;
+    size_t length;
+    struct MessageNode * next;
+} MessageNode;
+
+// Head of the linked list
+static MessageNode * head = NULL;
+
+// Function to check for duplicates and add new messages
 int duplicate_data(const char * json_str, size_t json_msg_len)
 {
-    static PreviousJsonMessage prev_message = {"", 0};
+    MessageNode * current = head;
 
-    if (prev_message.json_msg_len == json_msg_len && std::memcmp(prev_message.json_msg, json_msg, json_msg_len) == 0)
-    {       
-        return;
+    // Check if the current message is a duplicate
+    while (current != NULL)
+    {
+        if (current->length == json_msg_len && memcmp(current->message, json_str, json_msg_len) == 0)
+        {
+            return 1; // Duplicate found
+        }
+        current = current->next;
     }
 
-    prev_message.json_msg = json_msg;
-    prev_message.json_msg_len = json_msg_len;
+    // If not a duplicate, add the new message to the linked list
+    MessageNode * new_node = (MessageNode *)malloc(sizeof(MessageNode));
+    if (new_node == NULL)
+    {
+        logger(1, "Failed to allocate memory for new node");
+        return 0;
+    }
+
+    new_node->message = (char *)malloc(json_msg_len);
+    if (new_node->message == NULL)
+    {
+        logger(1, "Failed to allocate memory for message");
+        free(new_node);
+        return 0;
+    }
+
+    memcpy(new_node->message, json_str, json_msg_len);
+    new_node->length = json_msg_len;
+    new_node->next = head;
+    head = new_node;
+
+    return 0; // No duplicate
 }
+
+// Function to free the linked list memory
+void free_messages()
+{
+    MessageNode * current = head;
+    while (current != NULL)
+    {
+        MessageNode * temp = current;
+        current = current->next;
+        free(temp->message);
+        free(temp);
+    }
+    head = NULL;
+}
+
+//static write_to_file(unsigned long long int flow_id, const char * json_str, size_t json_msg_len)
+//{
+//    logger(0, "write_to_file");
+//    if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL)
+//    {
+//        return;
+//    }
+//
+//    if (CheckSRCIPField(json_str) == 0)
+//    {
+//        return;
+//    }
+//
+//    FILE * serialization_fp = NULL;
+//    char * converted_json_str = NULL;
+//    int createAlert = 0;
+//    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
+//
+//    if (converted_json_str != NULL)
+//    {
+//        int length = strlen(converted_json_str);
+//        if (duplicate_data(converted_json_str, length))
+//        {
+//            return;
+//        }
+//
+//        if (length != 0)
+//        {
+//            if (createAlert)
+//            {
+//                serialization_fp = fopen(generated_tmp_json_files_alert, "a");
+//                if (serialization_fp == NULL)
+//                {
+//                    logger(2, "Unable to create file %s: %s\n", generated_tmp_json_files_alert, strerror(errno));
+//                }
+//                else
+//                {
+//                    int length = strlen(converted_json_str);
+//                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+//                    fclose(serialization_fp);
+//                }
+//            }
+//
+//            char * converted_json_str_no_risk = NULL;
+//            if (createAlert)
+//            {
+//                DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
+//            }
+//
+//            serialization_fp = fopen(generated_tmp_json_files_event, "a");
+//            if (serialization_fp == NULL)
+//            {
+//                logger(0, "Unable to create file %s: %s\n", generated_tmp_json_files_event, strerror(errno));
+//            }
+//            else
+//            {
+//                if (createAlert)
+//                {
+//                    int length = strlen(converted_json_str_no_risk);
+//                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str_no_risk);
+//                }
+//                else
+//                {
+//                    int length = strlen(converted_json_str);
+//                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
+//                }
+//                fclose(serialization_fp);
+//            }
+//
+//            free(converted_json_str_no_risk);
+//        }
+//    }
+//
+//    free(converted_json_str);
+//}
+
+
 
 static write_to_file(const char * json_str, size_t json_msg_len)
 {
-    if (generated_tmp_json_files_alert == NULL || generated_tmp_json_files_event == NULL) 
-    {
-        return;
-    }
-
-    if (duplicate_data(json_str, json_msg_len)) 
-    {
-        logger(0, "Ashwani: duplicate message: %s", json_str);
-        return;
-    }
-
     FILE* serialization_fp = NULL;
     char * converted_json_str = NULL;
-    int createAlert = 0;
-    ConvertnDPIDataFormat(json_str, &converted_json_str, &createAlert);
+    int flowRisksCount = 0;
+    unsigned long long int flow_id = 834264320534;
+    unsigned int flow_event_id = -1;
+    unsigned int packet_id = -1;
+    // Ashwani: uncomment this to put data to console
+    // printf("\n%s\n", json_str);
 
-    if (converted_json_str != NULL)
+    ConvertnDPIDataFormat(json_str, &converted_json_str, &flowRisksCount, &flow_id, &flow_event_id, &packet_id, current_pcap_file);
+    if (flow_id != 834264320534 && converted_json_str != NULL)
     {
         int length = strlen(converted_json_str);
+        if (duplicate_data(converted_json_str, length))
+        {
+            return;
+        }
 
         if (length != 0)
         {
-            if (createAlert)
-            {
-                serialization_fp = fopen(generated_tmp_json_files_alert, "a");
-                if (serialization_fp == NULL)
-                {
-                    logger(2, "Unable to create file %s: %s\n",  generated_tmp_json_files_alert,  strerror(errno));
-                }
-                else
-                {
-                    int length = strlen(converted_json_str);
-                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
-                    fclose(serialization_fp);
-                }
-            }
 
             char * converted_json_str_no_risk = NULL;
-            if (createAlert)
+            if (flowRisksCount)
             {
                 DeletenDPIRisk(converted_json_str, &converted_json_str_no_risk);
-            }
-
-            serialization_fp = fopen(generated_tmp_json_files_event, "a");
-            if (serialization_fp == NULL)
-            {
-                logger(0, "Unable to create file %s: %s\n",  generated_tmp_json_files_event,  strerror(errno));
+                add_or_update_flow_entry(flow_map_ref, flow_id, flow_event_id, packet_id, converted_json_str_no_risk, converted_json_str);
             }
             else
-            {
-                if (createAlert)
-                {
-                    int length = strlen(converted_json_str_no_risk);
-                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str_no_risk);
-                }
-                else
-                {
-                    int length = strlen(converted_json_str);
-                    fprintf(serialization_fp, "%.*s\n", (int)length, converted_json_str);
-                }
-                fclose(serialization_fp);
-            }
-
+             {
+                add_or_update_flow_entry(flow_map_ref, flow_id, flow_event_id, packet_id, converted_json_str, NULL);     
+             }
+                
             free(converted_json_str_no_risk);
         }
     }
-
+   
     free(converted_json_str);
+    //logger (0, "write_to_file End");
 }
 
-static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
+/*-------------------------------------------------------------------------------------------------------------------------------------------------------*/
+static void send_to_collector( struct nDPId_reader_thread * const reader_thread,
                               char const * const json_msg,
                               size_t json_msg_len)
 {
@@ -2400,7 +2791,7 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                      (int)json_msg_len,
                      json_msg);
 
-
+    // printf("\n%s\n", json_msg);
     if (s_ret < 0 || s_ret >= (int)sizeof(newline_json_msg))
     {
         logger(1,
@@ -2456,11 +2847,10 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
 
     write_to_file(json_msg, json_msg_len);
     ssize_t written;
+
     if (reader_thread->collector_sock_last_errno == 0 &&
         (written = write(reader_thread->collector_sockfd, newline_json_msg, s_ret)) != s_ret)
     {
-        logger(0, "************\n***********\n***********");
-        logger(0, "Ashwani AAA");
         saved_errno = errno;
         if (saved_errno == EPIPE || written == 0)
         {
@@ -2484,13 +2874,11 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
         }
         else if (collector_address.raw.sa_family == AF_UNIX)
         {
-            logger(0, "Ashwani 1");
             size_t pos = (written < 0 ? 0 : written);
             set_collector_block(reader_thread);
             while ((size_t)(written = write(reader_thread->collector_sockfd, newline_json_msg + pos, s_ret - pos)) !=
                    s_ret - pos)
             {
-                logger(0, "Ashwani 2");
                 saved_errno = errno;
                 if (saved_errno == EPIPE || written == 0)
                 {
@@ -2515,10 +2903,8 @@ static void send_to_collector(struct nDPId_reader_thread * const reader_thread,
                 else
                 {
                     pos += written;
-                    logger(0, "Ashwani 3");
                 }
             }
-            logger(0, "Ashwani 4");
             set_collector_nonblock(reader_thread);
         }
     }
@@ -2530,11 +2916,6 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
     uint32_t json_msg_len;
 
     json_msg = ndpi_serializer_get_buffer(&reader_thread->workflow->ndpi_serializer, &json_msg_len);
-
-    char * converted_json_str = NULL;
-    int createAlert = 0;
-    ConvertnDPIDataFormat(json_msg, &converted_json_str, &createAlert);
-    free(converted_json_str);
 
     if (json_msg == NULL || json_msg_len == 0)
     {
@@ -2549,6 +2930,7 @@ static void serialize_and_send(struct nDPId_reader_thread * const reader_thread)
         reader_thread->workflow->total_events_serialized++;
         send_to_collector(reader_thread, json_msg, json_msg_len);
     }
+
     ndpi_reset_serializer(&reader_thread->workflow->ndpi_serializer);
 }
 
@@ -3782,6 +4164,24 @@ static void ndpi_process_packet(uint8_t * const args,
         return;
     }
 
+    // Ashwani Start       
+            
+    u_int64_t time_ms = ((uint64_t) header->ts.tv_sec) * TICK_RESOLUTION + header->ts.tv_usec / (1000000 / TICK_RESOLUTION);
+   
+     /* safety check */
+     if(workflow->last_time > time_ms) 
+     {
+          /* printf("\nWARNING: timestamp bug in the pcap file (ts delta: %llu, repairing)\n", ndpi_thread_info[thread_id].last_time - time); */
+          time_ms = workflow->last_time;
+     }
+
+     /* update last time value */
+     workflow->last_time = time_ms;
+     //logger (0, "time_ms %lu", time_ms);
+     //logger (0, "TIME is: %" PRIu64 "\n", time_ms);
+    
+    // Ashwani End 
+
     if (type == ETH_P_IP)
     {
         ip = (struct ndpi_iphdr *)&packet[ip_offset];
@@ -4187,6 +4587,10 @@ static void ndpi_process_packet(uint8_t * const args,
 
         workflow->total_active_flows++;
         flow_to_process->flow_extended.flow_id = MT_GET_AND_ADD(global_flow_id, 1);
+        
+        //Ashwani START
+        flow_to_process->flow_extended.last_seen_ms = time_ms;
+        //Ashwani END
 
         if (alloc_detection_data(flow_to_process) != 0)
         {
@@ -4236,6 +4640,10 @@ static void ndpi_process_packet(uint8_t * const args,
                 break;
         }
         flow_to_process = (struct nDPId_flow *)flow_basic_to_process;
+        //Ashwani START
+        flow_to_process->flow_extended.last_seen_ms = time_ms;
+        //Ashwani END
+
 
         if (flow_to_process->flow_extended.flow_basic.state == FS_INFO)
         {
@@ -4259,6 +4667,8 @@ static void ndpi_process_packet(uint8_t * const args,
     }
 
     flow_to_process->flow_extended.packets_processed[direction]++;
+    flow_to_process->flow_extended.bytes[direction] = flow_to_process->flow_extended.bytes[direction] + header->caplen;
+    
     flow_to_process->flow_extended.total_l4_payload_len[direction] += l4_payload_len;
     workflow->packets_processed++;
     workflow->total_l4_payload_len += l4_payload_len;
@@ -4272,6 +4682,15 @@ static void ndpi_process_packet(uint8_t * const args,
         flow_to_process->flow_extended.min_l4_payload_len[direction] = l4_payload_len;
     }
 
+    // Ashwani START
+    if (flow_to_process->flow_extended.first_seen_ms == 0)
+    {
+        flow_to_process->flow_extended.first_seen_ms = time_ms;
+    }
+
+    flow_to_process->flow_extended.last_seen_ms = time_ms;
+    // Ashwani END
+
     if (is_new_flow != 0)
     {
         last_pkt_time = flow_to_process->flow_extended.first_seen =
@@ -4280,6 +4699,7 @@ static void ndpi_process_packet(uint8_t * const args,
                     flow_to_process->flow_extended.last_flow_update = workflow->last_thread_time;
         flow_to_process->flow_extended.max_l4_payload_len[direction] = l4_payload_len;
         flow_to_process->flow_extended.min_l4_payload_len[direction] = l4_payload_len;
+
         jsonize_flow_event(reader_thread, &flow_to_process->flow_extended, FLOW_EVENT_NEW);
     }
 
@@ -4517,10 +4937,17 @@ static void log_all_flows(struct nDPId_reader_thread const * const reader_thread
 }
 #endif
 
-static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char* generated_tmp_json_files_alert_input, char* generated_tmp_json_files_event_input)
+static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread,
+                          FlowMap * flow_map_input,
+                          char * generated_tmp_json_files_alert_input,
+                          char * generated_tmp_json_files_event_input,
+                          char * current_pcap_file_input)
 {
+    //logger(0, "run_pcap_loop start");
+    flow_map_ref = flow_map_input;
     generated_tmp_json_files_alert = generated_tmp_json_files_alert_input;
     generated_tmp_json_files_event = generated_tmp_json_files_event_input;
+    current_pcap_file = current_pcap_file_input;
 
     if (reader_thread->workflow != NULL && reader_thread->workflow->pcap_handle != NULL)
     {
@@ -4530,7 +4957,9 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
             {
                 case PCAP_ERROR:
                     logger(1, "Error while reading pcap file: '%s'", pcap_geterr(reader_thread->workflow->pcap_handle));
-                    MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
+                    // Ashwani START
+                    //MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
+                    // Ashwani END
                     return;
                 case PCAP_ERROR_BREAK:
                     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
@@ -4681,7 +5110,7 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
                     }
                     else
 #endif
-                        if (fd == pcap_fd)
+                    if (fd == pcap_fd)
                     {
                         switch (pcap_dispatch(
                             reader_thread->workflow->pcap_handle, -1, ndpi_process_packet, (uint8_t *)reader_thread))
@@ -4707,9 +5136,12 @@ static void run_pcap_loop(struct nDPId_reader_thread * const reader_thread, char
                 }
             }
 
+            logger(0, "before nio_free call");
             nio_free(&io);
         }
     }
+
+     logger(0, "run_pcap_loop end");
 }
 
 static void break_pcap_loop(struct nDPId_reader_thread * const reader_thread)
@@ -4740,7 +5172,7 @@ static void * processing_thread(void * const ndpi_thread_arg)
         jsonize_daemon(reader_thread, DAEMON_EVENT_INIT);
     }
 
-    run_pcap_loop(reader_thread, NULL, NULL);
+    run_pcap_loop(reader_thread, NULL, NULL, NULL, NULL);
     set_collector_block(reader_thread);
     MT_GET_AND_ADD(reader_thread->workflow->error_or_eof, 1);
     return NULL;
@@ -4972,6 +5404,7 @@ static int stop_reader_threads(void)
 
 static void free_reader_threads(void)
 {
+    logger(0, "free_reader_threads called");
     for (unsigned long long int i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
         if (reader_threads[i].workflow == NULL)
