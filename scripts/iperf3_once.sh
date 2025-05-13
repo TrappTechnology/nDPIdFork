@@ -38,7 +38,7 @@ echo "$OUTPUT"
 # Extract and sum packets from per-second stats (5th column)
 PACKETS_SENT=$(echo "$OUTPUT" | awk '/sec/ && $0 ~ /Datagrams/ { sum += $(NF); } END { print sum }')
 
-echo "Packets sent: $PACKETS_SENT"
+echo "Packets sent1: $PACKETS_SENT"
 echo "Test completed."
 
 
