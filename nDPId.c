@@ -4101,7 +4101,7 @@ static void ndpi_process_packet(uint8_t * const args,
                                 struct pcap_pkthdr const * const header,
                                 uint8_t const * const packet)
 {
-    static count = 0;
+    static int count = 0;
     count++;
     // Ashwani
     logger(0, "Packet Sents = %d", count);
