@@ -20,6 +20,9 @@
 #!/bin/bash
 
 # Set to the eth0 IP (must not be 127.0.0.1)
+#!/bin/bash
+
+# Set to the eth0 IP (must not be 127.0.0.1)
 SERVER_IP="10.31.1.157"
 BANDWIDTH="1G"
 DURATION=10
@@ -35,10 +38,10 @@ OUTPUT=$(iperf3 -c "$SERVER_IP" -u -B "$SOURCE_IP" -b "$BANDWIDTH" -t "$DURATION
 # Print full output
 echo "$OUTPUT"
 
-# Extract and sum packets from per-second stats (5th column)
-PACKETS_SENT=$(echo "$OUTPUT" | awk '/sec/ && $0 ~ /Datagrams/ { sum += $(NF); } END { print sum }')
+# Extract packets sent from sender summary line
+PACKETS_SENT=$(echo "$OUTPUT" | grep -Eo '[0-9]+/[0-9]+.*sender' | head -n1 | awk -F'/' '{print $2}' | awk '{print $1}')
 
-echo "Packets sent1: $PACKETS_SENT"
+echo "Packets sent: $PACKETS_SENT"
 echo "Test completed."
 
 
