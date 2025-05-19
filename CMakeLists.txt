@@ -258,7 +258,7 @@ if(ENABLE_SANITIZER AND ENABLE_SANITIZER_THREAD)
     message(FATAL_ERROR "ENABLE_SANITIZER and ENABLE_SANITIZER_THREAD can not be used together!")
 endif()
 
-find_library(JSON_C_LIB NAMES json-c PATHS /home/acoma/repositories/json-c/build/ NO_DEFAULT_PATH)
+find_library(JSON_C_LIB NAMES json-c PATHS /home/anssetup/repositories/json-c/build/ NO_DEFAULT_PATH)
 
 # Ensure the library was found
 if(NOT JSON_C_LIB)
