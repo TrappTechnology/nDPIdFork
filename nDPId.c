@@ -4101,10 +4101,14 @@ static void ndpi_process_packet(uint8_t * const args,
                                 struct pcap_pkthdr const * const header,
                                 uint8_t const * const packet)
 {
-    static int count = 0;
+    static uint64_t total_bytes = 0;
+    static uint64_t count = 0;
+
+    total_bytes += header->caplen;
     count++;
-    // Ashwani
-    logger(0, "Packet Sents = %d", count);
+
+    logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, count, total_bytes);
+
     loggerDebug("ndpi_process_packet called");
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
     struct nDPId_workflow * workflow;
