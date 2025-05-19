@@ -27,4 +27,10 @@ case "$TRANSFER_UNIT" in
   *) BYTES_SENT="Unknown unit: $TRANSFER_UNIT" ;;
 esac
 
-# Extract packets sent
+# Extract packets sent (format: N/M where M = packets sent)
+PACKETS_SENT=$(echo "$SENDER_LINE" | grep -oP '\d+/\K\d+')
+
+# Final output summary
+echo "Packets sent: $PACKETS_SENT"
+echo "Total bytes sent: $BYTES_SENT"
+echo "Test completed."
