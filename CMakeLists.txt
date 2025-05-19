@@ -92,7 +92,7 @@ if(BUILD_EXAMPLES)
 option(ENABLE_DBUS "Build DBus notification example." OFF)
 option(ENABLE_CURL "Build influxdb data write example." OFF)
 endif()
-option(BUILD_NDPI "Clone and build nDPI from github." OFF)
+option(BUILD_NDPI "Clone and build nDPI from github." ON)
 
 if(BUILD_NDPI)
     message(STATUS "Ashwani BUILD_NDPI")
