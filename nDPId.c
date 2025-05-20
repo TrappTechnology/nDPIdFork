@@ -1517,14 +1517,19 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     {
         // AShwani
         logger(0, "Ashwani: calling pcap_open_live");
-        workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 1, pcap_error_buffer);
-
-        //pcap_t * handle = pcap_create(file_or_device, pcap_error_buffer);
-        //pcap_set_snaplen(handle, 65535);
-        //pcap_set_promisc(handle, 1);
-        //pcap_set_timeout(handle, 1);
-        //pcap_set_buffer_size(handle, 8 * 1024 * 1024); // 8 MB buffer
-        //pcap_activate(handle);
+        //workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 1, pcap_error_buffer);
+        pcap_t * handle = pcap_create(file_or_device, pcap_error_buffer);
+        logger(0, "Ashwani: 1");
+        pcap_set_snaplen(handle, 65535);
+        logger(0, "Ashwani: 2");
+        pcap_set_promisc(handle, 1);
+        logger(0, "Ashwani: 3");
+        pcap_set_timeout(handle, 1);
+        logger(0, "Ashwani: 4");
+        pcap_set_buffer_size(handle, 8 * 1024 * 1024); // 8 MB buffer
+        logger(0, "Ashwani: 5");
+        pcap_activate(handle);
+        logger(0, "Ashwani: 6");
 
     }
     else
