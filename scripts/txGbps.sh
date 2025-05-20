@@ -1,25 +1,31 @@
 #!/bin/bash
 
-IFACE=enp2s0f0
-echo "Measuring TX rate on interface $IFACE over 60 seconds..."
+IFACE="enp2s0f0"
+echo "Measuring TX rate on interface $IFACE over 30 seconds..."
 
-# Read initial value and timestamp
-TX_START=$(cat /sys/class/net/$IFACE/statistics/tx_bytes)
+# Get initial TX bytes
+TX1=$(cat /sys/class/net/$IFACE/statistics/tx_bytes)
 T1=$(date +%s)
 
-# Wait 60 seconds
-sleep 60
+sleep 30
 
-# Read final value and timestamp
-TX_END=$(cat /sys/class/net/$IFACE/statistics/tx_bytes)
+# Get TX bytes after 60 seconds
+TX2=$(cat /sys/class/net/$IFACE/statistics/tx_bytes)
 T2=$(date +%s)
 
-# Calculate byte difference and time difference
-TX_BYTES=$((TX_END - TX_START))
-TIME_DIFF=$((T2 - T1))
+# Sanity check
+if [[ -z "$TX1" || -z "$TX2" ]]; then
+    echo "Failed to read TX bytes for $IFACE"
+    exit 1
+fi
 
-# Convert to bits per second, then Gbps
-TX_GBPS=$(echo "scale=3; $TX_BYTES * 8 / $TIME_DIFF / 1000000000" | bc)
+# Compute delta and rate
+TX_BYTES=$((TX2 - TX1))
+TIME_DELTA=$((T2 - T1))
+TX_BITS=$((TX_BYTES * 8))
 
-echo "TX over $TIME_DIFF seconds: $TX_BYTES bytes"
+# Compute Gbps using bc
+TX_GBPS=$(echo "scale=6; $TX_BITS / ($TIME_DELTA * 1000000000)" | bc)
+
+echo "TX over $TIME_DELTA seconds: $TX_BYTES bytes"
 echo "TX Rate: $TX_GBPS Gbps"
