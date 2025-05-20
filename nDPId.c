@@ -4102,68 +4102,60 @@ static void ndpi_process_packet(uint8_t * const args,
                                 uint8_t const * const packet)
 {
     static uint64_t total_bytes = 0;
-    static uint64_t count = 0;
+    static uint64_t packet_count = 0;
     static time_t start_time = 0;
-    static int started = 0;
-    static int measuring = 1; // Flag to keep measuring or stop
+    static int measuring = 0; // 0 = not started, 1 = measuring, -1 = stop forever
 
-    if (!measuring)
+    if (measuring == -1)
+        return; // Stop measuring forever after user chooses to stop
+
+    time_t now = time(NULL);
+
+    if (measuring == 0)
     {
-        // Stop processing further measurements
-        return;
+        // Start measuring
+        start_time = now;
+        total_bytes = 0;
+        packet_count = 0;
+        measuring = 1;
+        printf("Started measuring...\n");
     }
 
-    // Initialize start time on first call or when count reaches 100
-    if (!started && count >= 100)
+    // Count this packet
+    total_bytes += header->caplen;
+    packet_count++;
+
+    double elapsed = difftime(now, start_time);
+    if (elapsed >= 60.0)
     {
-        start_time = time(NULL);
-        started = 1;
-        printf("Measurement started at count %lu\n", count);
-    }
+        // Measurement window complete
+        printf("\n=== 60 Second Report ===\n");
+        printf("Total bytes captured: %lu\n", total_bytes);
+        printf("Total packets captured: %lu\n", packet_count);
 
-    if (started)
-    {
-        total_bytes += header->caplen;
-    }
+        // Ask user if they want to continue
+        printf("Do you want to continue measuring? (y/n): ");
+        fflush(stdout);
 
-    count++;
+        int c = getchar();
+        // Consume any extra characters (like newline)
+        while (c != '\n' && getchar() != '\n')
+            ;
 
-    if (started)
-    {
-        time_t now = time(NULL);
-        double elapsed = difftime(now, start_time);
-
-        if (elapsed >= 60)
+        if (c == 'y' || c == 'Y')
         {
-            double bits = total_bytes * 8;
-            double gbps = bits / (elapsed * 1e9);
-
-            printf("Count: %lu, Total bytes: %lu, Elapsed time: %.0f seconds\n", count, total_bytes, elapsed);
-            printf("Average speed: %.3f Gbps\n", gbps);
-
-            printf("Continue measuring? (y/n): ");
-            fflush(stdout);
-
-            int c = getchar();
-
-            // Consume leftover newline if any
-            while (c != '\n' && getchar() != '\n')
-                ;
-
-            if (c == 'y' || c == 'Y')
-            {
-                // Reset for next measurement
-                started = 0;
-                total_bytes = 0;
-            }
-            else
-            {
-                printf("Stopping measurements.\n");
-                measuring = 0;
-            }
+            // Reset and start new measurement window
+            start_time = time(NULL);
+            total_bytes = 0;
+            packet_count = 0;
+            printf("Restarted measuring...\n");
+        }
+        else
+        {
+            printf("Stopping measurements.\n");
+            measuring = -1;
         }
     }
-
 
     logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, count, total_bytes);
 
