@@ -4157,7 +4157,7 @@ static void ndpi_process_packet(uint8_t * const args,
         }
     }
 
-    logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, count, total_bytes);
+    logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
 
     loggerDebug("ndpi_process_packet called");
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
