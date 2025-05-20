@@ -4105,6 +4105,13 @@ static void ndpi_process_packet(uint8_t * const args,
     static uint64_t count = 0;
     static time_t start_time = 0;
     static int started = 0;
+    static int measuring = 1; // Flag to keep measuring or stop
+
+    if (!measuring)
+    {
+        // Stop processing further measurements
+        return;
+    }
 
     // Initialize start time on first call or when count reaches 100
     if (!started && count >= 100)
@@ -4126,20 +4133,34 @@ static void ndpi_process_packet(uint8_t * const args,
         time_t now = time(NULL);
         double elapsed = difftime(now, start_time);
 
-        // Run for 60 seconds (1 minute)
         if (elapsed >= 60)
         {
             double bits = total_bytes * 8;
             double gbps = bits / (elapsed * 1e9);
 
-            logger(0, "Count: %lu, Total bytes: %lu, Elapsed time: %.0f seconds\n", count, total_bytes, elapsed);
-            logger(0, "Average speed: %.3f Gbps\n", gbps);
+            printf("Count: %lu, Total bytes: %lu, Elapsed time: %.0f seconds\n", count, total_bytes, elapsed);
+            printf("Average speed: %.3f Gbps\n", gbps);
 
-            // Reset counters if you want to continue measuring next intervals
-            started = 0;
-            total_bytes = 0;
-            // Optional: reset count to zero or keep increasing
-            // count = 0;
+            printf("Continue measuring? (y/n): ");
+            fflush(stdout);
+
+            int c = getchar();
+
+            // Consume leftover newline if any
+            while (c != '\n' && getchar() != '\n')
+                ;
+
+            if (c == 'y' || c == 'Y')
+            {
+                // Reset for next measurement
+                started = 0;
+                total_bytes = 0;
+            }
+            else
+            {
+                printf("Stopping measurements.\n");
+                measuring = 0;
+            }
         }
     }
 
