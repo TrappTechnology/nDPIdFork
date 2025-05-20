@@ -1522,13 +1522,13 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
         logger(0, "Ashwani: 1");
         pcap_set_snaplen(workflow->pcap_handle, 65535);
         logger(0, "Ashwani: 2");
-        pcap_set_promisc(handle, 1);
+        pcap_set_promisc(workflow->pcap_handle, 1);
         logger(0, "Ashwani: 3");
-        pcap_set_timeout(handle, 1);
+        pcap_set_timeout(workflow->pcap_handle, 1);
         logger(0, "Ashwani: 4");
-        pcap_set_buffer_size(handle, 8 * 1024 * 1024); // 8 MB buffer
+        pcap_set_buffer_size(workflow->pcap_handle, 8 * 1024 * 1024); // 8 MB buffer
         logger(0, "Ashwani: 5");
-        pcap_activate(handle);
+        pcap_activate(workflow->pcap_handle);
         logger(0, "Ashwani: 6");
 
     }
