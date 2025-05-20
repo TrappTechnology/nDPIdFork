@@ -4107,13 +4107,12 @@ static void ndpi_process_packet(uint8_t * const args,
     static int measuring = 0; // 0 = not started, 1 = measuring, -1 = stop forever
 
     if (measuring == -1)
-        return; // Stop measuring forever after user chooses to stop
+        return; // User chose to stop
 
     time_t now = time(NULL);
 
     if (measuring == 0)
     {
-        // Start measuring
         start_time = now;
         total_bytes = 0;
         packet_count = 0;
@@ -4121,30 +4120,31 @@ static void ndpi_process_packet(uint8_t * const args,
         printf("Started measuring...\n");
     }
 
-    // Count this packet
     total_bytes += header->caplen;
     packet_count++;
 
     double elapsed = difftime(now, start_time);
     if (elapsed >= 60.0)
     {
-        // Measurement window complete
-        printf("\n=== 60 Second Report ===\n");
-        printf("Total bytes captured: %lu\n", total_bytes);
-        printf("Total packets captured: %lu\n", packet_count);
+        // Calculate average speed in Gbps
+        double bits = total_bytes * 8.0;
+        double gbps = bits / (elapsed * 1e9); // Gbps = bits / seconds / 1e9
 
-        // Ask user if they want to continue
+        printf("\n=== 60 Second Report ===\n");
+        printf("Total packets captured: %lu\n", packet_count);
+        printf("Total bytes captured: %lu\n", total_bytes);
+        printf("Average speed: %.3f Gbps\n", gbps);
+
+        // Ask to continue
         printf("Do you want to continue measuring? (y/n): ");
         fflush(stdout);
 
         int c = getchar();
-        // Consume any extra characters (like newline)
         while (c != '\n' && getchar() != '\n')
-            ;
+            ; // Clear input
 
         if (c == 'y' || c == 'Y')
         {
-            // Reset and start new measurement window
             start_time = time(NULL);
             total_bytes = 0;
             packet_count = 0;
