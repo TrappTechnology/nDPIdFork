@@ -4103,9 +4103,46 @@ static void ndpi_process_packet(uint8_t * const args,
 {
     static uint64_t total_bytes = 0;
     static uint64_t count = 0;
+    static time_t start_time = 0;
+    static int started = 0;
 
-    total_bytes += header->caplen;
+    // Initialize start time on first call or when count reaches 100
+    if (!started && count >= 100)
+    {
+        start_time = time(NULL);
+        started = 1;
+        printf("Measurement started at count %lu\n", count);
+    }
+
+    if (started)
+    {
+        total_bytes += header->caplen;
+    }
+
     count++;
+
+    if (started)
+    {
+        time_t now = time(NULL);
+        double elapsed = difftime(now, start_time);
+
+        // Run for 60 seconds (1 minute)
+        if (elapsed >= 60)
+        {
+            double bits = total_bytes * 8;
+            double gbps = bits / (elapsed * 1e9);
+
+            logger(0, "Count: %lu, Total bytes: %lu, Elapsed time: %.0f seconds\n", count, total_bytes, elapsed);
+            logger(0, "Average speed: %.3f Gbps\n", gbps);
+
+            // Reset counters if you want to continue measuring next intervals
+            started = 0;
+            total_bytes = 0;
+            // Optional: reset count to zero or keep increasing
+            // count = 0;
+        }
+    }
+
 
     logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, count, total_bytes);
 
