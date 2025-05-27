@@ -4250,8 +4250,9 @@ static void ndpi_process_packet(uint8_t * const args,
         printf("Average speed: %.3f Gbps\n", gbps);
        // print_stats(workflow->pcap_handle);
 
+        printf("Restarted measuring...\n");
         // Ask to continue
-        printf("Do you want to continue measuring? (y/n): ");
+        //printf("Do you want to continue measuring? (y/n): ");
         fflush(stdout);
 
         start_time = time(NULL);
