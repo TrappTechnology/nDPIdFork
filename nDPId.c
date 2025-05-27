@@ -4111,62 +4111,62 @@ static int distribute_single_packet(struct nDPId_reader_thread * const reader_th
             reader_thread->array_index);
 }
 
-void print_stats(pcap_t * pcap_handle;)
-{
-    struct pcap_stat pcapStat;
-    struct timeval endTime;
-    float deltaSec;
-    static u_int64_t lastPkts = 0;
-    u_int64_t diff;
-    static struct timeval lastTime;
-    char buf1[64], buf2[64];
-
-    if (startTime.tv_sec == 0)
-    {
-        lastTime.tv_sec = 0;
-        gettimeofday(&startTime, NULL);
-        return;
-    }
-
-    gettimeofday(&endTime, NULL);
-    deltaSec = (double)delta_time(&endTime, &startTime) / 1000000;
-
-    if (pcap_stats(pcap_handle, &pcapStat) >= 0)
-    {
-        fprintf(stderr,
-                "=========================\n"
-                "Absolute Stats: [%u pkts rcvd][%u pkts dropped (%u if drops)]\n"
-                "Total Pkts=%u/Dropped=%.1f %%\n",
-                pcapStat.ps_recv,
-                pcapStat.ps_drop,
-                pcapStat.ps_ifdrop,
-                pcapStat.ps_recv - pcapStat.ps_drop,
-                pcapStat.ps_recv == 0 ? 0 : (double)(pcapStat.ps_drop * 100) / (double)pcapStat.ps_recv);
-        fprintf(stderr,
-                "%llu pkts [%.1f pkt/sec] - %llu bytes [%.2f Mbit/sec]\n",
-                numPkts,
-                (double)numPkts / deltaSec,
-                numBytes,
-                (double)8 * numBytes / (double)(deltaSec * 1000000));
-
-        if (lastTime.tv_sec > 0)
-        {
-            deltaSec = (double)delta_time(&endTime, &lastTime) / 1000000;
-            diff = numPkts - lastPkts;
-            fprintf(stderr,
-                    "=========================\n"
-                    "Actual Stats: %s pkts [%.1f ms][%s pkt/sec]\n",
-                    pfring_format_numbers(diff, buf1, sizeof(buf1), 0),
-                    deltaSec * 1000,
-                    pfring_format_numbers(((double)diff / (double)(deltaSec)), buf2, sizeof(buf2), 1));
-            lastPkts = numPkts;
-        }
-
-        fprintf(stderr, "=========================\n");
-    }
-
-    lastTime.tv_sec = endTime.tv_sec, lastTime.tv_usec = endTime.tv_usec;
-}
+//void print_stats(pcap_t * pcap_handle)
+//{
+//    struct pcap_stat pcapStat;
+//    struct timeval endTime;
+//    float deltaSec;
+//    static u_int64_t lastPkts = 0;
+//    u_int64_t diff;
+//    static struct timeval lastTime;
+//    char buf1[64], buf2[64];
+//
+//    if (startTime.tv_sec == 0)
+//    {
+//        lastTime.tv_sec = 0;
+//        gettimeofday(&startTime, NULL);
+//        return;
+//    }
+//
+//    gettimeofday(&endTime, NULL);
+//    deltaSec = (double)delta_time(&endTime, &startTime) / 1000000;
+//
+//    if (pcap_stats(pcap_handle, &pcapStat) >= 0)
+//    {
+//        fprintf(stderr,
+//                "=========================\n"
+//                "Absolute Stats: [%u pkts rcvd][%u pkts dropped (%u if drops)]\n"
+//                "Total Pkts=%u/Dropped=%.1f %%\n",
+//                pcapStat.ps_recv,
+//                pcapStat.ps_drop,
+//                pcapStat.ps_ifdrop,
+//                pcapStat.ps_recv - pcapStat.ps_drop,
+//                pcapStat.ps_recv == 0 ? 0 : (double)(pcapStat.ps_drop * 100) / (double)pcapStat.ps_recv);
+//        fprintf(stderr,
+//                "%llu pkts [%.1f pkt/sec] - %llu bytes [%.2f Mbit/sec]\n",
+//                numPkts,
+//                (double)numPkts / deltaSec,
+//                numBytes,
+//                (double)8 * numBytes / (double)(deltaSec * 1000000));
+//
+//        if (lastTime.tv_sec > 0)
+//        {
+//            deltaSec = (double)delta_time(&endTime, &lastTime) / 1000000;
+//            diff = numPkts - lastPkts;
+//            fprintf(stderr,
+//                    "=========================\n"
+//                    "Actual Stats: %s pkts [%.1f ms][%s pkt/sec]\n",
+//                    pfring_format_numbers(diff, buf1, sizeof(buf1), 0),
+//                    deltaSec * 1000,
+//                    pfring_format_numbers(((double)diff / (double)(deltaSec)), buf2, sizeof(buf2), 1));
+//            lastPkts = numPkts;
+//        }
+//
+//        fprintf(stderr, "=========================\n");
+//    }
+//
+//    lastTime.tv_sec = endTime.tv_sec, lastTime.tv_usec = endTime.tv_usec;
+//}
 
 
 static void ndpi_process_packet(uint8_t * const args,
@@ -4248,7 +4248,7 @@ static void ndpi_process_packet(uint8_t * const args,
         printf("Total packets captured: %lu\n", packet_count);
         printf("Total bytes captured: %lu\n", total_bytes);
         printf("Average speed: %.3f Gbps\n", gbps);
-        print_stats(workflow->pcap_handle);
+       // print_stats(workflow->pcap_handle);
 
         // Ask to continue
         printf("Do you want to continue measuring? (y/n): ");
@@ -4272,7 +4272,7 @@ static void ndpi_process_packet(uint8_t * const args,
         }
     }
 
-    logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
+   // logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
 
     workflow->packets_captured++;
     time_us = ndpi_timeval_to_microseconds(header->ts);
