@@ -4167,7 +4167,30 @@ static int distribute_single_packet(struct nDPId_reader_thread * const reader_th
 //
 //    lastTime.tv_sec = endTime.tv_sec, lastTime.tv_usec = endTime.tv_usec;
 //}
+// 
+ void print_stats(pcap_t * pcap_handle)
+{
+     struct pcap_stat pcapStat;
 
+
+     if (pcap_stats(pcap_handle, &pcapStat) >= 0)
+     {
+         printf(
+                 "=========================\n"
+                 "Absolute Stats: [%u pkts rcvd][%u pkts dropped (%u if drops)]\n"
+                 "Total Pkts=%u/Dropped=%.1f %%\n",
+                 pcapStat.ps_recv,
+                 pcapStat.ps_drop,
+                 pcapStat.ps_ifdrop,
+                 pcapStat.ps_recv - pcapStat.ps_drop,
+                 pcapStat.ps_recv == 0 ? 0 : (double)(pcapStat.ps_drop * 100) / (double)pcapStat.ps_recv);
+        
+
+         fprintf(stderr, "=========================\n");
+     }
+
+    
+ }
 
 static void ndpi_process_packet(uint8_t * const args,
                                 struct pcap_pkthdr const * const header,
@@ -4248,7 +4271,7 @@ static void ndpi_process_packet(uint8_t * const args,
         printf("Total packets captured: %lu\n", packet_count);
         printf("Total bytes captured: %lu\n", total_bytes);
         printf("Average speed: %.3f Gbps\n", gbps);
-       // print_stats(workflow->pcap_handle);
+        print_stats(workflow->pcap_handle);
 
         printf("Restarted measuring...\n");
         // Ask to continue
