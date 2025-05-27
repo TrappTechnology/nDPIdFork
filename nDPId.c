@@ -4254,22 +4254,26 @@ static void ndpi_process_packet(uint8_t * const args,
         printf("Do you want to continue measuring? (y/n): ");
         fflush(stdout);
 
-        int c = getchar();
-        while (c != '\n' && getchar() != '\n')
-            ; // Clear input
+        start_time = time(NULL);
+        total_bytes = 0;
+        packet_count = 0;
 
-        if (c == 'y' || c == 'Y')
-        {
-            start_time = time(NULL);
-            total_bytes = 0;
-            packet_count = 0;
-            printf("Restarted measuring...\n");
-        }
-        else
-        {
-            printf("Stopping measurements.\n");
-            measuring = -1;
-        }
+        //int c = getchar();
+        //while (c != '\n' && getchar() != '\n')
+        //    ; // Clear input
+
+        //if (c == 'y' || c == 'Y')
+        //{
+        //    start_time = time(NULL);
+        //    total_bytes = 0;
+        //    packet_count = 0;
+        //    printf("Restarted measuring...\n");
+        //}
+        //else
+        //{
+        //    printf("Stopping measurements.\n");
+        //    measuring = -1;
+        //}
     }
 
    // logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
