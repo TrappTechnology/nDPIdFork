@@ -4219,11 +4219,64 @@ static void ndpi_process_packet(uint8_t * const args,
     packet_count++;
 
     double elapsed = difftime(now, start_time);
+    
+    struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
+    if (reader_thread == NULL)
+    {
+        return;
+    }
+
+    struct nDPId_workflow * workflow = reader_thread->workflow;
+
+    if (workflow == NULL)
+    {
+        return;
+    }
+
+    if (elapsed >= 60.0)
+    {
+        // Calculate average speed in Gbps
+        double bits = total_bytes * 8.0;
+        double gbps = bits / (elapsed * 1e9); // Gbps = bits / seconds / 1e9
+
+        printf("\n=== 60 Second Report ===\n");
+        printf("Total packets captured: %lu\n", packet_count);
+        printf("Total bytes captured: %lu\n", total_bytes);
+        printf("Average speed: %.3f Gbps\n", gbps);
+        print_stats(workflow->pcap_handle);
+
+        printf("Restarted measuring...\n");
+        // Ask to continue
+        // printf("Do you want to continue measuring? (y/n): ");
+        fflush(stdout);
+
+        start_time = time(NULL);
+        total_bytes = 0;
+        packet_count = 0;
+
+        // int c = getchar();
+        // while (c != '\n' && getchar() != '\n')
+        //     ; // Clear input
+
+        // if (c == 'y' || c == 'Y')
+        //{
+        //     start_time = time(NULL);
+        //     total_bytes = 0;
+        //     packet_count = 0;
+        //     printf("Restarted measuring...\n");
+        // }
+        // else
+        //{
+        //     printf("Stopping measurements.\n");
+        //     measuring = -1;
+        // }
+    }
+
+    return;
 
 
     //loggerDebug("ndpi_process_packet called");
-    struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
-    struct nDPId_workflow * workflow;
+  
     struct nDPId_flow_basic flow_basic = {};
     enum nDPId_flow_direction direction;
 
@@ -4250,55 +4303,6 @@ static void ndpi_process_packet(uint8_t * const args,
     uint16_t type = 0;
     size_t thread_index = nDPId_THREAD_DISTRIBUTION_SEED; // generated with `dd if=/dev/random bs=1024 count=1 |& hd'
 
-    if (reader_thread == NULL)
-    {
-        return;
-    }
-    workflow = reader_thread->workflow;
-
-    if (workflow == NULL)
-    {
-        return;
-    }
-
-     if (elapsed >= 60.0)
-    {
-        // Calculate average speed in Gbps
-        double bits = total_bytes * 8.0;
-        double gbps = bits / (elapsed * 1e9); // Gbps = bits / seconds / 1e9
-
-        printf("\n=== 60 Second Report ===\n");
-        printf("Total packets captured: %lu\n", packet_count);
-        printf("Total bytes captured: %lu\n", total_bytes);
-        printf("Average speed: %.3f Gbps\n", gbps);
-        print_stats(workflow->pcap_handle);
-
-        printf("Restarted measuring...\n");
-        // Ask to continue
-        //printf("Do you want to continue measuring? (y/n): ");
-        fflush(stdout);
-
-        start_time = time(NULL);
-        total_bytes = 0;
-        packet_count = 0;
-
-        //int c = getchar();
-        //while (c != '\n' && getchar() != '\n')
-        //    ; // Clear input
-
-        //if (c == 'y' || c == 'Y')
-        //{
-        //    start_time = time(NULL);
-        //    total_bytes = 0;
-        //    packet_count = 0;
-        //    printf("Restarted measuring...\n");
-        //}
-        //else
-        //{
-        //    printf("Stopping measurements.\n");
-        //    measuring = -1;
-        //}
-    }
 
    // logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
 
