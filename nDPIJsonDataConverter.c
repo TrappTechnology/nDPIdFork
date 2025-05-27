@@ -1366,7 +1366,7 @@ static void add_Root_Data(json_object ** root_object,
     char modificationTimeStr[25];
     double duration_nanoseconds;
 
-    get_file_times(current_pcap_file, creationTimeStr, modificationTimeStr, &duration_nanoseconds);
+   // get_file_times(current_pcap_file, creationTimeStr, modificationTimeStr, &duration_nanoseconds);
 
     json_object * event_object = json_object_new_object();
     json_object_object_add(event_object, "start", json_object_new_string(creationTimeStr));
