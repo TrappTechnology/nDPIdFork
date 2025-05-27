@@ -1517,19 +1517,19 @@ static struct nDPId_workflow * init_workflow(char const * const file_or_device)
     {
         // AShwani
         logger(0, "Ashwani: calling pcap_open_live");
-        //workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 1, pcap_error_buffer);
-        workflow->pcap_handle = pcap_create(file_or_device, pcap_error_buffer);
-        logger(0, "Ashwani: 1");
-        pcap_set_snaplen(workflow->pcap_handle, 65535);
-        logger(0, "Ashwani: 2");
-        pcap_set_promisc(workflow->pcap_handle, 1);
-        logger(0, "Ashwani: 3");
-        pcap_set_timeout(workflow->pcap_handle, 1);
-        logger(0, "Ashwani: 4");
-        pcap_set_buffer_size(workflow->pcap_handle, 8 * 1024 * 1024); // 8 MB buffer
-        logger(0, "Ashwani: 5");
-        pcap_activate(workflow->pcap_handle);
-        logger(0, "Ashwani: 6");
+        workflow->pcap_handle = pcap_open_live(file_or_device, 65535, 1, 1, pcap_error_buffer);
+        //workflow->pcap_handle = pcap_create(file_or_device, pcap_error_buffer);
+        //logger(0, "Ashwani: 1");
+        //pcap_set_snaplen(workflow->pcap_handle, 65535);
+        //logger(0, "Ashwani: 2");
+        //pcap_set_promisc(workflow->pcap_handle, 1);
+        //logger(0, "Ashwani: 3");
+        //pcap_set_timeout(workflow->pcap_handle, 1);
+        //logger(0, "Ashwani: 4");
+        //pcap_set_buffer_size(workflow->pcap_handle, 8 * 1024 * 1024); // 8 MB buffer
+        //logger(0, "Ashwani: 5");
+        //pcap_activate(workflow->pcap_handle);
+        //logger(0, "Ashwani: 6");
 
     }
     else
@@ -4111,6 +4111,64 @@ static int distribute_single_packet(struct nDPId_reader_thread * const reader_th
             reader_thread->array_index);
 }
 
+void print_stats(pcap_t * pcap_handle;)
+{
+    struct pcap_stat pcapStat;
+    struct timeval endTime;
+    float deltaSec;
+    static u_int64_t lastPkts = 0;
+    u_int64_t diff;
+    static struct timeval lastTime;
+    char buf1[64], buf2[64];
+
+    if (startTime.tv_sec == 0)
+    {
+        lastTime.tv_sec = 0;
+        gettimeofday(&startTime, NULL);
+        return;
+    }
+
+    gettimeofday(&endTime, NULL);
+    deltaSec = (double)delta_time(&endTime, &startTime) / 1000000;
+
+    if (pcap_stats(pcap_handle, &pcapStat) >= 0)
+    {
+        fprintf(stderr,
+                "=========================\n"
+                "Absolute Stats: [%u pkts rcvd][%u pkts dropped (%u if drops)]\n"
+                "Total Pkts=%u/Dropped=%.1f %%\n",
+                pcapStat.ps_recv,
+                pcapStat.ps_drop,
+                pcapStat.ps_ifdrop,
+                pcapStat.ps_recv - pcapStat.ps_drop,
+                pcapStat.ps_recv == 0 ? 0 : (double)(pcapStat.ps_drop * 100) / (double)pcapStat.ps_recv);
+        fprintf(stderr,
+                "%llu pkts [%.1f pkt/sec] - %llu bytes [%.2f Mbit/sec]\n",
+                numPkts,
+                (double)numPkts / deltaSec,
+                numBytes,
+                (double)8 * numBytes / (double)(deltaSec * 1000000));
+
+        if (lastTime.tv_sec > 0)
+        {
+            deltaSec = (double)delta_time(&endTime, &lastTime) / 1000000;
+            diff = numPkts - lastPkts;
+            fprintf(stderr,
+                    "=========================\n"
+                    "Actual Stats: %s pkts [%.1f ms][%s pkt/sec]\n",
+                    pfring_format_numbers(diff, buf1, sizeof(buf1), 0),
+                    deltaSec * 1000,
+                    pfring_format_numbers(((double)diff / (double)(deltaSec)), buf2, sizeof(buf2), 1));
+            lastPkts = numPkts;
+        }
+
+        fprintf(stderr, "=========================\n");
+    }
+
+    lastTime.tv_sec = endTime.tv_sec, lastTime.tv_usec = endTime.tv_usec;
+}
+
+
 static void ndpi_process_packet(uint8_t * const args,
                                 struct pcap_pkthdr const * const header,
                                 uint8_t const * const packet)
@@ -4134,46 +4192,13 @@ static void ndpi_process_packet(uint8_t * const args,
         printf("Started measuring...\n");
     }
 
-    total_bytes += header->caplen;
+    total_bytes += header->len;
     packet_count++;
 
     double elapsed = difftime(now, start_time);
-    if (elapsed >= 60.0)
-    {
-        // Calculate average speed in Gbps
-        double bits = total_bytes * 8.0;
-        double gbps = bits / (elapsed * 1e9); // Gbps = bits / seconds / 1e9
 
-        printf("\n=== 60 Second Report ===\n");
-        printf("Total packets captured: %lu\n", packet_count);
-        printf("Total bytes captured: %lu\n", total_bytes);
-        printf("Average speed: %.3f Gbps\n", gbps);
 
-        // Ask to continue
-        printf("Do you want to continue measuring? (y/n): ");
-        fflush(stdout);
-
-        int c = getchar();
-        while (c != '\n' && getchar() != '\n')
-            ; // Clear input
-
-        if (c == 'y' || c == 'Y')
-        {
-            start_time = time(NULL);
-            total_bytes = 0;
-            packet_count = 0;
-            printf("Restarted measuring...\n");
-        }
-        else
-        {
-            printf("Stopping measurements.\n");
-            measuring = -1;
-        }
-    }
-
-    logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
-
-    loggerDebug("ndpi_process_packet called");
+    //loggerDebug("ndpi_process_packet called");
     struct nDPId_reader_thread * const reader_thread = (struct nDPId_reader_thread *)args;
     struct nDPId_workflow * workflow;
     struct nDPId_flow_basic flow_basic = {};
@@ -4212,6 +4237,42 @@ static void ndpi_process_packet(uint8_t * const args,
     {
         return;
     }
+
+     if (elapsed >= 60.0)
+    {
+        // Calculate average speed in Gbps
+        double bits = total_bytes * 8.0;
+        double gbps = bits / (elapsed * 1e9); // Gbps = bits / seconds / 1e9
+
+        printf("\n=== 60 Second Report ===\n");
+        printf("Total packets captured: %lu\n", packet_count);
+        printf("Total bytes captured: %lu\n", total_bytes);
+        printf("Average speed: %.3f Gbps\n", gbps);
+        print_stats(workflow->pcap_handle);
+
+        // Ask to continue
+        printf("Do you want to continue measuring? (y/n): ");
+        fflush(stdout);
+
+        int c = getchar();
+        while (c != '\n' && getchar() != '\n')
+            ; // Clear input
+
+        if (c == 'y' || c == 'Y')
+        {
+            start_time = time(NULL);
+            total_bytes = 0;
+            packet_count = 0;
+            printf("Restarted measuring...\n");
+        }
+        else
+        {
+            printf("Stopping measurements.\n");
+            measuring = -1;
+        }
+    }
+
+    logger(0, "Packet Sents = %" PRIu64 ", Total bytes received: %" PRIu64, packet_count, total_bytes);
 
     workflow->packets_captured++;
     time_us = ndpi_timeval_to_microseconds(header->ts);
