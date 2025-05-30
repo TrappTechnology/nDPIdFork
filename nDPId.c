@@ -1868,6 +1868,8 @@ static int setup_reader_threads(void)
         }
     }
 
+    printf("Ashwani: Thread Count = %d", nDPId_options.reader_thread_count);
+
     for (unsigned long long int i = 0; i < nDPId_options.reader_thread_count; ++i)
     {
         reader_threads[i].workflow = init_workflow(get_cmdarg(&nDPId_options.pcap_file_or_interface));
